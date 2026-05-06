@@ -336,6 +336,56 @@
     }
     .info-note strong { color: #0c5296; }
 
+    /* ── EDIT PROFILE ── */
+    .edit-profile-section { margin-top: 1.2rem; }
+    .edit-profile-section h3 { font-size: 1.05rem; font-weight: 700; color: #c45203; margin-bottom: .9rem; }
+    .avatar-upload-wrap {
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;
+    }
+    .avatar-preview {
+      width: 64px; height: 64px; border-radius: 50%;
+      object-fit: cover; border: 3px solid #f0e8d8; flex-shrink: 0;
+    }
+    .avatar-preview-placeholder {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: linear-gradient(135deg, #e85d04, #f48c06);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; color: #fff; font-weight: 700; flex-shrink: 0;
+    }
+    .avatar-upload-btn {
+      background: #f0e8d8; color: #444; border: none; border-radius: 8px;
+      padding: .45rem .9rem; font-size: .87rem; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .avatar-upload-btn:hover { background: #e0d8c8; }
+    #avatar-file-input { display: none; }
+
+    /* ── ADMIN PANEL ── */
+    .admin-section { margin-top: 1.4rem; }
+    .admin-section h3 { font-size: 1.05rem; font-weight: 700; color: #c45203; margin-bottom: .9rem; }
+    .admin-user-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: .75rem; flex-wrap: wrap;
+      background: #fff; border-radius: 8px; padding: .75rem 1rem;
+      box-shadow: 0 1px 5px rgba(0,0,0,.06); margin-bottom: .5rem;
+      font-size: .88rem;
+    }
+    .admin-user-info { flex: 1; min-width: 0; }
+    .admin-user-name { font-weight: 700; }
+    .admin-user-email { color: #888; font-size: .82rem; }
+    .admin-role-badge {
+      font-size: .72rem; font-weight: 700; padding: .18rem .6rem;
+      border-radius: 20px; white-space: nowrap;
+    }
+    .role-admin { background: #e2d9f3; color: #6f42c1; }
+    .role-user  { background: #f0e8d8; color: #777; }
+    .btn-role-toggle {
+      background: #f0e8d8; color: #444; border: none; border-radius: 6px;
+      padding: .3rem .75rem; font-size: .8rem; font-weight: 600;
+      cursor: pointer; transition: background .2s; white-space: nowrap;
+    }
+    .btn-role-toggle:hover { background: #e0d8c8; }
+
     /* ── Footer ── */
     footer {
       text-align: center;
@@ -604,9 +654,9 @@
       <div class="slider-group">
         <label>
           📦 Average plan tier
-          <span id="tier-val">$39/mo</span>
+          <span id="tier-val">$20/mo</span>
         </label>
-        <input type="range" id="tier" min="26" max="52" value="39" step="13"
+        <input type="range" id="tier" min="10" max="30" value="20" step="10"
                oninput="updateCalc()" aria-label="Average plan price" />
       </div>
     </div>
@@ -652,8 +702,8 @@
       <div class="plan-emoji">🐣</div>
       <h3>Solo / Couple</h3>
       <p class="plan-tagline">For 1–2 people</p>
-      <div class="plan-price">$26<span>/mo</span></div>
-      <p class="per-week">~$6.50 / week</p>
+      <div class="plan-price">$10<span>/mo</span></div>
+      <p class="per-week">~$2.50 / week</p>
       <ul>
         <li>½ dozen eggs per week</li>
         <li>6 eggs × 4 deliveries/mo</li>
@@ -661,7 +711,7 @@
         <li>Newsletter + farm updates</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="openSubscribeModal('Solo / Couple', 26)">Choose Plan</button>
+      <button class="plan-cta" onclick="openSubscribeModal('Solo / Couple', 10)">Choose Plan</button>
     </div>
 
     <!-- Small Family -->
@@ -670,8 +720,8 @@
       <div class="plan-emoji">👨‍👩‍👦</div>
       <h3>Small Family</h3>
       <p class="plan-tagline">For 2–4 people</p>
-      <div class="plan-price">$39<span>/mo</span></div>
-      <p class="per-week">~$9.75 / week</p>
+      <div class="plan-price">$20<span>/mo</span></div>
+      <p class="per-week">~$5.00 / week</p>
       <ul>
         <li>1 dozen eggs per week</li>
         <li>12 eggs × 4 deliveries/mo</li>
@@ -680,7 +730,7 @@
         <li>Newsletter + farm updates</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="openSubscribeModal('Small Family', 39)">Choose Plan</button>
+      <button class="plan-cta" onclick="openSubscribeModal('Small Family', 20)">Choose Plan</button>
     </div>
 
     <!-- Family -->
@@ -688,8 +738,8 @@
       <div class="plan-emoji">👨‍👩‍👧‍👦</div>
       <h3>Family</h3>
       <p class="plan-tagline">For 4+ people</p>
-      <div class="plan-price">$52<span>/mo</span></div>
-      <p class="per-week">~$13 / week</p>
+      <div class="plan-price">$30<span>/mo</span></div>
+      <p class="per-week">~$7.50 / week</p>
       <ul>
         <li>1½ dozen eggs per week</li>
         <li>18 eggs × 4 deliveries/mo</li>
@@ -698,7 +748,7 @@
         <li>Seasonal produce add-ons</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="openSubscribeModal('Family', 52)">Choose Plan</button>
+      <button class="plan-cta" onclick="openSubscribeModal('Family', 30)">Choose Plan</button>
     </div>
 
   </div>
@@ -708,7 +758,7 @@
   </div>
 
   <div class="info-note" style="margin-top:.8rem;">
-    <strong>Tip:</strong> The <strong>Family plan at $52/month</strong> tends to be the easiest sell in Lincoln — families go through eggs quickly and value the convenience of local delivery. Lead with that tier in your marketing.
+    <strong>Tip:</strong> The <strong>Family plan at $30/month</strong> tends to be the easiest sell in Lincoln — families go through eggs quickly and value the convenience of local delivery. Lead with that tier in your marketing.
   </div>
 </section>
 
@@ -930,7 +980,7 @@
   </div>
 
   <div class="info-note">
-    <strong>Revenue at 20 subscribers (mixed plans ~$39 avg):</strong> ~$780/month or <strong>~$9,360/year</strong> — well within the $25,000 cottage food threshold. You'd need ~64 subscribers at the Family plan to hit the license threshold.
+    <strong>Revenue at 20 subscribers (mixed plans ~$20 avg):</strong> ~$400/month or <strong>~$4,800/year</strong> — well within the $25,000 cottage food threshold. You'd need ~104 subscribers at the Family plan to hit the license threshold.
   </div>
 </section>
 
@@ -1089,7 +1139,9 @@
   <!-- LOGGED IN: profile + orders -->
   <div id="account-logged-in" style="display:none;">
     <div class="profile-card">
-      <div class="profile-avatar" id="profile-avatar">?</div>
+      <div id="profile-avatar-wrap">
+        <div class="profile-avatar" id="profile-avatar">?</div>
+      </div>
       <div class="profile-name"  id="profile-name">–</div>
       <div class="profile-email" id="profile-email">–</div>
       <div class="profile-since" id="profile-since">–</div>
@@ -1097,10 +1149,62 @@
       <button class="btn-secondary" onclick="doLogout()">Sign Out</button>
     </div>
 
+    <!-- Edit Profile -->
+    <div class="edit-profile-section card">
+      <h3>✏️ Edit Profile</h3>
+      <div id="edit-profile-flash"></div>
+
+      <!-- Avatar upload -->
+      <div class="avatar-upload-wrap">
+        <div id="avatar-edit-preview-wrap">
+          <div class="avatar-preview-placeholder" id="avatar-edit-placeholder">?</div>
+        </div>
+        <div>
+          <button class="avatar-upload-btn" onclick="document.getElementById('avatar-file-input').click()">
+            📷 Change Photo
+          </button>
+          <button class="avatar-upload-btn" style="margin-top:.4rem;" onclick="removeAvatar()">
+            Remove Photo
+          </button>
+          <input type="file" id="avatar-file-input" accept="image/jpeg,image/png,image/gif,image/webp"
+                 onchange="handleAvatarFile(event)" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="edit-name">Full Name</label>
+        <input type="text" id="edit-name" placeholder="Your name" maxlength="120" />
+      </div>
+      <div class="form-group">
+        <label for="edit-email">Email</label>
+        <input type="email" id="edit-email" placeholder="you@example.com" />
+      </div>
+      <hr style="border:none;border-top:1px solid #f0e8d8;margin:.9rem 0;" />
+      <p style="font-size:.82rem;color:#888;margin-bottom:.7rem;">Leave password fields blank to keep your current password.</p>
+      <div class="form-group">
+        <label for="edit-current-password">Current Password</label>
+        <input type="password" id="edit-current-password" placeholder="Required to change password" />
+      </div>
+      <div class="form-group">
+        <label for="edit-new-password">New Password <small style="color:#aaa;">(min. 6 characters)</small></label>
+        <input type="password" id="edit-new-password" placeholder="Leave blank to keep current" />
+      </div>
+      <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+    </div>
+
     <div class="orders-section">
       <h3>🛒 My Subscriptions</h3>
       <div id="orders-list">
         <div class="orders-empty">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Admin Panel (only visible to admins) -->
+    <div class="admin-section" id="admin-panel" style="display:none;">
+      <div class="card">
+        <h3>🔑 Admin Panel</h3>
+        <div id="admin-flash"></div>
+        <div id="admin-users-list">Loading…</div>
       </div>
     </div>
   </div>
@@ -1136,7 +1240,7 @@
   /* ═══════════════════════════════════════════════════════
      REVENUE CALCULATOR
   ═══════════════════════════════════════════════════════ */
-  const tierEggs = { 26: 6, 39: 12, 52: 18 };
+  const tierEggs = { 10: 6, 20: 12, 30: 18 };
   // Minimum value to avoid division by zero when flock slider is at minimum
   const MIN_EGGS_AVAILABLE = 1;
 
@@ -1190,6 +1294,7 @@
 
   // Map of plan name → eggs per week (mirrors PLANS on the server)
   const PLAN_EGGS = { 'Solo / Couple': 6, 'Small Family': 12, 'Family': 18 };
+  const PLAN_PRICES = { 'Solo / Couple': 10, 'Small Family': 20, 'Family': 30 };
 
   function openSubscribeModal(name, price) {
     if (!currentUser) {
@@ -1469,16 +1574,168 @@
     if (currentUser) {
       formsWrap.style.display    = 'none';
       loggedInWrap.style.display = 'block';
-      const initial = currentUser.name.charAt(0).toUpperCase();
-      document.getElementById('profile-avatar').textContent = initial;
+
+      // Profile header
+      renderAvatar('profile-avatar-wrap', currentUser.avatar_url, currentUser.name, 'profile-avatar');
       document.getElementById('profile-name').textContent   = currentUser.name;
       document.getElementById('profile-email').textContent  = currentUser.email;
       const since = new Date(currentUser.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
       document.getElementById('profile-since').textContent  = 'Member since ' + since;
+
+      // Pre-fill edit form
+      document.getElementById('edit-name').value  = currentUser.name;
+      document.getElementById('edit-email').value = currentUser.email;
+      document.getElementById('edit-current-password').value = '';
+      document.getElementById('edit-new-password').value     = '';
+      renderEditAvatar();
+
+      // Admin panel
+      const adminPanel = document.getElementById('admin-panel');
+      if (currentUser.role === 'admin') {
+        adminPanel.style.display = 'block';
+        loadAdminUsers();
+      } else {
+        adminPanel.style.display = 'none';
+      }
+
       loadOrders();
     } else {
       formsWrap.style.display    = 'block';
       loggedInWrap.style.display = 'none';
+    }
+  }
+
+  function renderAvatar(wrapId, avatarUrl, name, existingElId) {
+    const wrap = document.getElementById(wrapId);
+    if (!wrap) return;
+    if (avatarUrl) {
+      let img = wrap.querySelector('img.profile-avatar-img');
+      if (!img) {
+        wrap.innerHTML = '';
+        img = document.createElement('img');
+        img.className = 'profile-avatar';
+        img.style.cssText = 'width:56px;height:56px;border-radius:50%;object-fit:cover;';
+        wrap.appendChild(img);
+      }
+      img.src = avatarUrl;
+      img.alt = name;
+    } else {
+      const initial = (name || '?').charAt(0).toUpperCase();
+      wrap.innerHTML = `<div class="profile-avatar" id="${existingElId || ''}">${initial}</div>`;
+    }
+  }
+
+  function renderEditAvatar() {
+    const wrap = document.getElementById('avatar-edit-preview-wrap');
+    if (!wrap) return;
+    if (currentUser && currentUser.avatar_url) {
+      wrap.innerHTML = `<img class="avatar-preview" src="${escHtml(currentUser.avatar_url)}" alt="Avatar" />`;
+    } else {
+      const initial = currentUser ? currentUser.name.charAt(0).toUpperCase() : '?';
+      wrap.innerHTML = `<div class="avatar-preview-placeholder" id="avatar-edit-placeholder">${initial}</div>`;
+    }
+  }
+
+  async function saveProfile() {
+    const name            = document.getElementById('edit-name').value.trim();
+    const email           = document.getElementById('edit-email').value.trim();
+    const currentPassword = document.getElementById('edit-current-password').value;
+    const newPassword     = document.getElementById('edit-new-password').value;
+
+    if (!name) { showFlash('edit-profile-flash', 'Name cannot be empty.', 'warn'); return; }
+    if (!email) { showFlash('edit-profile-flash', 'Email cannot be empty.', 'warn'); return; }
+
+    try {
+      const body = { name, email };
+      if (newPassword) { body.currentPassword = currentPassword; body.newPassword = newPassword; }
+      const data = await apiPut('/api/auth/me', body);
+      if (data.error) { showFlash('edit-profile-flash', data.error, 'err'); return; }
+      currentUser = data.user;
+      renderAccountTab();
+      updateAuthBar();
+      showFlash('edit-profile-flash', 'Profile updated successfully!', 'ok');
+      document.getElementById('edit-current-password').value = '';
+      document.getElementById('edit-new-password').value = '';
+    } catch (e) {
+      showFlash('edit-profile-flash', 'Failed to save profile. Please try again.', 'err');
+    }
+  }
+
+  function handleAvatarFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      showFlash('edit-profile-flash', 'Image must be under 2 MB.', 'warn');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      const dataUrl = e.target.result;
+      // Preview immediately
+      document.getElementById('avatar-edit-preview-wrap').innerHTML =
+        `<img class="avatar-preview" src="${escHtml(dataUrl)}" alt="Avatar preview" />`;
+      try {
+        const data = await apiPut('/api/auth/avatar', { avatarUrl: dataUrl });
+        if (data.error) { showFlash('edit-profile-flash', data.error, 'err'); return; }
+        currentUser.avatar_url = dataUrl;
+        renderAvatar('profile-avatar-wrap', dataUrl, currentUser.name, 'profile-avatar');
+        showFlash('edit-profile-flash', 'Photo updated!', 'ok');
+      } catch (_) {
+        showFlash('edit-profile-flash', 'Failed to upload photo. Please try again.', 'err');
+      }
+    };
+    reader.readAsDataURL(file);
+    // Reset input so the same file can be re-selected
+    event.target.value = '';
+  }
+
+  async function removeAvatar() {
+    try {
+      const data = await apiPut('/api/auth/avatar', { avatarUrl: null });
+      if (data.error) { showFlash('edit-profile-flash', data.error, 'err'); return; }
+      currentUser.avatar_url = null;
+      renderEditAvatar();
+      renderAvatar('profile-avatar-wrap', null, currentUser.name, 'profile-avatar');
+      showFlash('edit-profile-flash', 'Photo removed.', 'ok');
+    } catch (_) {
+      showFlash('edit-profile-flash', 'Failed to remove photo. Please try again.', 'err');
+    }
+  }
+
+  async function loadAdminUsers() {
+    const container = document.getElementById('admin-users-list');
+    try {
+      const data = await apiFetch('/api/admin/users');
+      if (data.error) { container.innerHTML = `<p style="color:#c0392b;">${escHtml(data.error)}</p>`; return; }
+      if (!data.users || data.users.length === 0) {
+        container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">No users found.</p>';
+        return;
+      }
+      container.innerHTML = data.users.map(u => `
+        <div class="admin-user-row">
+          <div class="admin-user-info">
+            <div class="admin-user-name">${escHtml(u.name)}</div>
+            <div class="admin-user-email">${escHtml(u.email)}</div>
+          </div>
+          <span class="admin-role-badge ${u.role === 'admin' ? 'role-admin' : 'role-user'}">${escHtml(u.role)}</span>
+          ${u.id !== currentUser.id
+            ? `<button class="btn-role-toggle" onclick="toggleUserRole(${u.id}, '${u.role === 'admin' ? 'user' : 'admin'}')"
+                >${u.role === 'admin' ? 'Remove Admin' : 'Make Admin'}</button>`
+            : '<span style="font-size:.78rem;color:#aaa;">(you)</span>'}
+        </div>
+      `).join('');
+    } catch (_) {
+      container.innerHTML = '<p style="color:#c0392b;font-size:.9rem;">Could not load users.</p>';
+    }
+  }
+
+  async function toggleUserRole(userId, newRole) {
+    try {
+      const data = await apiPut(`/api/admin/users/${userId}/role`, { role: newRole });
+      if (data.error) { showFlash('admin-flash', data.error, 'err'); return; }
+      loadAdminUsers();
+    } catch (_) {
+      showFlash('admin-flash', 'Failed to update role. Please try again.', 'err');
     }
   }
 

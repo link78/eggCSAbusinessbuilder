@@ -4,10 +4,11 @@ const db      = require('../db');
 const router = express.Router();
 
 // Canonical plan definitions — price and eggs are never trusted from the client
+// Pricing: 1 dozen eggs = $5; plans priced at that rate per week × ~4 weeks/month
 const PLANS = {
-  'Solo / Couple': { price: 26, eggsPerWeek: 6 },
-  'Small Family':  { price: 39, eggsPerWeek: 12 },
-  'Family':        { price: 52, eggsPerWeek: 18 }
+  'Solo / Couple': { price: 10, eggsPerWeek: 6 },   // ½ doz/week × $5 × 4
+  'Small Family':  { price: 20, eggsPerWeek: 12 },  // 1 doz/week × $5 × 4
+  'Family':        { price: 30, eggsPerWeek: 18 }   // 1.5 doz/week × $5 × 4
 };
 
 const VALID_PICKUP_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

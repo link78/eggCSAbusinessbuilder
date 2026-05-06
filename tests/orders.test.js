@@ -62,7 +62,7 @@ describe('POST /api/orders', () => {
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
       plan_name: 'Solo / Couple',
-      price: 26,
+      price: 10,
       eggs_per_week: 6,
       fulfillment_method: 'pickup',
       pickup_day: 'Wednesday',
@@ -80,7 +80,7 @@ describe('POST /api/orders', () => {
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
       plan_name: 'Family',
-      price: 52,
+      price: 30,
       fulfillment_method: 'delivery',
       delivery_address: '123 Main St, Lincoln, NE'
     });

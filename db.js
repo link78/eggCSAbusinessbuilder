@@ -65,4 +65,16 @@ db.exec(`
   }
 }
 
+// Add user profile columns if they don't exist yet.
+{
+  const userCols = db.prepare('PRAGMA table_info(users)').all().map(c => c.name);
+
+  if (!userCols.includes('role')) {
+    db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'");
+  }
+  if (!userCols.includes('avatar_url')) {
+    db.exec('ALTER TABLE users ADD COLUMN avatar_url TEXT');
+  }
+}
+
 module.exports = db;
