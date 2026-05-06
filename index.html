@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Egg CSA Business Builder – Lincoln, NE</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #fdf8f0;
+      color: #2d2d2d;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #e85d04 0%, #f48c06 100%);
+      color: #fff;
+      padding: 2rem 1.5rem 1.5rem;
+      text-align: center;
+    }
+    header .egg-icon { font-size: 2.8rem; display: block; margin-bottom: .4rem; }
+    header h1 { font-size: 1.9rem; font-weight: 700; letter-spacing: -.5px; }
+    header p  { margin-top: .4rem; opacity: .9; font-size: 1rem; }
+
+    /* ── Tab bar ── */
+    .tab-bar {
+      display: flex;
+      background: #fff;
+      border-bottom: 2px solid #f0e8d8;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab-bar button {
+      flex: 1;
+      min-width: 130px;
+      padding: .85rem .5rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: .85rem;
+      font-weight: 600;
+      color: #777;
+      transition: color .2s, border-bottom .2s;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+    }
+    .tab-bar button.active {
+      color: #e85d04;
+      border-bottom: 3px solid #e85d04;
+    }
+    .tab-bar button:hover:not(.active) { color: #444; }
+
+    /* ── Tab panels ── */
+    .tab-panel { display: none; padding: 1.5rem; max-width: 800px; margin: 0 auto; }
+    .tab-panel.active { display: block; }
+
+    /* ── Section headings ── */
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #c45203;
+      margin-bottom: .3rem;
+    }
+    .section-subtitle {
+      font-size: .95rem;
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.4rem 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      margin-bottom: 1.2rem;
+    }
+
+    /* ── REVENUE CALCULATOR ── */
+    .calc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 480px) { .calc-grid { grid-template-columns: 1fr; } }
+
+    .slider-group label {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      font-size: .9rem;
+      margin-bottom: .5rem;
+    }
+    .slider-group label span {
+      color: #e85d04;
+      font-size: 1rem;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #f0e8d8;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #e85d04;
+      box-shadow: 0 2px 6px rgba(232,93,4,.4);
+      cursor: pointer;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #e85d04;
+      border: none;
+      cursor: pointer;
+    }
+
+    .result-bar {
+      background: #fef9f0;
+      border: 2px solid #f4c97e;
+      border-radius: 10px;
+      padding: 1.2rem 1.4rem;
+      margin-top: .5rem;
+    }
+    .result-bar .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .4rem 0;
+      border-bottom: 1px solid #f0e8d8;
+      font-size: .93rem;
+    }
+    .result-bar .row:last-child { border-bottom: none; }
+    .result-bar .row strong { color: #2d2d2d; }
+    .result-bar .row .val { font-weight: 700; font-size: 1.05rem; color: #e85d04; }
+
+    .status-badge {
+      display: inline-block;
+      padding: .3rem .85rem;
+      border-radius: 20px;
+      font-size: .82rem;
+      font-weight: 700;
+      margin-top: .9rem;
+    }
+    .status-ok  { background: #d4f5d4; color: #1a7a1a; }
+    .status-warn{ background: #fff3cd; color: #856404; }
+    .status-err { background: #fde8e8; color: #c0392b; }
+
+    .demand-bar-wrap { margin-top: 1rem; }
+    .demand-bar-label { font-size: .82rem; color: #666; margin-bottom: .35rem; display: flex; justify-content: space-between; }
+    .demand-bar-track {
+      height: 14px; border-radius: 7px;
+      background: #f0e8d8; overflow: hidden;
+    }
+    .demand-bar-fill {
+      height: 100%; border-radius: 7px;
+      background: linear-gradient(90deg, #e85d04, #f48c06);
+      transition: width .4s ease;
+    }
+
+    /* ── SUBSCRIPTION PLANS ── */
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 600px) { .plans-grid { grid-template-columns: 1fr; } }
+
+    .plan-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1.4rem 1.2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      text-align: center;
+      border: 2px solid transparent;
+      position: relative;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .plan-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    .plan-card.featured {
+      border-color: #e85d04;
+    }
+    .plan-card .badge-popular {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: #e85d04; color: #fff;
+      font-size: .72rem; font-weight: 700; letter-spacing: .5px;
+      padding: .25rem .8rem; border-radius: 20px; white-space: nowrap;
+    }
+    .plan-card .plan-emoji { font-size: 2.2rem; margin-bottom: .5rem; }
+    .plan-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: .2rem; }
+    .plan-card .plan-tagline { font-size: .8rem; color: #888; margin-bottom: .9rem; }
+    .plan-card .plan-price {
+      font-size: 2rem; font-weight: 800; color: #e85d04; line-height: 1;
+    }
+    .plan-card .plan-price span { font-size: .95rem; font-weight: 500; color: #888; }
+    .plan-card .per-week { font-size: .8rem; color: #aaa; margin: .25rem 0 .9rem; }
+    .plan-card ul { list-style: none; text-align: left; font-size: .87rem; }
+    .plan-card ul li { padding: .28rem 0; display: flex; align-items: flex-start; gap: .45rem; color: #444; }
+    .plan-card ul li::before { content: '✓'; color: #e85d04; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+    .plan-cta {
+      display: block; margin-top: 1.1rem;
+      background: #e85d04; color: #fff;
+      border: none; border-radius: 8px;
+      padding: .65rem; width: 100%;
+      font-size: .9rem; font-weight: 700;
+      cursor: pointer; transition: background .2s;
+      text-decoration: none;
+    }
+    .plan-cta:hover { background: #c44f03; }
+    .plan-card.featured .plan-cta { background: #e85d04; }
+
+    /* ── LAUNCH CHECKLIST ── */
+    .checklist { list-style: none; }
+    .checklist li {
+      display: flex; align-items: flex-start; gap: 1rem;
+      padding: 1rem 1.2rem;
+      background: #fff;
+      border-radius: 10px;
+      margin-bottom: .75rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06);
+      cursor: pointer;
+      transition: box-shadow .2s;
+    }
+    .checklist li:hover { box-shadow: 0 3px 12px rgba(0,0,0,.1); }
+    .checklist li.done { opacity: .6; }
+    .checklist li.done .check-box { background: #28a745; border-color: #28a745; }
+    .checklist li.done .check-box::after { content: '✓'; color: #fff; font-size: .9rem; font-weight: 700; }
+    .check-box {
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 2px solid #d0c8b8;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, border-color .2s;
+      margin-top: 1px;
+    }
+    .checklist li.done .item-title { text-decoration: line-through; color: #999; }
+    .item-content { flex: 1; }
+    .item-step { font-size: .72rem; text-transform: uppercase; letter-spacing: .6px; color: #e85d04; font-weight: 700; }
+    .item-title { font-size: 1rem; font-weight: 600; margin: .15rem 0; }
+    .item-desc  { font-size: .84rem; color: #666; line-height: 1.45; }
+    .item-tag {
+      display: inline-block; font-size: .72rem; font-weight: 700;
+      padding: .18rem .6rem; border-radius: 20px; margin-top: .5rem;
+    }
+    .tag-free   { background: #d4f5d4; color: #1a7a1a; }
+    .tag-low    { background: #cce5ff; color: #004085; }
+    .tag-legal  { background: #e2d9f3; color: #6f42c1; }
+    .tag-action { background: #fff3cd; color: #856404; }
+
+    .checklist-progress {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06);
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .progress-track {
+      flex: 1; height: 10px; background: #f0e8d8; border-radius: 5px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, #28a745, #5cb85c);
+      border-radius: 5px; transition: width .4s ease;
+    }
+    .progress-text { font-size: .85rem; font-weight: 700; color: #444; white-space: nowrap; }
+
+    /* ── 90-DAY ROADMAP ── */
+    .roadmap-phase { margin-bottom: 1.6rem; }
+    .phase-header {
+      display: flex; align-items: center; gap: .75rem;
+      margin-bottom: .9rem;
+    }
+    .phase-dot {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .phase-dot.p1 { background: #e85d04; }
+    .phase-dot.p2 { background: #f48c06; }
+    .phase-dot.p3 { background: #28a745; }
+    .phase-title { font-size: 1.1rem; font-weight: 700; }
+    .phase-sub   { font-size: .82rem; color: #888; }
+
+    .week-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: .75rem;
+    }
+    .week-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06);
+      border-left: 4px solid #e85d04;
+    }
+    .week-card.p2 { border-left-color: #f48c06; }
+    .week-card.p3 { border-left-color: #28a745; }
+    .week-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .6px; color: #888; margin-bottom: .25rem; font-weight: 700; }
+    .week-card h4 { font-size: .95rem; font-weight: 700; margin-bottom: .4rem; }
+    .week-card p  { font-size: .82rem; color: #666; line-height: 1.45; }
+
+    .milestone-bar {
+      background: #fff8ee;
+      border: 1.5px solid #f4c97e;
+      border-radius: 10px;
+      padding: .9rem 1.2rem;
+      margin-top: 1rem;
+      display: flex; align-items: center; gap: .8rem;
+      font-size: .9rem;
+    }
+    .milestone-bar .m-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .milestone-bar strong { display: block; font-size: .95rem; }
+
+    /* ── Info note ── */
+    .info-note {
+      background: #e8f4fd;
+      border-left: 4px solid #1a88d8;
+      border-radius: 0 8px 8px 0;
+      padding: .85rem 1.1rem;
+      font-size: .87rem;
+      color: #1a4f7a;
+      margin-top: 1rem;
+      line-height: 1.5;
+    }
+    .info-note strong { color: #0c5296; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: .8rem;
+      color: #aaa;
+      border-top: 1px solid #f0e8d8;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="egg-icon" role="img" aria-label="Egg icon">🥚</span>
+  <h1>Egg CSA Business Builder</h1>
+  <p>Your complete guide to turning your Lincoln flock into recurring revenue</p>
+</header>
+
+<!-- Tab Bar -->
+<nav class="tab-bar" role="tablist">
+  <button class="active" role="tab" aria-selected="true"  onclick="switchTab(0)">📊 Revenue Calculator</button>
+  <button role="tab" aria-selected="false" onclick="switchTab(1)">📦 Subscription Plans</button>
+  <button role="tab" aria-selected="false" onclick="switchTab(2)">✅ Launch Checklist</button>
+  <button role="tab" aria-selected="false" onclick="switchTab(3)">🗓️ 90-Day Roadmap</button>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     TAB 0 – REVENUE CALCULATOR
+═══════════════════════════════════════════ -->
+<section class="tab-panel active" id="panel-0">
+  <h2 class="section-title">Revenue Calculator</h2>
+  <p class="section-subtitle">Drag the sliders to see if your flock can cover demand — and what you'll earn.</p>
+
+  <div class="card">
+    <div class="calc-grid">
+      <div class="slider-group">
+        <label>
+          🐔 Flock size
+          <span id="flock-val">20 hens</span>
+        </label>
+        <input type="range" id="flock" min="5" max="100" value="20" step="1"
+               oninput="updateCalc()" aria-label="Flock size" />
+      </div>
+      <div class="slider-group">
+        <label>
+          👨‍👩‍👧 Target subscribers
+          <span id="subs-val">10 subscribers</span>
+        </label>
+        <input type="range" id="subs" min="1" max="60" value="10" step="1"
+               oninput="updateCalc()" aria-label="Target subscribers" />
+      </div>
+      <div class="slider-group">
+        <label>
+          🥚 Eggs per hen/week
+          <span id="rate-val">5 eggs</span>
+        </label>
+        <input type="range" id="rate" min="3" max="7" value="5" step="0.5"
+               oninput="updateCalc()" aria-label="Eggs per hen per week" />
+      </div>
+      <div class="slider-group">
+        <label>
+          📦 Average plan tier
+          <span id="tier-val">$39/mo</span>
+        </label>
+        <input type="range" id="tier" min="26" max="52" value="39" step="13"
+               oninput="updateCalc()" aria-label="Average plan price" />
+      </div>
+    </div>
+
+    <div class="result-bar">
+      <div class="row"><strong>🥚 Eggs available / week</strong><span class="val" id="r-eggs-avail">–</span></div>
+      <div class="row"><strong>📦 Eggs needed / week</strong><span class="val" id="r-eggs-needed">–</span></div>
+      <div class="row"><strong>🌾 Surplus / deficit</strong><span class="val" id="r-surplus">–</span></div>
+      <div class="row"><strong>💰 Monthly revenue</strong><span class="val" id="r-revenue">–</span></div>
+      <div class="row"><strong>📅 Annual revenue</strong><span class="val" id="r-annual">–</span></div>
+      <div class="row"><strong>⚖️ Cottage food limit</strong><span class="val">$25,000 / yr</span></div>
+
+      <div id="status-badge-wrap"></div>
+
+      <div class="demand-bar-wrap">
+        <div class="demand-bar-label">
+          <span>Supply vs. Demand</span>
+          <span id="demand-pct-label">0%</span>
+        </div>
+        <div class="demand-bar-track">
+          <div class="demand-bar-fill" id="demand-bar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-note">
+    <strong>Nebraska Cottage Food Law:</strong> You can sell directly to consumers (including CSA subscriptions, farmers markets, and farm-stand pick-up) without a commercial license until you exceed <strong>$25,000/year</strong> in gross sales. Perfect for starting small.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TAB 1 – SUBSCRIPTION PLANS
+═══════════════════════════════════════════ -->
+<section class="tab-panel" id="panel-1">
+  <h2 class="section-title">Subscription Plans</h2>
+  <p class="section-subtitle">Three tiers designed for the Lincoln market. Pick-up or local delivery included.</p>
+
+  <div class="plans-grid">
+
+    <!-- Solo / Couple -->
+    <div class="plan-card">
+      <div class="plan-emoji">🐣</div>
+      <h3>Solo / Couple</h3>
+      <p class="plan-tagline">For 1–2 people</p>
+      <div class="plan-price">$26<span>/mo</span></div>
+      <p class="per-week">~$6.50 / week</p>
+      <ul>
+        <li>½ dozen eggs per week</li>
+        <li>6 eggs × 4 deliveries/mo</li>
+        <li>Weekly or bi-weekly pickup</li>
+        <li>Newsletter + farm updates</li>
+        <li>Cancel anytime</li>
+      </ul>
+      <button class="plan-cta" onclick="selectPlan('Solo / Couple', 26)">Choose Plan</button>
+    </div>
+
+    <!-- Small Family -->
+    <div class="plan-card featured">
+      <div class="badge-popular">⭐ Most Popular</div>
+      <div class="plan-emoji">👨‍👩‍👦</div>
+      <h3>Small Family</h3>
+      <p class="plan-tagline">For 2–4 people</p>
+      <div class="plan-price">$39<span>/mo</span></div>
+      <p class="per-week">~$9.75 / week</p>
+      <ul>
+        <li>1 dozen eggs per week</li>
+        <li>12 eggs × 4 deliveries/mo</li>
+        <li>Weekly pickup or delivery</li>
+        <li>Seasonal produce add-ons</li>
+        <li>Newsletter + farm updates</li>
+        <li>Cancel anytime</li>
+      </ul>
+      <button class="plan-cta" onclick="selectPlan('Small Family', 39)">Choose Plan</button>
+    </div>
+
+    <!-- Family -->
+    <div class="plan-card">
+      <div class="plan-emoji">👨‍👩‍👧‍👦</div>
+      <h3>Family</h3>
+      <p class="plan-tagline">For 4+ people</p>
+      <div class="plan-price">$52<span>/mo</span></div>
+      <p class="per-week">~$13 / week</p>
+      <ul>
+        <li>1½ dozen eggs per week</li>
+        <li>18 eggs × 4 deliveries/mo</li>
+        <li>Weekly delivery included</li>
+        <li>Priority waitlist access</li>
+        <li>Seasonal produce add-ons</li>
+        <li>Cancel anytime</li>
+      </ul>
+      <button class="plan-cta" onclick="selectPlan('Family', 52)">Choose Plan</button>
+    </div>
+
+  </div>
+
+  <div id="plan-selected-msg" style="display:none;" class="info-note" role="status">
+    ✅ <strong id="plan-msg-text"></strong> — Great choice! Use the Revenue Calculator tab to see what this means for your income.
+  </div>
+
+  <div class="info-note" style="margin-top:.8rem;">
+    <strong>Tip:</strong> The <strong>Family plan at $52/month</strong> tends to be the easiest sell in Lincoln — families go through eggs quickly and value the convenience of local delivery. Lead with that tier in your marketing.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TAB 2 – LAUNCH CHECKLIST
+═══════════════════════════════════════════ -->
+<section class="tab-panel" id="panel-2">
+  <h2 class="section-title">Launch Checklist</h2>
+  <p class="section-subtitle">8 concrete steps from zero to first paying customer. Click each step to mark it done.</p>
+
+  <div class="checklist-progress">
+    <div class="progress-track">
+      <div class="progress-fill" id="cl-progress-fill" style="width:0%"></div>
+    </div>
+    <div class="progress-text" id="cl-progress-text">0 / 8 complete</div>
+  </div>
+
+  <ul class="checklist" id="checklist">
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 1</div>
+        <div class="item-title">Review Nebraska Cottage Food Law</div>
+        <div class="item-desc">Confirm you qualify: sell directly to end consumers, no resale. You're exempt from a commercial license up to <strong>$25,000/year</strong>. Keep simple sales records.</div>
+        <span class="item-tag tag-legal">Legal · Free</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 2</div>
+        <div class="item-title">Audit your flock &amp; egg supply</div>
+        <div class="item-desc">Track actual egg production for one week. Calculate weekly supply. Decide how many subscribers you can reliably serve — leave a 15% buffer for slow weeks.</div>
+        <span class="item-tag tag-free">Free · 1 week</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 3</div>
+        <div class="item-title">Set up a simple payment system</div>
+        <div class="item-desc">Use <strong>Venmo, PayPal, or Stripe</strong> to collect monthly payments. A free Square account works great for in-person pickup. Avoid handling cash for recurring subscriptions.</div>
+        <span class="item-tag tag-free">Free to start</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 4</div>
+        <div class="item-title">Create a simple sign-up form</div>
+        <div class="item-desc">Use Google Forms or Jotform (free) to collect: name, email, address, plan choice, and pickup preference. Link to it from all your marketing.</div>
+        <span class="item-tag tag-free">Free</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 5</div>
+        <div class="item-title">Design your egg boxes &amp; label</div>
+        <div class="item-desc">Use recycled egg cartons. Nebraska requires a label with: producer name, address, &quot;Keep Refrigerated&quot;, and pack date. Design a simple sticker on Canva ($0) or print on cardstock.</div>
+        <span class="item-tag tag-low">~$10–20 setup</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 6</div>
+        <div class="item-title">Post in 3 Lincoln neighborhood groups</div>
+        <div class="item-desc">Post in <strong>Lincoln NextDoor, Lincoln Buy/Sell Facebook groups, and r/lincoln</strong>. Include a photo of your chickens, your 3 plan tiers, and the sign-up link. Aim for 5–10 founding members at a discount.</div>
+        <span class="item-tag tag-action">Marketing · Free</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 7</div>
+        <div class="item-title">Confirm your first 5 subscribers</div>
+        <div class="item-desc">Don't wait for 20 — start with 5. Collect payment upfront for the first month. Confirm pickup/delivery schedule. Send a welcome email with pickup address and day/time.</div>
+        <span class="item-tag tag-action">Revenue · Month 1</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 8</div>
+        <div class="item-title">Deliver Week 1 &amp; ask for a referral</div>
+        <div class="item-desc">After the first delivery, send a short thank-you text or email and ask: <em>"Know anyone who'd love fresh local eggs?"</em> — word of mouth is your #1 growth channel at this stage.</div>
+        <span class="item-tag tag-action">Growth · Free</span>
+      </div>
+    </li>
+
+  </ul>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TAB 3 – 90-DAY ROADMAP
+═══════════════════════════════════════════ -->
+<section class="tab-panel" id="panel-3">
+  <h2 class="section-title">90-Day Roadmap</h2>
+  <p class="section-subtitle">A realistic week-by-week plan to reach 15–20 subscribers — your sustainable base.</p>
+
+  <!-- Phase 1 -->
+  <div class="roadmap-phase">
+    <div class="phase-header">
+      <div class="phase-dot p1">1</div>
+      <div>
+        <div class="phase-title">Phase 1 — Foundation (Weeks 1–4)</div>
+        <div class="phase-sub">Setup, legals, first 5 subscribers</div>
+      </div>
+    </div>
+    <div class="week-grid">
+      <div class="week-card">
+        <div class="week-label">Week 1</div>
+        <h4>Audit &amp; Plan</h4>
+        <p>Count eggs for 7 days. Decide max subscriber cap. Read Nebraska cottage food rules. Choose payment platform.</p>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 2</div>
+        <h4>Build Your Assets</h4>
+        <p>Create sign-up form, design carton label, write a 3-sentence "about your farm" pitch. Take photos of hens.</p>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 3</div>
+        <h4>Soft Launch</h4>
+        <p>Share with family, friends, and neighbors. Offer a "founding member" $5/mo discount for the first 3 months. Goal: 5 sign-ups.</p>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 4</div>
+        <h4>First Deliveries</h4>
+        <p>Collect Month 1 payments. Deliver your first boxes. Send a welcome message. Ask for one referral each.</p>
+      </div>
+    </div>
+    <div class="milestone-bar">
+      <span class="m-icon">🏁</span>
+      <div><strong>Month 1 Milestone</strong> 5 paying subscribers, first recurring revenue, systems working smoothly.</div>
+    </div>
+  </div>
+
+  <!-- Phase 2 -->
+  <div class="roadmap-phase">
+    <div class="phase-header">
+      <div class="phase-dot p2">2</div>
+      <div>
+        <div class="phase-title">Phase 2 — Growth (Weeks 5–8)</div>
+        <div class="phase-sub">Community marketing, reach 10–12 subscribers</div>
+      </div>
+    </div>
+    <div class="week-grid">
+      <div class="week-card p2">
+        <div class="week-label">Week 5</div>
+        <h4>Social Proof Post</h4>
+        <p>Share a customer quote (with permission) + photo on Lincoln NextDoor and Facebook. Announce 3 spots open.</p>
+      </div>
+      <div class="week-card p2">
+        <div class="week-label">Week 6</div>
+        <h4>Farmers Market Appearance</h4>
+        <p>Set up a table at Lincoln Haymarket Farmers Market. Bring samples, a sign, and a QR code to the sign-up form.</p>
+      </div>
+      <div class="week-card p2">
+        <div class="week-label">Week 7</div>
+        <h4>Email Newsletter</h4>
+        <p>Send a short farm update (Mailchimp free tier). Share what your hens have been up to. Include a "refer a friend" link.</p>
+      </div>
+      <div class="week-card p2">
+        <div class="week-label">Week 8</div>
+        <h4>Local Business Outreach</h4>
+        <p>Contact 3–5 local coffee shops or restaurants about a wholesale or bulk partnership. Even small accounts add stability.</p>
+      </div>
+    </div>
+    <div class="milestone-bar">
+      <span class="m-icon">📈</span>
+      <div><strong>Month 2 Milestone</strong> 10–12 subscribers. Word-of-mouth starting to work. Revenue covers feed costs.</div>
+    </div>
+  </div>
+
+  <!-- Phase 3 -->
+  <div class="roadmap-phase">
+    <div class="phase-header">
+      <div class="phase-dot p3">3</div>
+      <div>
+        <div class="phase-title">Phase 3 — Scale (Weeks 9–12)</div>
+        <div class="phase-sub">Reach 15–20 subscribers, solidify operations</div>
+      </div>
+    </div>
+    <div class="week-grid">
+      <div class="week-card p3">
+        <div class="week-label">Week 9</div>
+        <h4>Waitlist &amp; Urgency</h4>
+        <p>If at capacity, open a waitlist. "Only 5 spots left" messaging drives conversions. Consider expanding your flock if demand holds.</p>
+      </div>
+      <div class="week-card p3">
+        <div class="week-label">Week 10</div>
+        <h4>Add-On Products</h4>
+        <p>Offer seasonal add-ons: herbs, jam, or extra dozen. Increases average order value without new subscribers.</p>
+      </div>
+      <div class="week-card p3">
+        <div class="week-label">Week 11</div>
+        <h4>Streamline Operations</h4>
+        <p>Batch all labeling on one day. Create a delivery route. Use a shared Google Sheet to track boxes owed per subscriber.</p>
+      </div>
+      <div class="week-card p3">
+        <div class="week-label">Week 12</div>
+        <h4>Review &amp; Plan Ahead</h4>
+        <p>Calculate true profit margin. Decide: stay at 15–20, expand flock, or add a second product line. Celebrate your win! 🎉</p>
+      </div>
+    </div>
+    <div class="milestone-bar">
+      <span class="m-icon">🎯</span>
+      <div><strong>Month 3 Milestone</strong> 15–20 subscribers. Sustainable recurring income. Ready to decide your next growth step.</div>
+    </div>
+  </div>
+
+  <div class="info-note">
+    <strong>Revenue at 20 subscribers (mixed plans ~$39 avg):</strong> ~$780/month or <strong>~$9,360/year</strong> — well within the $25,000 cottage food threshold. You'd need ~64 subscribers at the Family plan to hit the license threshold.
+  </div>
+</section>
+
+<footer>
+  Built for Lincoln, Nebraska egg farmers · Nebraska Cottage Food Law applies · Not legal or financial advice
+</footer>
+
+<script>
+  /* ── TAB SWITCHING ── */
+  const panels = document.querySelectorAll('.tab-panel');
+  const tabs   = document.querySelectorAll('.tab-bar button');
+
+  function switchTab(idx) {
+    panels.forEach((p, i) => p.classList.toggle('active', i === idx));
+    tabs.forEach((t, i) => {
+      t.classList.toggle('active', i === idx);
+      t.setAttribute('aria-selected', i === idx);
+    });
+  }
+
+  /* ── REVENUE CALCULATOR ── */
+  // Tier labels map
+  const tierLabels = { 26: 'Solo/Couple ($26)', 39: 'Small Family ($39)', 52: 'Family ($52)' };
+  // Eggs per box per tier per week
+  const tierEggs   = { 26: 6, 39: 12, 52: 18 };
+
+  function formatCurrency(n) { return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 }); }
+
+  function updateCalc() {
+    const flock   = +document.getElementById('flock').value;
+    const subs    = +document.getElementById('subs').value;
+    const rate    = +document.getElementById('rate').value;
+    const tier    = +document.getElementById('tier').value;
+
+    document.getElementById('flock-val').textContent = flock + ' hens';
+    document.getElementById('subs-val').textContent  = subs  + ' subscribers';
+    document.getElementById('rate-val').textContent  = rate  + ' eggs';
+    document.getElementById('tier-val').textContent  = formatCurrency(tier) + '/mo';
+
+    const eggsAvail  = Math.floor(flock * rate);
+    const eggsNeeded = subs * tierEggs[tier];
+    const surplus    = eggsAvail - eggsNeeded;
+    const monthly    = subs * tier;
+    const annual     = monthly * 12;
+    // Use Math.max to avoid division by zero when flock slider is at minimum
+    const MIN_EGGS_AVAILABLE = 1;
+    const pct        = Math.min(100, Math.round((eggsNeeded / Math.max(eggsAvail, MIN_EGGS_AVAILABLE)) * 100));
+
+    document.getElementById('r-eggs-avail').textContent  = eggsAvail.toLocaleString()  + ' eggs';
+    document.getElementById('r-eggs-needed').textContent = eggsNeeded.toLocaleString() + ' eggs';
+    document.getElementById('r-surplus').textContent     = (surplus >= 0 ? '+' : '') + surplus.toLocaleString() + ' eggs';
+    document.getElementById('r-surplus').style.color     = surplus >= 0 ? '#28a745' : '#c0392b';
+    document.getElementById('r-revenue').textContent     = formatCurrency(monthly) + ' / mo';
+    document.getElementById('r-annual').textContent      = formatCurrency(annual)  + ' / yr';
+
+    document.getElementById('demand-bar').style.width   = pct + '%';
+    document.getElementById('demand-pct-label').textContent = pct + '% of supply used';
+
+    const badge = document.getElementById('status-badge-wrap');
+    if (surplus >= 0 && annual < 25000) {
+      badge.innerHTML = '<span class="status-badge status-ok">✓ Supply covers demand · Under cottage food limit</span>';
+    } else if (surplus >= 0 && annual >= 25000) {
+      badge.innerHTML = '<span class="status-badge status-warn">⚠ Good supply — but over $25k/yr: commercial license needed</span>';
+    } else {
+      badge.innerHTML = '<span class="status-badge status-err">✗ Not enough eggs — reduce subscribers or grow flock</span>';
+    }
+  }
+
+  // Init on load
+  updateCalc();
+
+  /* ── SUBSCRIPTION PLAN SELECTION ── */
+  function selectPlan(name, price) {
+    const msg = document.getElementById('plan-selected-msg');
+    document.getElementById('plan-msg-text').textContent =
+      name + ' plan selected — ' + formatCurrency(price) + '/month';
+    msg.style.display = 'block';
+    msg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  /* ── LAUNCH CHECKLIST ── */
+  function toggleCheck(li) {
+    li.classList.toggle('done');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const items = document.querySelectorAll('#checklist li');
+    const done  = document.querySelectorAll('#checklist li.done').length;
+    const pct   = Math.round((done / items.length) * 100);
+    document.getElementById('cl-progress-fill').style.width = pct + '%';
+    document.getElementById('cl-progress-text').textContent = done + ' / ' + items.length + ' complete';
+  }
+</script>
+
+</body>
+</html>
