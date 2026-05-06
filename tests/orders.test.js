@@ -14,7 +14,7 @@ beforeAll(async () => {
 // ── GET /api/orders/plans ─────────────────────────────────────────────────────
 
 describe('GET /api/orders/plans', () => {
-  it('returns all three plans', async () => {
+  it('returns all three standard plans', async () => {
     const res = await agent.get('/api/orders/plans');
     expect(res.status).toBe(200);
     expect(res.body.plans).toHaveLength(3);
@@ -31,6 +31,16 @@ describe('GET /api/orders/plans', () => {
       expect(plan).toHaveProperty('price');
       expect(plan).toHaveProperty('eggsPerWeek');
     }
+  });
+
+  it('returns custom plan constraints', async () => {
+    const res = await agent.get('/api/orders/plans');
+    expect(res.body.customPlan).toMatchObject({
+      pricePerBox: 7,
+      eggsPerBox:  18,
+      minBoxes:    2,
+      minWeeks:    2
+    });
   });
 });
 
@@ -62,7 +72,7 @@ describe('POST /api/orders', () => {
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
       plan_name: 'Solo / Couple',
-      price: 10,
+      price: 9,
       eggs_per_week: 6,
       fulfillment_method: 'pickup',
       pickup_day: 'Wednesday',
@@ -80,10 +90,53 @@ describe('POST /api/orders', () => {
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
       plan_name: 'Family',
-      price: 30,
+      price: 28,
       fulfillment_method: 'delivery',
       delivery_address: '123 Main St, Lincoln, NE'
     });
+  });
+
+  it('places a custom plan order', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Custom',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Friday',
+      boxesPerDelivery: 3,
+      durationWeeks: 4
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.order).toMatchObject({
+      plan_name: 'Custom',
+      price: 84,            // 3 boxes × $7 × 4 weeks
+      eggs_per_week: 54,    // 3 × 18
+      boxes_per_delivery: 3,
+      duration_weeks: 4,
+      status: 'active'
+    });
+  });
+
+  it('rejects custom plan with fewer than 2 boxes', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Custom',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Monday',
+      boxesPerDelivery: 1,
+      durationWeeks: 2
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/boxesPerDelivery/i);
+  });
+
+  it('rejects custom plan with fewer than 2 weeks', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Custom',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Monday',
+      boxesPerDelivery: 2,
+      durationWeeks: 1
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/durationWeeks/i);
   });
 
   it('cancels the previous active order when placing a new one', async () => {

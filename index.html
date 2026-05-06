@@ -336,6 +336,36 @@
     }
     .info-note strong { color: #0c5296; }
 
+    /* ── CUSTOM PLAN CARD ── */
+    .custom-plan-card { border: 2px dashed #e0d8cc; }
+    .custom-plan-controls { margin: .8rem 0; }
+    .custom-control-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: .5rem; margin-bottom: .6rem; flex-wrap: wrap;
+    }
+    .custom-control-row label { font-size: .82rem; color: #555; flex: 1; min-width: 130px; }
+    .stepper-wrap {
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .stepper-btn {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #f0e8d8; border: none; font-size: 1.1rem; font-weight: 700;
+      cursor: pointer; color: #e85d04; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    .stepper-btn:hover { background: #e0d8c8; }
+    #custom-boxes-val, #custom-weeks-val {
+      min-width: 2rem; text-align: center; font-weight: 700; font-size: 1rem;
+    }
+
+    /* ── MODAL CUSTOM INFO ── */
+    .modal-custom-info {
+      background: #fff8f0; border-radius: 8px; padding: .65rem .9rem;
+      font-size: .9rem; color: #444; margin-bottom: .5rem;
+      border: 1px solid #f0e8d8;
+    }
+
     /* ── EDIT PROFILE ── */
     .edit-profile-section { margin-top: 1.2rem; }
     .edit-profile-section h3 { font-size: 1.05rem; font-weight: 700; color: #c45203; margin-bottom: .9rem; }
@@ -654,9 +684,9 @@
       <div class="slider-group">
         <label>
           📦 Average plan tier
-          <span id="tier-val">$20/mo</span>
+          <span id="tier-val">$19/mo</span>
         </label>
-        <input type="range" id="tier" min="10" max="30" value="20" step="10"
+        <input type="range" id="tier" min="9" max="28" value="19" step="1"
                oninput="updateCalc()" aria-label="Average plan price" />
       </div>
     </div>
@@ -693,7 +723,7 @@
 ═══════════════════════════════════════════ -->
 <section class="tab-panel" id="panel-1">
   <h2 class="section-title">Subscription Plans</h2>
-  <p class="section-subtitle">Three tiers designed for the Lincoln market. Pick-up or local delivery included.</p>
+  <p class="section-subtitle">Three standard tiers or build your own custom plan. Pick-up or local delivery included.</p>
 
   <div class="plans-grid">
 
@@ -702,8 +732,8 @@
       <div class="plan-emoji">🐣</div>
       <h3>Solo / Couple</h3>
       <p class="plan-tagline">For 1–2 people</p>
-      <div class="plan-price">$10<span>/mo</span></div>
-      <p class="per-week">~$2.50 / week</p>
+      <div class="plan-price">$9<span>/mo</span></div>
+      <p class="per-week">~$2.25 / week</p>
       <ul>
         <li>½ dozen eggs per week</li>
         <li>6 eggs × 4 deliveries/mo</li>
@@ -711,7 +741,7 @@
         <li>Newsletter + farm updates</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="openSubscribeModal('Solo / Couple', 10)">Choose Plan</button>
+      <button class="plan-cta" onclick="openSubscribeModal('Solo / Couple', 9)">Choose Plan</button>
     </div>
 
     <!-- Small Family -->
@@ -720,8 +750,8 @@
       <div class="plan-emoji">👨‍👩‍👦</div>
       <h3>Small Family</h3>
       <p class="plan-tagline">For 2–4 people</p>
-      <div class="plan-price">$20<span>/mo</span></div>
-      <p class="per-week">~$5.00 / week</p>
+      <div class="plan-price">$19<span>/mo</span></div>
+      <p class="per-week">~$4.75 / week</p>
       <ul>
         <li>1 dozen eggs per week</li>
         <li>12 eggs × 4 deliveries/mo</li>
@@ -730,7 +760,7 @@
         <li>Newsletter + farm updates</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="openSubscribeModal('Small Family', 20)">Choose Plan</button>
+      <button class="plan-cta" onclick="openSubscribeModal('Small Family', 19)">Choose Plan</button>
     </div>
 
     <!-- Family -->
@@ -738,17 +768,53 @@
       <div class="plan-emoji">👨‍👩‍👧‍👦</div>
       <h3>Family</h3>
       <p class="plan-tagline">For 4+ people</p>
-      <div class="plan-price">$30<span>/mo</span></div>
-      <p class="per-week">~$7.50 / week</p>
+      <div class="plan-price">$28<span>/mo</span></div>
+      <p class="per-week">~$7.00 / week</p>
       <ul>
-        <li>1½ dozen eggs per week</li>
+        <li>1½ dozen (18) eggs per week</li>
         <li>18 eggs × 4 deliveries/mo</li>
         <li>Weekly delivery included</li>
         <li>Priority waitlist access</li>
         <li>Seasonal produce add-ons</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="openSubscribeModal('Family', 30)">Choose Plan</button>
+      <button class="plan-cta" onclick="openSubscribeModal('Family', 28)">Choose Plan</button>
+    </div>
+
+    <!-- Custom Plan -->
+    <div class="plan-card custom-plan-card">
+      <div class="plan-emoji">🛠️</div>
+      <h3>Custom Plan</h3>
+      <p class="plan-tagline">You choose boxes &amp; duration</p>
+      <div class="plan-price" id="custom-price-display">$28<span> total</span></div>
+      <p class="per-week" id="custom-summary-line">2 boxes · 2 weeks</p>
+
+      <div class="custom-plan-controls">
+        <div class="custom-control-row">
+          <label>📦 Boxes / delivery <small style="color:#aaa;">(18 eggs each, min 2)</small></label>
+          <div class="stepper-wrap">
+            <button class="stepper-btn" onclick="adjustCustom('boxes', -1)" aria-label="Fewer boxes">−</button>
+            <span id="custom-boxes-val">2</span>
+            <button class="stepper-btn" onclick="adjustCustom('boxes', 1)" aria-label="More boxes">+</button>
+          </div>
+        </div>
+        <div class="custom-control-row">
+          <label>📅 Duration <small style="color:#aaa;">(weeks, min 2)</small></label>
+          <div class="stepper-wrap">
+            <button class="stepper-btn" onclick="adjustCustom('weeks', -1)" aria-label="Fewer weeks">−</button>
+            <span id="custom-weeks-val">2</span>
+            <button class="stepper-btn" onclick="adjustCustom('weeks', 1)" aria-label="More weeks">+</button>
+          </div>
+        </div>
+      </div>
+
+      <ul>
+        <li>18 eggs per box · $7/box/delivery</li>
+        <li>Minimum 2 boxes &amp; 2 weeks</li>
+        <li>Weekly pickup or delivery</li>
+        <li>Newsletter + farm updates</li>
+      </ul>
+      <button class="plan-cta" onclick="openCustomSubscribeModal()">Build My Plan</button>
     </div>
 
   </div>
@@ -758,7 +824,7 @@
   </div>
 
   <div class="info-note" style="margin-top:.8rem;">
-    <strong>Tip:</strong> The <strong>Family plan at $30/month</strong> tends to be the easiest sell in Lincoln — families go through eggs quickly and value the convenience of local delivery. Lead with that tier in your marketing.
+    <strong>Tip:</strong> The <strong>Family plan at $28/month</strong> tends to be the easiest sell in Lincoln — families go through eggs quickly and value the convenience of local delivery. Lead with that tier in your marketing.
   </div>
 </section>
 
@@ -980,7 +1046,7 @@
   </div>
 
   <div class="info-note">
-    <strong>Revenue at 20 subscribers (mixed plans ~$20 avg):</strong> ~$400/month or <strong>~$4,800/year</strong> — well within the $25,000 cottage food threshold. You'd need ~104 subscribers at the Family plan to hit the license threshold.
+    <strong>Revenue at 20 subscribers (mixed plans ~$19 avg):</strong> ~$380/month or <strong>~$4,560/year</strong> — well within the $25,000 cottage food threshold. You'd need ~119 subscribers at the Family plan to hit the license threshold.
   </div>
 </section>
 
@@ -1028,6 +1094,15 @@
       <input type="text" id="modal-delivery-address"
              placeholder="e.g. 1234 Vine St, Lincoln NE 68508"
              maxlength="200" autocomplete="street-address" />
+    </div>
+
+    <!-- Custom-plan info (shown only for the Custom plan) -->
+    <div class="modal-field" id="modal-custom-fields" style="display:none;">
+      <div class="modal-custom-info">
+        📦 <strong><span id="modal-custom-boxes">2</span> boxes</strong>/delivery ·
+        📅 <strong><span id="modal-custom-weeks">2</span> weeks</strong>
+        <span style="color:#888;font-size:.82rem;"> · 18 eggs/box · $7/box/delivery</span>
+      </div>
     </div>
 
     <!-- Summary of what they're signing up for -->
@@ -1240,7 +1315,8 @@
   /* ═══════════════════════════════════════════════════════
      REVENUE CALCULATOR
   ═══════════════════════════════════════════════════════ */
-  const tierEggs = { 10: 6, 20: 12, 30: 18 };
+  const TIER_SNAPS = [9, 19, 28];
+  const tierEggs = { 9: 6, 19: 12, 28: 18 };
   // Minimum value to avoid division by zero when flock slider is at minimum
   const MIN_EGGS_AVAILABLE = 1;
 
@@ -1252,7 +1328,9 @@
     const flock = +document.getElementById('flock').value;
     const subs  = +document.getElementById('subs').value;
     const rate  = +document.getElementById('rate').value;
-    const tier  = +document.getElementById('tier').value;
+    const rawTier = +document.getElementById('tier').value;
+    // Snap to nearest plan price
+    const tier = TIER_SNAPS.reduce((a, b) => Math.abs(b - rawTier) < Math.abs(a - rawTier) ? b : a);
 
     document.getElementById('flock-val').textContent = flock + ' hens';
     document.getElementById('subs-val').textContent  = subs  + ' subscribers';
@@ -1293,8 +1371,65 @@
   let _pendingPlanPrice = null;
 
   // Map of plan name → eggs per week (mirrors PLANS on the server)
-  const PLAN_EGGS = { 'Solo / Couple': 6, 'Small Family': 12, 'Family': 18 };
-  const PLAN_PRICES = { 'Solo / Couple': 10, 'Small Family': 20, 'Family': 30 };
+  const PLAN_EGGS   = { 'Solo / Couple': 6, 'Small Family': 12, 'Family': 18 };
+  const PLAN_PRICES = { 'Solo / Couple': 9, 'Small Family': 19, 'Family': 28 };
+
+  // Custom plan state
+  let _customBoxes = 2;
+  let _customWeeks = 2;
+  const PRICE_PER_BOX = 7;
+  const MIN_BOXES = 2;
+  const MIN_WEEKS = 2;
+  const MAX_BOXES = 20;
+  const MAX_WEEKS = 52;
+
+  function adjustCustom(field, delta) {
+    if (field === 'boxes') {
+      _customBoxes = Math.min(MAX_BOXES, Math.max(MIN_BOXES, _customBoxes + delta));
+    } else {
+      _customWeeks = Math.min(MAX_WEEKS, Math.max(MIN_WEEKS, _customWeeks + delta));
+    }
+    updateCustomPlanDisplay();
+  }
+
+  function updateCustomPlanDisplay() {
+    const total = _customBoxes * PRICE_PER_BOX * _customWeeks;
+    document.getElementById('custom-boxes-val').textContent = _customBoxes;
+    document.getElementById('custom-weeks-val').textContent = _customWeeks;
+    document.getElementById('custom-price-display').innerHTML =
+      `$${total}<span> total</span>`;
+    document.getElementById('custom-summary-line').textContent =
+      `${_customBoxes} box${_customBoxes > 1 ? 'es' : ''} · ${_customWeeks} week${_customWeeks > 1 ? 's' : ''} · ${_customBoxes * 18} eggs/delivery`;
+  }
+
+  function openCustomSubscribeModal() {
+    if (!currentUser) {
+      switchTab(5);
+      showFlash('login-flash', 'Please sign in or create an account to subscribe.', 'warn');
+      return;
+    }
+    _pendingPlanName  = 'Custom';
+    _pendingPlanPrice = _customBoxes * PRICE_PER_BOX * _customWeeks;
+
+    document.getElementById('modal-plan-name').textContent = 'Custom Plan';
+    document.getElementById('modal-plan-subtitle').textContent =
+      `$${_pendingPlanPrice} total · ${_customBoxes * 18} eggs/week · ${_customWeeks} weeks`;
+
+    // Show custom fields, hide any leftover
+    document.getElementById('modal-custom-fields').style.display = 'block';
+    document.getElementById('modal-custom-boxes').textContent = _customBoxes;
+    document.getElementById('modal-custom-weeks').textContent = _customWeeks;
+
+    // Reset fulfillment
+    document.getElementById('ft-pickup').checked = true;
+    document.getElementById('modal-pickup-day').value       = '';
+    document.getElementById('modal-delivery-address').value = '';
+    document.getElementById('modal-flash').style.display    = 'none';
+    updateFulfillmentFields();
+
+    document.getElementById('subscribe-modal').classList.add('open');
+    document.getElementById('modal-pickup-day').focus();
+  }
 
   function openSubscribeModal(name, price) {
     if (!currentUser) {
@@ -1308,6 +1443,9 @@
     document.getElementById('modal-plan-name').textContent = name;
     document.getElementById('modal-plan-subtitle').textContent =
       formatCurrency(price) + '/month · ' + PLAN_EGGS[name] + ' eggs/week · Cancel anytime';
+
+    // Hide custom-plan fields for standard plans
+    document.getElementById('modal-custom-fields').style.display = 'none';
 
     // Reset form
     document.getElementById('ft-pickup').checked = true;
@@ -1338,12 +1476,21 @@
     const method     = document.querySelector('input[name="fulfillment"]:checked').value;
     const isDelivery = method === 'delivery';
     const price      = _pendingPlanPrice || 0;
-    const eggs       = PLAN_EGGS[_pendingPlanName] || 0;
     const icon       = isDelivery ? '🚗 Local delivery' : '🏡 Farm pick-up';
-    document.getElementById('modal-summary').innerHTML =
-      `<strong>${escHtml(_pendingPlanName || '')}</strong> — ` +
-      `${formatCurrency(price)}/month · ${eggs} eggs/week<br>` +
-      `${icon} · Monthly billing · Cancel anytime`;
+
+    if (_pendingPlanName === 'Custom') {
+      const eggs = _customBoxes * 18;
+      document.getElementById('modal-summary').innerHTML =
+        `<strong>Custom Plan</strong> — ` +
+        `$${price} total · ${_customBoxes} box${_customBoxes > 1 ? 'es' : ''}/delivery · ${eggs} eggs/delivery<br>` +
+        `${icon} · ${_customWeeks} weeks · One-time billing`;
+    } else {
+      const eggs = PLAN_EGGS[_pendingPlanName] || 0;
+      document.getElementById('modal-summary').innerHTML =
+        `<strong>${escHtml(_pendingPlanName || '')}</strong> — ` +
+        `${formatCurrency(price)}/month · ${eggs} eggs/week<br>` +
+        `${icon} · Monthly billing · Cancel anytime`;
+    }
   }
 
   async function submitSubscription() {
@@ -1365,12 +1512,19 @@
     btn.textContent = 'Subscribing…';
 
     try {
-      const data = await apiPost('/api/orders', {
+      const body = {
         planName:          _pendingPlanName,
         fulfillmentMethod: method,
         deliveryAddress:   method === 'delivery' ? deliveryAddress : undefined,
         pickupDay:         method === 'pickup'   ? pickupDay       : undefined
-      });
+      };
+      // Include custom plan parameters when applicable
+      if (_pendingPlanName === 'Custom') {
+        body.boxesPerDelivery = _customBoxes;
+        body.durationWeeks    = _customWeeks;
+      }
+
+      const data = await apiPost('/api/orders', body);
 
       if (data.error) {
         showFlash('modal-flash', data.error, 'err');
@@ -1381,10 +1535,17 @@
 
       const msg = document.getElementById('plan-selected-msg');
       const fulfillLabel = method === 'delivery' ? 'local delivery' : `pick-up (${pickupDay}s)`;
-      document.getElementById('plan-msg-text').textContent =
-        _pendingPlanName + ' plan confirmed — ' +
-        formatCurrency(data.order.price) + '/month via ' + fulfillLabel +
-        '. View your subscription in My Account!';
+      if (_pendingPlanName === 'Custom') {
+        document.getElementById('plan-msg-text').textContent =
+          `Custom Plan confirmed — $${data.order.price} total · ` +
+          `${data.order.boxes_per_delivery} boxes/delivery · ${data.order.duration_weeks} weeks via ` +
+          fulfillLabel + '. View your subscription in My Account!';
+      } else {
+        document.getElementById('plan-msg-text').textContent =
+          _pendingPlanName + ' plan confirmed — ' +
+          formatCurrency(data.order.price) + '/month via ' + fulfillLabel +
+          '. View your subscription in My Account!';
+      }
       msg.style.display = 'block';
       msg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } catch (e) {
@@ -1768,9 +1929,17 @@
       fulfillLine = `🏡 Pick-up · ${escHtml(o.pickup_day || '—')}s`;
     }
 
-    // Next billing line
+    // Price / detail line — custom plans show total + duration
+    let priceDetail;
+    if (o.plan_name === 'Custom') {
+      priceDetail = `$${o.price} total · ${o.boxes_per_delivery} box${o.boxes_per_delivery > 1 ? 'es' : ''}/delivery · ${o.eggs_per_week} eggs/week · ${o.duration_weeks} weeks · Started ${date}`;
+    } else {
+      priceDetail = `$${o.price}/mo · ${o.eggs_per_week} eggs/week · Started ${date}`;
+    }
+
+    // Next billing line (only for ongoing monthly plans)
     let billingLine = '';
-    if (o.next_billing_date && o.status === 'active' && /^\d{4}-\d{2}-\d{2}$/.test(o.next_billing_date)) {
+    if (o.plan_name !== 'Custom' && o.next_billing_date && o.status === 'active' && /^\d{4}-\d{2}-\d{2}$/.test(o.next_billing_date)) {
       const bd = new Date(o.next_billing_date + 'T00:00:00');
       if (!isNaN(bd.getTime())) {
         billingLine = `💳 Next billing: ${bd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
@@ -1783,7 +1952,7 @@
     return `<div class="order-card">
       <div class="order-info">
         <div class="order-plan">${escHtml(o.plan_name)}</div>
-        <div class="order-detail">$${o.price}/mo · ${o.eggs_per_week} eggs/week · Started ${date}</div>
+        <div class="order-detail">${priceDetail}</div>
         ${extraLines ? `<div class="order-detail" style="margin-top:.3rem;">${extraLines}</div>` : ''}
       </div>
       <div style="display:flex;align-items:center;gap:.6rem;">
@@ -1913,6 +2082,7 @@
     }
     updateAuthBar();
     updateCalc();
+    updateCustomPlanDisplay();
     if (currentUser) loadChecklist();
   }
 

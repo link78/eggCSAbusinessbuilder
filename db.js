@@ -77,4 +77,16 @@ db.exec(`
   }
 }
 
+// Add custom subscription columns to orders if they don't exist yet.
+{
+  const orderCols = db.prepare('PRAGMA table_info(orders)').all().map(c => c.name);
+
+  if (!orderCols.includes('boxes_per_delivery')) {
+    db.exec('ALTER TABLE orders ADD COLUMN boxes_per_delivery INTEGER');
+  }
+  if (!orderCols.includes('duration_weeks')) {
+    db.exec('ALTER TABLE orders ADD COLUMN duration_weeks INTEGER');
+  }
+}
+
 module.exports = db;
