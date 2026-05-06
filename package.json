@@ -1,0 +1,17 @@
+{
+  "name": "egg-csa-business-builder",
+  "version": "1.0.0",
+  "description": "Full-stack Egg CSA Business Builder for Lincoln, NE",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^9.4.3",
+    "express": "^4.18.3",
+    "express-rate-limit": "^7.5.1",
+    "express-session": "^1.18.0"
+  }
+}

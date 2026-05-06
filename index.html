@@ -345,6 +345,126 @@
       border-top: 1px solid #f0e8d8;
       margin-top: 1rem;
     }
+
+    /* ── REVIEWS TAB ── */
+    .review-form-card { margin-bottom: 1.4rem; }
+    .review-form-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; }
+    .form-group { margin-bottom: .9rem; }
+    .form-group label { display: block; font-size: .87rem; font-weight: 600; margin-bottom: .35rem; color: #444; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: .6rem .8rem;
+      border: 1.5px solid #e0d8cc; border-radius: 8px;
+      font-size: .93rem; font-family: inherit;
+      background: #fffdf9; color: #2d2d2d;
+      transition: border-color .2s;
+      outline: none;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: #e85d04;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .star-row { display: flex; gap: .3rem; margin-bottom: .5rem; }
+    .star-btn {
+      font-size: 1.6rem; background: none; border: none; cursor: pointer;
+      color: #ccc; padding: 0; line-height: 1; transition: color .1s;
+    }
+    .star-btn.selected { color: #f4c30f; }
+    .btn-primary {
+      background: #e85d04; color: #fff;
+      border: none; border-radius: 8px; padding: .65rem 1.4rem;
+      font-size: .93rem; font-weight: 700; cursor: pointer; transition: background .2s;
+    }
+    .btn-primary:hover { background: #c44f03; }
+    .btn-secondary {
+      background: #f0e8d8; color: #2d2d2d;
+      border: none; border-radius: 8px; padding: .65rem 1.4rem;
+      font-size: .93rem; font-weight: 700; cursor: pointer; margin-left: .5rem;
+      transition: background .2s;
+    }
+    .btn-secondary:hover { background: #e0d8c8; }
+    .btn-danger {
+      background: #fde8e8; color: #c0392b;
+      border: none; border-radius: 8px; padding: .4rem .9rem;
+      font-size: .82rem; font-weight: 700; cursor: pointer; transition: background .2s;
+    }
+    .btn-danger:hover { background: #fcd0d0; }
+
+    .review-card {
+      background: #fff; border-radius: 12px; padding: 1.2rem 1.4rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07); margin-bottom: .9rem;
+    }
+    .review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .5rem; }
+    .review-stars { color: #f4c30f; font-size: 1rem; margin-bottom: .2rem; }
+    .review-title { font-weight: 700; font-size: 1rem; }
+    .review-meta { font-size: .78rem; color: #999; margin-top: .15rem; }
+    .review-body { font-size: .9rem; color: #555; line-height: 1.55; margin-top: .5rem; }
+    .reviews-empty { text-align: center; padding: 2rem; color: #aaa; font-size: .95rem; }
+
+    .flash-msg {
+      padding: .75rem 1rem; border-radius: 8px; margin-bottom: 1rem;
+      font-size: .9rem; font-weight: 600;
+    }
+    .flash-ok   { background: #d4f5d4; color: #1a7a1a; }
+    .flash-warn { background: #fff3cd; color: #856404; }
+    .flash-err  { background: #fde8e8; color: #c0392b; }
+
+    /* ── ACCOUNT TAB ── */
+    .auth-tabs { display: flex; gap: .5rem; margin-bottom: 1.2rem; }
+    .auth-tab-btn {
+      flex: 1; padding: .6rem; border-radius: 8px; border: 2px solid #e0d8cc;
+      background: #fff; cursor: pointer; font-size: .9rem; font-weight: 600;
+      color: #666; transition: all .2s;
+    }
+    .auth-tab-btn.active { border-color: #e85d04; color: #e85d04; background: #fff8f0; }
+
+    .auth-form-wrap { display: none; }
+    .auth-form-wrap.active { display: block; }
+
+    .profile-card {
+      background: #fff; border-radius: 12px; padding: 1.4rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07); margin-bottom: 1.2rem;
+    }
+    .profile-avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, #e85d04, #f48c06);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; color: #fff; font-weight: 700; margin-bottom: .8rem;
+    }
+    .profile-name { font-size: 1.2rem; font-weight: 700; }
+    .profile-email { font-size: .87rem; color: #888; margin-top: .2rem; }
+    .profile-since { font-size: .8rem; color: #aaa; margin-top: .15rem; }
+
+    .orders-section h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: #c45203; }
+    .order-card {
+      background: #fff; border-radius: 10px; padding: 1rem 1.2rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06); margin-bottom: .75rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .order-info .order-plan { font-weight: 700; font-size: 1rem; }
+    .order-info .order-detail { font-size: .82rem; color: #888; margin-top: .2rem; }
+    .order-status {
+      display: inline-block; padding: .25rem .75rem; border-radius: 20px;
+      font-size: .78rem; font-weight: 700;
+    }
+    .status-active    { background: #d4f5d4; color: #1a7a1a; }
+    .status-cancelled { background: #f0e8d8; color: #777; }
+    .orders-empty { text-align: center; padding: 1.5rem; color: #aaa; font-size: .9rem; }
+
+    #header-auth-bar {
+      background: rgba(255,255,255,0.15);
+      text-align: right;
+      padding: .4rem 1.5rem;
+      font-size: .83rem;
+      color: rgba(255,255,255,0.9);
+    }
+    #header-auth-bar button {
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5);
+      color: #fff; border-radius: 6px; padding: .25rem .75rem;
+      cursor: pointer; font-size: .82rem; font-weight: 600;
+      margin-left: .5rem; transition: background .2s;
+    }
+    #header-auth-bar button:hover { background: rgba(255,255,255,0.35); }
   </style>
 </head>
 <body>
@@ -354,6 +474,10 @@
   <h1>Egg CSA Business Builder</h1>
   <p>Your complete guide to turning your Lincoln flock into recurring revenue</p>
 </header>
+<div id="header-auth-bar">
+  <span id="auth-bar-text">Not signed in</span>
+  <button id="auth-bar-btn" onclick="switchTab(5)">Sign In</button>
+</div>
 
 <!-- Tab Bar -->
 <nav class="tab-bar" role="tablist">
@@ -361,6 +485,8 @@
   <button role="tab" aria-selected="false" onclick="switchTab(1)">📦 Subscription Plans</button>
   <button role="tab" aria-selected="false" onclick="switchTab(2)">✅ Launch Checklist</button>
   <button role="tab" aria-selected="false" onclick="switchTab(3)">🗓️ 90-Day Roadmap</button>
+  <button role="tab" aria-selected="false" onclick="switchTab(4)">⭐ Reviews</button>
+  <button role="tab" aria-selected="false" onclick="switchTab(5)" id="tab-account">👤 Account</button>
 </nav>
 
 <!-- ══════════════════════════════════════════
@@ -456,7 +582,7 @@
         <li>Newsletter + farm updates</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="selectPlan('Solo / Couple', 26)">Choose Plan</button>
+      <button class="plan-cta" onclick="orderPlan('Solo / Couple', 26, 6)">Choose Plan</button>
     </div>
 
     <!-- Small Family -->
@@ -475,7 +601,7 @@
         <li>Newsletter + farm updates</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="selectPlan('Small Family', 39)">Choose Plan</button>
+      <button class="plan-cta" onclick="orderPlan('Small Family', 39, 12)">Choose Plan</button>
     </div>
 
     <!-- Family -->
@@ -493,7 +619,7 @@
         <li>Seasonal produce add-ons</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="selectPlan('Family', 52)">Choose Plan</button>
+      <button class="plan-cta" onclick="orderPlan('Family', 52, 18)">Choose Plan</button>
     </div>
 
   </div>
@@ -729,12 +855,136 @@
   </div>
 </section>
 
+<!-- ══════════════════════════════════════════
+     TAB 4 – REVIEWS
+═══════════════════════════════════════════ -->
+<section class="tab-panel" id="panel-4">
+  <h2 class="section-title">Customer Reviews</h2>
+  <p class="section-subtitle">Hear from Lincoln families who subscribe — and share your own experience.</p>
+
+  <!-- Write a review (shown only when logged in) -->
+  <div id="review-form-section" style="display:none;">
+    <div class="card review-form-card">
+      <h3>✍️ Share Your Experience</h3>
+      <div id="review-flash"></div>
+      <div class="form-group">
+        <label>Your Rating</label>
+        <div class="star-row" id="star-row" role="group" aria-label="Rating">
+          <button class="star-btn" data-val="1" onclick="setRating(1)" aria-label="1 star">★</button>
+          <button class="star-btn" data-val="2" onclick="setRating(2)" aria-label="2 stars">★</button>
+          <button class="star-btn" data-val="3" onclick="setRating(3)" aria-label="3 stars">★</button>
+          <button class="star-btn" data-val="4" onclick="setRating(4)" aria-label="4 stars">★</button>
+          <button class="star-btn" data-val="5" onclick="setRating(5)" aria-label="5 stars">★</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="review-title">Review Title</label>
+        <input type="text" id="review-title" maxlength="120" placeholder="e.g. Fresh eggs every week!" />
+      </div>
+      <div class="form-group">
+        <label for="review-body">Your Experience</label>
+        <textarea id="review-body" maxlength="1000" rows="4"
+          placeholder="Tell us about your experience with the egg CSA..."></textarea>
+      </div>
+      <button class="btn-primary" onclick="submitReview()">Post Review</button>
+    </div>
+  </div>
+
+  <!-- Prompt to sign in to leave a review -->
+  <div id="review-login-prompt" class="info-note" style="margin-bottom:1.2rem;">
+    <strong>Want to write a review?</strong>
+    <a href="#" onclick="switchTab(5); return false;" style="color:#e85d04; font-weight:700;">Sign in or create an account</a> to share your experience.
+  </div>
+
+  <!-- Reviews list -->
+  <div id="reviews-list">
+    <div class="reviews-empty">Loading reviews…</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TAB 5 – ACCOUNT
+═══════════════════════════════════════════ -->
+<section class="tab-panel" id="panel-5">
+  <h2 class="section-title" id="account-title">My Account</h2>
+  <p class="section-subtitle" id="account-subtitle">Sign in or create an account to place orders and save your progress.</p>
+
+  <!-- NOT LOGGED IN: login/register forms -->
+  <div id="auth-forms-wrap">
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" id="tab-login-btn"    onclick="showAuthForm('login')">Sign In</button>
+      <button class="auth-tab-btn"        id="tab-register-btn" onclick="showAuthForm('register')">Create Account</button>
+    </div>
+
+    <!-- Login form -->
+    <div class="auth-form-wrap active card" id="login-form-wrap">
+      <div id="login-flash"></div>
+      <div class="form-group">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="Your password" autocomplete="current-password" />
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Sign In</button>
+      <button class="btn-secondary" onclick="showAuthForm('register')">Create Account</button>
+    </div>
+
+    <!-- Register form -->
+    <div class="auth-form-wrap card" id="register-form-wrap">
+      <div id="register-flash"></div>
+      <div class="form-group">
+        <label for="reg-name">Full Name</label>
+        <input type="text" id="reg-name" placeholder="Jane Smith" autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="reg-email">Email</label>
+        <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="reg-password">Password <small style="color:#aaa;">(min. 6 characters)</small></label>
+        <input type="password" id="reg-password" placeholder="Create a password" autocomplete="new-password" />
+      </div>
+      <button class="btn-primary" id="register-submit-btn" onclick="doRegister()">Create Account</button>
+      <button class="btn-secondary" onclick="showAuthForm('login')">Already have an account?</button>
+    </div>
+  </div>
+
+  <!-- LOGGED IN: profile + orders -->
+  <div id="account-logged-in" style="display:none;">
+    <div class="profile-card">
+      <div class="profile-avatar" id="profile-avatar">?</div>
+      <div class="profile-name"  id="profile-name">–</div>
+      <div class="profile-email" id="profile-email">–</div>
+      <div class="profile-since" id="profile-since">–</div>
+      <br/>
+      <button class="btn-secondary" onclick="doLogout()">Sign Out</button>
+    </div>
+
+    <div class="orders-section">
+      <h3>🛒 My Subscriptions</h3>
+      <div id="orders-list">
+        <div class="orders-empty">Loading…</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <footer>
   Built for Lincoln, Nebraska egg farmers · Nebraska Cottage Food Law applies · Not legal or financial advice
 </footer>
 
 <script>
-  /* ── TAB SWITCHING ── */
+  /* ═══════════════════════════════════════════════════════
+     STATE
+  ═══════════════════════════════════════════════════════ */
+  let currentUser   = null;
+  let selectedRating = 0;
+
+  /* ═══════════════════════════════════════════════════════
+     TAB SWITCHING
+  ═══════════════════════════════════════════════════════ */
   const panels = document.querySelectorAll('.tab-panel');
   const tabs   = document.querySelectorAll('.tab-bar button');
 
@@ -744,21 +994,24 @@
       t.classList.toggle('active', i === idx);
       t.setAttribute('aria-selected', i === idx);
     });
+    if (idx === 4) loadReviews();
+    if (idx === 5) renderAccountTab();
   }
 
-  /* ── REVENUE CALCULATOR ── */
-  // Tier labels map
-  const tierLabels = { 26: 'Solo/Couple ($26)', 39: 'Small Family ($39)', 52: 'Family ($52)' };
-  // Eggs per box per tier per week
-  const tierEggs   = { 26: 6, 39: 12, 52: 18 };
+  /* ═══════════════════════════════════════════════════════
+     REVENUE CALCULATOR
+  ═══════════════════════════════════════════════════════ */
+  const tierEggs = { 26: 6, 39: 12, 52: 18 };
 
-  function formatCurrency(n) { return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 }); }
+  function formatCurrency(n) {
+    return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  }
 
   function updateCalc() {
-    const flock   = +document.getElementById('flock').value;
-    const subs    = +document.getElementById('subs').value;
-    const rate    = +document.getElementById('rate').value;
-    const tier    = +document.getElementById('tier').value;
+    const flock = +document.getElementById('flock').value;
+    const subs  = +document.getElementById('subs').value;
+    const rate  = +document.getElementById('rate').value;
+    const tier  = +document.getElementById('tier').value;
 
     document.getElementById('flock-val').textContent = flock + ' hens';
     document.getElementById('subs-val').textContent  = subs  + ' subscribers';
@@ -770,9 +1023,8 @@
     const surplus    = eggsAvail - eggsNeeded;
     const monthly    = subs * tier;
     const annual     = monthly * 12;
-    // Use Math.max to avoid division by zero when flock slider is at minimum
     const MIN_EGGS_AVAILABLE = 1;
-    const pct        = Math.min(100, Math.round((eggsNeeded / Math.max(eggsAvail, MIN_EGGS_AVAILABLE)) * 100));
+    const pct = Math.min(100, Math.round((eggsNeeded / Math.max(eggsAvail, MIN_EGGS_AVAILABLE)) * 100));
 
     document.getElementById('r-eggs-avail').textContent  = eggsAvail.toLocaleString()  + ' eggs';
     document.getElementById('r-eggs-needed').textContent = eggsNeeded.toLocaleString() + ' eggs';
@@ -781,8 +1033,8 @@
     document.getElementById('r-revenue').textContent     = formatCurrency(monthly) + ' / mo';
     document.getElementById('r-annual').textContent      = formatCurrency(annual)  + ' / yr';
 
-    document.getElementById('demand-bar').style.width   = pct + '%';
-    document.getElementById('demand-pct-label').textContent = pct + '% of supply used';
+    document.getElementById('demand-bar').style.width        = pct + '%';
+    document.getElementById('demand-pct-label').textContent  = pct + '% of supply used';
 
     const badge = document.getElementById('status-badge-wrap');
     if (surplus >= 0 && annual < 25000) {
@@ -794,22 +1046,38 @@
     }
   }
 
-  // Init on load
-  updateCalc();
-
-  /* ── SUBSCRIPTION PLAN SELECTION ── */
-  function selectPlan(name, price) {
-    const msg = document.getElementById('plan-selected-msg');
-    document.getElementById('plan-msg-text').textContent =
-      name + ' plan selected — ' + formatCurrency(price) + '/month';
-    msg.style.display = 'block';
-    msg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  /* ═══════════════════════════════════════════════════════
+     SUBSCRIPTION PLANS — order flow
+  ═══════════════════════════════════════════════════════ */
+  async function orderPlan(name, price, eggsPerWeek) {  // eslint-disable-line no-unused-vars
+    if (!currentUser) {
+      switchTab(5);
+      showFlash('login-flash', 'Please sign in or create an account to place an order.', 'warn');
+      return;
+    }
+    if (!confirm(`Subscribe to the ${name} plan for ${formatCurrency(price)}/month?\n\nAny existing active subscription will be replaced.`)) {
+      return;
+    }
+    try {
+      const data = await apiPost('/api/orders', { planName: name });
+      if (data.error) { alert('Error: ' + data.error); return; }
+      const msg = document.getElementById('plan-selected-msg');
+      document.getElementById('plan-msg-text').textContent =
+        name + ' plan subscribed — ' + formatCurrency(data.order.price) + '/month. View it in My Account!';
+      msg.style.display = 'block';
+      msg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch (e) {
+      alert('Failed to place order. Please try again.');
+    }
   }
 
-  /* ── LAUNCH CHECKLIST ── */
+  /* ═══════════════════════════════════════════════════════
+     LAUNCH CHECKLIST (with DB persistence when logged in)
+  ═══════════════════════════════════════════════════════ */
   function toggleCheck(li) {
     li.classList.toggle('done');
     updateProgress();
+    saveChecklist();
   }
 
   function updateProgress() {
@@ -819,6 +1087,328 @@
     document.getElementById('cl-progress-fill').style.width = pct + '%';
     document.getElementById('cl-progress-text').textContent = done + ' / ' + items.length + ' complete';
   }
+
+  function getCompletedSteps() {
+    const items = document.querySelectorAll('#checklist li');
+    const done  = [];
+    items.forEach((li, idx) => { if (li.classList.contains('done')) done.push(idx); });
+    return done;
+  }
+
+  async function saveChecklist() {
+    if (!currentUser) return;
+    try {
+      await apiPut('/api/checklist', { completedSteps: getCompletedSteps() });
+    } catch (_) { /* silent */ }
+  }
+
+  async function loadChecklist() {
+    if (!currentUser) return;
+    try {
+      const data = await apiFetch('/api/checklist');
+      if (!data.completedSteps) return;
+      const items = document.querySelectorAll('#checklist li');
+      items.forEach((li, idx) => {
+        li.classList.toggle('done', data.completedSteps.includes(idx));
+      });
+      updateProgress();
+    } catch (_) { /* silent */ }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     REVIEWS TAB
+  ═══════════════════════════════════════════════════════ */
+  function setRating(val) {
+    selectedRating = val;
+    document.querySelectorAll('#star-row .star-btn').forEach((btn, i) => {
+      btn.classList.toggle('selected', i < val);
+    });
+  }
+
+  async function loadReviews() {
+    try {
+      const data = await apiFetch('/api/reviews');
+      const container = document.getElementById('reviews-list');
+      if (!data.reviews || data.reviews.length === 0) {
+        container.innerHTML = '<div class="reviews-empty">No reviews yet — be the first to share your experience!</div>';
+        return;
+      }
+      container.innerHTML = data.reviews.map(r => reviewCard(r)).join('');
+    } catch (e) {
+      document.getElementById('reviews-list').innerHTML =
+        '<div class="reviews-empty">Could not load reviews.</div>';
+    }
+  }
+
+  function reviewCard(r) {
+    const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+    const date  = new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `<div class="review-card">
+      <div class="review-header">
+        <div>
+          <div class="review-stars">${escHtml(stars)}</div>
+          <div class="review-title">${escHtml(r.title)}</div>
+          <div class="review-meta">${escHtml(r.user_name)} · ${date}</div>
+        </div>
+      </div>
+      <div class="review-body">${escHtml(r.body)}</div>
+    </div>`;
+  }
+
+  async function submitReview() {
+    const title = document.getElementById('review-title').value.trim();
+    const body  = document.getElementById('review-body').value.trim();
+    if (selectedRating === 0) { showFlash('review-flash', 'Please select a star rating.', 'warn'); return; }
+    if (!title) { showFlash('review-flash', 'Please enter a review title.', 'warn'); return; }
+    if (!body)  { showFlash('review-flash', 'Please write your experience.', 'warn'); return; }
+
+    try {
+      const data = await apiPost('/api/reviews', { rating: selectedRating, title, body });
+      if (data.error) { showFlash('review-flash', data.error, 'err'); return; }
+      showFlash('review-flash', 'Review posted! Thank you.', 'ok');
+      document.getElementById('review-title').value = '';
+      document.getElementById('review-body').value  = '';
+      setRating(0);
+      loadReviews();
+    } catch (e) {
+      showFlash('review-flash', 'Failed to post review. Please try again.', 'err');
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     ACCOUNT TAB
+  ═══════════════════════════════════════════════════════ */
+  function showAuthForm(which) {
+    document.getElementById('login-form-wrap').classList.toggle('active', which === 'login');
+    document.getElementById('register-form-wrap').classList.toggle('active', which === 'register');
+    document.getElementById('tab-login-btn').classList.toggle('active', which === 'login');
+    document.getElementById('tab-register-btn').classList.toggle('active', which === 'register');
+  }
+
+  async function doLogin() {
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) { showFlash('login-flash', 'Email and password are required.', 'warn'); return; }
+    try {
+      const data = await apiPost('/api/auth/login', { email, password });
+      if (data.error) { showFlash('login-flash', data.error, 'err'); return; }
+      currentUser = data.user;
+      document.getElementById('login-password').value = '';
+      renderAccountTab();
+      updateAuthBar();
+      loadChecklist();
+    } catch (e) {
+      showFlash('login-flash', 'Login failed. Please try again.', 'err');
+    }
+  }
+
+  async function doRegister() {
+    const name     = document.getElementById('reg-name').value.trim();
+    const email    = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    if (!name || !email || !password) { showFlash('register-flash', 'All fields are required.', 'warn'); return; }
+    try {
+      const data = await apiPost('/api/auth/register', { name, email, password });
+      if (data.error) { showFlash('register-flash', data.error, 'err'); return; }
+      currentUser = data.user;
+      document.getElementById('reg-password').value = '';
+      renderAccountTab();
+      updateAuthBar();
+      loadChecklist();
+    } catch (e) {
+      showFlash('register-flash', 'Registration failed. Please try again.', 'err');
+    }
+  }
+
+  async function doLogout() {
+    try {
+      await apiPost('/api/auth/logout', {});
+    } catch (_) { /* ignore */ }
+    // Session was regenerated on the server; clear cached CSRF token so it is refetched
+    _csrfToken = null;
+    currentUser = null;
+    updateAuthBar();
+    renderAccountTab();
+    // Clear checklist done states if not logged in (can't persist)
+    document.querySelectorAll('#checklist li').forEach(li => li.classList.remove('done'));
+    updateProgress();
+  }
+
+  function renderAccountTab() {
+    const formsWrap   = document.getElementById('auth-forms-wrap');
+    const loggedInWrap = document.getElementById('account-logged-in');
+    if (currentUser) {
+      formsWrap.style.display    = 'none';
+      loggedInWrap.style.display = 'block';
+      const initial = currentUser.name.charAt(0).toUpperCase();
+      document.getElementById('profile-avatar').textContent = initial;
+      document.getElementById('profile-name').textContent   = currentUser.name;
+      document.getElementById('profile-email').textContent  = currentUser.email;
+      const since = new Date(currentUser.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      document.getElementById('profile-since').textContent  = 'Member since ' + since;
+      loadOrders();
+    } else {
+      formsWrap.style.display    = 'block';
+      loggedInWrap.style.display = 'none';
+    }
+  }
+
+  async function loadOrders() {
+    const container = document.getElementById('orders-list');
+    try {
+      const data = await apiFetch('/api/orders');
+      if (!data.orders || data.orders.length === 0) {
+        container.innerHTML = '<div class="orders-empty">No subscriptions yet. <a href="#" onclick="switchTab(1);return false;" style="color:#e85d04;">Browse plans →</a></div>';
+        return;
+      }
+      container.innerHTML = data.orders.map(o => orderCard(o)).join('');
+    } catch (e) {
+      container.innerHTML = '<div class="orders-empty">Could not load orders.</div>';
+    }
+  }
+
+  function orderCard(o) {
+    const date     = new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const statusCls = o.status === 'active' ? 'status-active' : 'status-cancelled';
+    const cancelBtn = o.status === 'active'
+      ? `<button class="btn-danger" onclick="cancelOrder(${o.id})">Cancel</button>`
+      : '';
+    return `<div class="order-card">
+      <div class="order-info">
+        <div class="order-plan">${escHtml(o.plan_name)}</div>
+        <div class="order-detail">$${o.price}/mo · ${o.eggs_per_week} eggs/week · Started ${date}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:.6rem;">
+        <span class="order-status ${statusCls}">${escHtml(o.status)}</span>
+        ${cancelBtn}
+      </div>
+    </div>`;
+  }
+
+  async function cancelOrder(id) {
+    if (!confirm('Cancel this subscription?')) return;
+    try {
+      const data = await apiDelete('/api/orders/' + id);
+      if (data.error) { alert('Error: ' + data.error); return; }
+      loadOrders();
+    } catch (e) {
+      alert('Failed to cancel. Please try again.');
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     AUTH BAR (top of page)
+  ═══════════════════════════════════════════════════════ */
+  function updateAuthBar() {
+    const text = document.getElementById('auth-bar-text');
+    const btn  = document.getElementById('auth-bar-btn');
+    // Update reviews form visibility
+    document.getElementById('review-form-section').style.display  = currentUser ? 'block' : 'none';
+    document.getElementById('review-login-prompt').style.display  = currentUser ? 'none'  : 'block';
+    if (currentUser) {
+      text.textContent    = 'Hi, ' + currentUser.name;
+      btn.textContent     = 'Sign Out';
+      btn.onclick         = doLogout;
+    } else {
+      text.textContent    = 'Not signed in';
+      btn.textContent     = 'Sign In';
+      btn.onclick         = () => switchTab(5);
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     FLASH MESSAGES
+  ═══════════════════════════════════════════════════════ */
+  function showFlash(elId, msg, type) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.className = 'flash-msg flash-' + type;
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     API HELPERS  (CSRF token is fetched once and cached)
+  ═══════════════════════════════════════════════════════ */
+  let _csrfToken = null;
+
+  async function getCsrfToken() {
+    if (_csrfToken) return _csrfToken;
+    const res = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+    const data = await res.json();
+    _csrfToken = data.csrfToken;
+    return _csrfToken;
+  }
+
+  async function apiFetch(url) {
+    const res = await fetch(url, { credentials: 'same-origin' });
+    return res.json();
+  }
+
+  async function apiPost(url, body) {
+    const token = await getCsrfToken();
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+      body: JSON.stringify(body)
+    });
+    return res.json();
+  }
+
+  async function apiPut(url, body) {
+    const token = await getCsrfToken();
+    const res = await fetch(url, {
+      method: 'PUT',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+      body: JSON.stringify(body)
+    });
+    return res.json();
+  }
+
+  async function apiDelete(url) {
+    const token = await getCsrfToken();
+    const res = await fetch(url, {
+      method: 'DELETE',
+      credentials: 'same-origin',
+      headers: { 'X-CSRF-Token': token }
+    });
+    return res.json();
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     XSS HELPER
+  ═══════════════════════════════════════════════════════ */
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,  '&amp;')
+      .replace(/</g,  '&lt;')
+      .replace(/>/g,  '&gt;')
+      .replace(/"/g,  '&quot;')
+      .replace(/'/g,  '&#39;');
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     INIT
+  ═══════════════════════════════════════════════════════ */
+  async function init() {
+    // Fetch CSRF token first (initialises session cookie)
+    await getCsrfToken();
+    // Check if already logged in (existing session)
+    try {
+      const data = await apiFetch('/api/auth/me');
+      currentUser = data.user || null;
+    } catch (_) {
+      currentUser = null;
+    }
+    updateAuthBar();
+    updateCalc();
+    if (currentUser) loadChecklist();
+  }
+
+  init();
 </script>
 
 </body>
