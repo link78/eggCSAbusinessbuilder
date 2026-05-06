@@ -88,10 +88,10 @@ app.use('/api/checklist', apiLimiter,   checklistRoutes);
 
 // ── Static Files ─────────────────────────────────────────────────────────────
 
-app.use(express.static(path.join(__dirname)));
+app.use(apiLimiter, express.static(path.join(__dirname)));
 
 // Catch-all: serve index.html for any unmatched route
-app.get('*', (req, res) => {
+app.get('*', apiLimiter, (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 

@@ -582,7 +582,7 @@
         <li>Newsletter + farm updates</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="orderPlan('Solo / Couple', 26, 6)">Choose Plan</button>
+      <button class="plan-cta" onclick="orderPlan('Solo / Couple', 26)">Choose Plan</button>
     </div>
 
     <!-- Small Family -->
@@ -601,7 +601,7 @@
         <li>Newsletter + farm updates</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="orderPlan('Small Family', 39, 12)">Choose Plan</button>
+      <button class="plan-cta" onclick="orderPlan('Small Family', 39)">Choose Plan</button>
     </div>
 
     <!-- Family -->
@@ -619,7 +619,7 @@
         <li>Seasonal produce add-ons</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="orderPlan('Family', 52, 18)">Choose Plan</button>
+      <button class="plan-cta" onclick="orderPlan('Family', 52)">Choose Plan</button>
     </div>
 
   </div>
@@ -1002,6 +1002,8 @@
      REVENUE CALCULATOR
   ═══════════════════════════════════════════════════════ */
   const tierEggs = { 26: 6, 39: 12, 52: 18 };
+  // Minimum value to avoid division by zero when flock slider is at minimum
+  const MIN_EGGS_AVAILABLE = 1;
 
   function formatCurrency(n) {
     return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 });
@@ -1023,7 +1025,6 @@
     const surplus    = eggsAvail - eggsNeeded;
     const monthly    = subs * tier;
     const annual     = monthly * 12;
-    const MIN_EGGS_AVAILABLE = 1;
     const pct = Math.min(100, Math.round((eggsNeeded / Math.max(eggsAvail, MIN_EGGS_AVAILABLE)) * 100));
 
     document.getElementById('r-eggs-avail').textContent  = eggsAvail.toLocaleString()  + ' eggs';
@@ -1049,7 +1050,7 @@
   /* ═══════════════════════════════════════════════════════
      SUBSCRIPTION PLANS — order flow
   ═══════════════════════════════════════════════════════ */
-  async function orderPlan(name, price, eggsPerWeek) {  // eslint-disable-line no-unused-vars
+  async function orderPlan(name, price) {
     if (!currentUser) {
       switchTab(5);
       showFlash('login-flash', 'Please sign in or create an account to place an order.', 'warn');
@@ -1394,7 +1395,7 @@
      INIT
   ═══════════════════════════════════════════════════════ */
   async function init() {
-    // Fetch CSRF token first (initialises session cookie)
+    // Fetch CSRF token first (initializes session cookie)
     await getCsrfToken();
     // Check if already logged in (existing session)
     try {
