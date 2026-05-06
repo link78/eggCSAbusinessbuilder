@@ -46,4 +46,23 @@ db.exec(`
   );
 `);
 
+// ── Migrations ───────────────────────────────────────────────────────────────
+// Add subscription fulfillment columns to orders if they don't exist yet.
+{
+  const existing = db.prepare('PRAGMA table_info(orders)').all().map(c => c.name);
+
+  if (!existing.includes('fulfillment_method')) {
+    db.exec("ALTER TABLE orders ADD COLUMN fulfillment_method TEXT NOT NULL DEFAULT 'pickup'");
+  }
+  if (!existing.includes('delivery_address')) {
+    db.exec('ALTER TABLE orders ADD COLUMN delivery_address TEXT');
+  }
+  if (!existing.includes('pickup_day')) {
+    db.exec('ALTER TABLE orders ADD COLUMN pickup_day TEXT');
+  }
+  if (!existing.includes('next_billing_date')) {
+    db.exec('ALTER TABLE orders ADD COLUMN next_billing_date TEXT');
+  }
+}
+
 module.exports = db;

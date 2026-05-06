@@ -465,6 +465,85 @@
       margin-left: .5rem; transition: background .2s;
     }
     #header-auth-bar button:hover { background: rgba(255,255,255,0.35); }
+
+    /* ── SUBSCRIPTION MODAL ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.8rem 1.6rem;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(0,0,0,.2);
+      animation: modalIn .18s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(.96) translateY(8px); }
+      to   { opacity: 1; transform: scale(1)  translateY(0);    }
+    }
+
+    .modal-title {
+      font-size: 1.2rem; font-weight: 700; color: #c45203;
+      margin-bottom: .3rem;
+    }
+    .modal-subtitle {
+      font-size: .88rem; color: #888; margin-bottom: 1.2rem;
+    }
+
+    .fulfillment-toggle {
+      display: flex; gap: .5rem; margin-bottom: 1.2rem;
+    }
+    .fulfillment-toggle label {
+      flex: 1; cursor: pointer;
+    }
+    .fulfillment-toggle input[type=radio] { display: none; }
+    .fulfillment-toggle .ft-btn {
+      display: block; text-align: center;
+      border: 2px solid #e0d8cc; border-radius: 10px;
+      padding: .7rem .5rem; font-size: .9rem; font-weight: 600;
+      color: #777; transition: all .15s; background: #fdf8f0;
+    }
+    .fulfillment-toggle input[type=radio]:checked + .ft-btn {
+      border-color: #e85d04; color: #e85d04; background: #fff8f0;
+    }
+
+    .modal-field { margin-bottom: 1rem; }
+    .modal-field label {
+      display: block; font-size: .87rem; font-weight: 600;
+      margin-bottom: .35rem; color: #444;
+    }
+    .modal-field input, .modal-field select {
+      width: 100%; padding: .6rem .8rem;
+      border: 1.5px solid #e0d8cc; border-radius: 8px;
+      font-size: .93rem; background: #fffdf9; color: #2d2d2d;
+      outline: none; transition: border-color .2s;
+    }
+    .modal-field input:focus, .modal-field select:focus {
+      border-color: #e85d04;
+    }
+
+    .modal-summary {
+      background: #fff8f0; border-radius: 8px;
+      padding: .75rem 1rem; font-size: .88rem;
+      color: #555; margin-bottom: 1.1rem;
+      border-left: 3px solid #e85d04;
+    }
+    .modal-summary strong { color: #c45203; }
+
+    .modal-actions { display: flex; gap: .6rem; justify-content: flex-end; }
+    .modal-actions .btn-primary  { padding: .6rem 1.4rem; }
+    .modal-actions .btn-secondary { padding: .6rem 1.2rem; }
+    #modal-flash { margin-bottom: .7rem; }
   </style>
 </head>
 <body>
@@ -582,7 +661,7 @@
         <li>Newsletter + farm updates</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="orderPlan('Solo / Couple', 26)">Choose Plan</button>
+      <button class="plan-cta" onclick="openSubscribeModal('Solo / Couple', 26)">Choose Plan</button>
     </div>
 
     <!-- Small Family -->
@@ -601,7 +680,7 @@
         <li>Newsletter + farm updates</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="orderPlan('Small Family', 39)">Choose Plan</button>
+      <button class="plan-cta" onclick="openSubscribeModal('Small Family', 39)">Choose Plan</button>
     </div>
 
     <!-- Family -->
@@ -619,7 +698,7 @@
         <li>Seasonal produce add-ons</li>
         <li>Cancel anytime</li>
       </ul>
-      <button class="plan-cta" onclick="orderPlan('Family', 52)">Choose Plan</button>
+      <button class="plan-cta" onclick="openSubscribeModal('Family', 52)">Choose Plan</button>
     </div>
 
   </div>
@@ -856,6 +935,62 @@
 </section>
 
 <!-- ══════════════════════════════════════════
+     SUBSCRIPTION MODAL (outside tab panels)
+═══════════════════════════════════════════ -->
+<div class="modal-backdrop" id="subscribe-modal" role="dialog" aria-modal="true" aria-labelledby="modal-plan-title">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-plan-title">Subscribe to <span id="modal-plan-name">—</span></div>
+    <div class="modal-subtitle" id="modal-plan-subtitle">Monthly · Cancel anytime</div>
+
+    <div id="modal-flash"></div>
+
+    <!-- Pickup vs Delivery toggle -->
+    <div class="fulfillment-toggle" role="group" aria-label="Fulfillment method">
+      <label>
+        <input type="radio" name="fulfillment" id="ft-pickup" value="pickup" checked
+               onchange="updateFulfillmentFields()" />
+        <span class="ft-btn">🏡 Pick-Up</span>
+      </label>
+      <label>
+        <input type="radio" name="fulfillment" id="ft-delivery" value="delivery"
+               onchange="updateFulfillmentFields()" />
+        <span class="ft-btn">🚗 Local Delivery</span>
+      </label>
+    </div>
+
+    <!-- Pickup day (shown when pickup selected) -->
+    <div class="modal-field" id="modal-field-pickup">
+      <label for="modal-pickup-day">Preferred Pick-Up Day</label>
+      <select id="modal-pickup-day">
+        <option value="">— choose a day —</option>
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Friday">Friday</option>
+        <option value="Saturday">Saturday</option>
+      </select>
+    </div>
+
+    <!-- Delivery address (shown when delivery selected) -->
+    <div class="modal-field" id="modal-field-delivery" style="display:none;">
+      <label for="modal-delivery-address">Delivery Address <small style="color:#aaa;">(Lincoln, NE)</small></label>
+      <input type="text" id="modal-delivery-address"
+             placeholder="e.g. 1234 Vine St, Lincoln NE 68508"
+             maxlength="200" autocomplete="street-address" />
+    </div>
+
+    <!-- Summary of what they're signing up for -->
+    <div class="modal-summary" id="modal-summary"></div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeSubscribeModal()">Cancel</button>
+      <button class="btn-primary"   onclick="submitSubscription()">Confirm &amp; Subscribe</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      TAB 4 – REVIEWS
 ═══════════════════════════════════════════ -->
 <section class="tab-panel" id="panel-4">
@@ -1048,29 +1183,122 @@
   }
 
   /* ═══════════════════════════════════════════════════════
-     SUBSCRIPTION PLANS — order flow
+     SUBSCRIPTION PLANS — modal order flow
   ═══════════════════════════════════════════════════════ */
-  async function orderPlan(name, price) {
+  let _pendingPlanName  = null;
+  let _pendingPlanPrice = null;
+
+  // Map of plan name → eggs per week (mirrors PLANS on the server)
+  const PLAN_EGGS = { 'Solo / Couple': 6, 'Small Family': 12, 'Family': 18 };
+
+  function openSubscribeModal(name, price) {
     if (!currentUser) {
       switchTab(5);
-      showFlash('login-flash', 'Please sign in or create an account to place an order.', 'warn');
+      showFlash('login-flash', 'Please sign in or create an account to subscribe.', 'warn');
       return;
     }
-    if (!confirm(`Subscribe to the ${name} plan for ${formatCurrency(price)}/month?\n\nAny existing active subscription will be replaced.`)) {
+    _pendingPlanName  = name;
+    _pendingPlanPrice = price;
+
+    document.getElementById('modal-plan-name').textContent = name;
+    document.getElementById('modal-plan-subtitle').textContent =
+      formatCurrency(price) + '/month · ' + PLAN_EGGS[name] + ' eggs/week · Cancel anytime';
+
+    // Reset form
+    document.getElementById('ft-pickup').checked = true;
+    document.getElementById('modal-pickup-day').value      = '';
+    document.getElementById('modal-delivery-address').value = '';
+    document.getElementById('modal-flash').style.display   = 'none';
+    updateFulfillmentFields();
+
+    document.getElementById('subscribe-modal').classList.add('open');
+    document.getElementById('modal-pickup-day').focus();
+  }
+
+  function closeSubscribeModal() {
+    document.getElementById('subscribe-modal').classList.remove('open');
+    _pendingPlanName  = null;
+    _pendingPlanPrice = null;
+  }
+
+  function updateFulfillmentFields() {
+    const method     = document.querySelector('input[name="fulfillment"]:checked').value;
+    const isDelivery = method === 'delivery';
+    document.getElementById('modal-field-pickup').style.display   = isDelivery ? 'none'  : 'block';
+    document.getElementById('modal-field-delivery').style.display = isDelivery ? 'block' : 'none';
+    updateModalSummary();
+  }
+
+  function updateModalSummary() {
+    const method     = document.querySelector('input[name="fulfillment"]:checked').value;
+    const isDelivery = method === 'delivery';
+    const price      = _pendingPlanPrice || 0;
+    const eggs       = PLAN_EGGS[_pendingPlanName] || 0;
+    const icon       = isDelivery ? '🚗 Local delivery' : '🏡 Farm pick-up';
+    document.getElementById('modal-summary').innerHTML =
+      `<strong>${escHtml(_pendingPlanName || '')}</strong> — ` +
+      `${formatCurrency(price)}/month · ${eggs} eggs/week<br>` +
+      `${icon} · Monthly billing · Cancel anytime`;
+  }
+
+  async function submitSubscription() {
+    const method          = document.querySelector('input[name="fulfillment"]:checked').value;
+    const deliveryAddress = document.getElementById('modal-delivery-address').value.trim();
+    const pickupDay       = document.getElementById('modal-pickup-day').value;
+
+    if (method === 'delivery' && !deliveryAddress) {
+      showFlash('modal-flash', 'Please enter your delivery address.', 'warn');
       return;
     }
+    if (method === 'pickup' && !pickupDay) {
+      showFlash('modal-flash', 'Please choose your preferred pick-up day.', 'warn');
+      return;
+    }
+
+    const btn = document.querySelector('#subscribe-modal .btn-primary');
+    btn.disabled    = true;
+    btn.textContent = 'Subscribing…';
+
     try {
-      const data = await apiPost('/api/orders', { planName: name });
-      if (data.error) { alert('Error: ' + data.error); return; }
+      const data = await apiPost('/api/orders', {
+        planName:          _pendingPlanName,
+        fulfillmentMethod: method,
+        deliveryAddress:   method === 'delivery' ? deliveryAddress : undefined,
+        pickupDay:         method === 'pickup'   ? pickupDay       : undefined
+      });
+
+      if (data.error) {
+        showFlash('modal-flash', data.error, 'err');
+        return;
+      }
+
+      closeSubscribeModal();
+
       const msg = document.getElementById('plan-selected-msg');
+      const fulfillLabel = method === 'delivery' ? 'local delivery' : `pick-up (${pickupDay}s)`;
       document.getElementById('plan-msg-text').textContent =
-        name + ' plan subscribed — ' + formatCurrency(data.order.price) + '/month. View it in My Account!';
+        _pendingPlanName + ' plan confirmed — ' +
+        formatCurrency(data.order.price) + '/month via ' + fulfillLabel +
+        '. View your subscription in My Account!';
       msg.style.display = 'block';
       msg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } catch (e) {
-      alert('Failed to place order. Please try again.');
+      showFlash('modal-flash', 'Failed to subscribe. Please try again.', 'err');
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'Confirm & Subscribe';
     }
   }
+
+  // Close modal when clicking the backdrop
+  document.getElementById('subscribe-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeSubscribeModal();
+  });
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeSubscribeModal();
+  });
 
   /* ═══════════════════════════════════════════════════════
      LAUNCH CHECKLIST (with DB persistence when logged in)
@@ -1269,15 +1497,35 @@
   }
 
   function orderCard(o) {
-    const date     = new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const statusCls = o.status === 'active' ? 'status-active' : 'status-cancelled';
-    const cancelBtn = o.status === 'active'
+    const date       = new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const statusCls  = o.status === 'active' ? 'status-active' : 'status-cancelled';
+    const cancelBtn  = o.status === 'active'
       ? `<button class="btn-danger" onclick="cancelOrder(${o.id})">Cancel</button>`
       : '';
+
+    // Fulfillment line
+    let fulfillLine = '';
+    if (o.fulfillment_method === 'delivery') {
+      fulfillLine = `🚗 Delivery → ${escHtml(o.delivery_address || '—')}`;
+    } else if (o.fulfillment_method === 'pickup') {
+      fulfillLine = `🏡 Pick-up · ${escHtml(o.pickup_day || '—')}s`;
+    }
+
+    // Next billing line
+    let billingLine = '';
+    if (o.next_billing_date && o.status === 'active') {
+      const bd = new Date(o.next_billing_date + 'T00:00:00');
+      billingLine = `💳 Next billing: ${bd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    }
+
+    const extraLines = [fulfillLine, billingLine].filter(Boolean)
+      .map(l => `<div>${l}</div>`).join('');
+
     return `<div class="order-card">
       <div class="order-info">
         <div class="order-plan">${escHtml(o.plan_name)}</div>
         <div class="order-detail">$${o.price}/mo · ${o.eggs_per_week} eggs/week · Started ${date}</div>
+        ${extraLines ? `<div class="order-detail" style="margin-top:.3rem;">${extraLines}</div>` : ''}
       </div>
       <div style="display:flex;align-items:center;gap:.6rem;">
         <span class="order-status ${statusCls}">${escHtml(o.status)}</span>
