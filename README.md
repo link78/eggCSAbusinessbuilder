@@ -49,13 +49,14 @@ The SQLite database (`egg_csa.db`) is created automatically on first run — no 
 ## Features
 
 - 📊 **Revenue Calculator** — real-time supply/demand sliders
-- 📦 **Subscription Plans** — Solo/Couple ($26), Small Family ($39), Family ($52) per month
+- 📦 **Subscription Plans** — Solo/Couple ($10), Small Family ($20), Family ($30) per month (priced at $5/dozen)
   - Choose **pick-up** (select a preferred day) or **local delivery** (enter your address)
   - Monthly billing with a "cancel anytime" policy
 - ✅ **Launch Checklist** — 8-step guide saved to your account
 - 🗓️ **90-Day Roadmap** — week-by-week plan to reach 15–20 subscribers
 - ⭐ **Reviews** — public star ratings from subscribers
-- 👤 **Account** — register/login, view and cancel active subscriptions
+- 👤 **Account** — register/login, edit profile, upload profile picture, view and cancel active subscriptions
+- 🔑 **Admin Panel** — admin users can view all accounts and assign/remove admin roles
 
 ## Environment Variables
 
