@@ -80,15 +80,7 @@ async function init() {
 
   // ── Seed plan configurations ─────────────────────────────────────────────────
   // Insert default plan config rows; skip if they already exist (idempotent).
-  await query(`
-    INSERT INTO plan_config (plan_key, display_name, price_monthly, eggs_per_week, delivery_fee_enabled)
-    VALUES
-      ('small_family', 'Small Family',  20, 12, true),
-      ('family',       'Family',        28, 18, true),
-      ('solo_couple',  'Solo / Couple', 10, 12, true),
-      ('custom',       'Custom Plan',    0, 24, true)
-    ON CONFLICT (plan_key) DO NOTHING
-  `);
+  await seedPlanConfig();
 
   // ── Seed admins ─────────────────────────────────────────────────────────────
   // Promote known admin accounts if they exist.
@@ -102,13 +94,30 @@ async function init() {
 }
 
 /**
+ * Seed the plan_config table with default plan configurations.
+ * Uses INSERT ... ON CONFLICT DO NOTHING so it is safe to call multiple times.
+ */
+async function seedPlanConfig() {
+  await query(`
+    INSERT INTO plan_config (plan_key, display_name, price_monthly, eggs_per_week, delivery_fee_enabled)
+    VALUES
+      ('small_family', 'Small Family',  20, 12, true),
+      ('family',       'Family',        28, 18, true),
+      ('solo_couple',  'Solo / Couple', 10, 12, true),
+      ('custom',       'Custom Plan',    0, 24, true)
+    ON CONFLICT (plan_key) DO NOTHING
+  `);
+}
+/**
  * Truncate all tables and reset sequences.
  * Only safe to call in test environments.
  */
 async function reset() {
   await query(
-    'TRUNCATE users, orders, reviews, checklist_progress RESTART IDENTITY CASCADE'
+    'TRUNCATE users, orders, reviews, checklist_progress, plan_config RESTART IDENTITY CASCADE'
   );
+  // Re-seed plan configurations so tests always start with a known state.
+  await seedPlanConfig();
 }
 
 /**
