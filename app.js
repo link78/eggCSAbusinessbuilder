@@ -4,6 +4,7 @@ const session        = require('express-session');
 const rateLimit      = require('express-rate-limit');
 const crypto         = require('crypto');
 
+const db             = require('./db');
 const authRoutes      = require('./routes/auth');
 const ordersRoutes    = require('./routes/orders');
 const reviewsRoutes   = require('./routes/reviews');
@@ -91,8 +92,19 @@ app.use('/api/admin',     apiLimiter,   adminRoutes);
 
 app.use(apiLimiter, express.static(path.join(__dirname)));
 
-// Farm dashboard (authenticated SPA)
-app.get('/dashboard', apiLimiter, (req, res) => {
+// Farm dashboard — admin only
+app.get('/dashboard', apiLimiter, async (req, res) => {
+  if (!req.session.userId) {
+    return res.redirect('/');
+  }
+  try {
+    const row = (await db.query('SELECT role FROM users WHERE id = $1', [req.session.userId])).rows[0];
+    if (!row || row.role !== 'admin') {
+      return res.redirect('/');
+    }
+  } catch (_) {
+    return res.redirect('/');
+  }
   res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 

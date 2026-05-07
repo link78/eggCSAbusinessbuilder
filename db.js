@@ -69,11 +69,14 @@ async function init() {
     );
   `);
 
-  // ── Seed admin ──────────────────────────────────────────────────────────────
-  // Promote absalim78@yahoo.com to admin if the account already exists.
-  const target = (await query("SELECT id FROM users WHERE email = 'absalim78@yahoo.com'")).rows[0];
-  if (target) {
-    await query("UPDATE users SET role = 'admin' WHERE id = $1", [target.id]);
+  // ── Seed admins ─────────────────────────────────────────────────────────────
+  // Promote known admin accounts if they exist.
+  const adminEmails = ['absalim78@yahoo.com', 'koandak@hotmail.com'];
+  for (const email of adminEmails) {
+    const target = (await query('SELECT id FROM users WHERE email = $1', [email])).rows[0];
+    if (target) {
+      await query("UPDATE users SET role = 'admin' WHERE id = $1", [target.id]);
+    }
   }
 }
 

@@ -2924,6 +2924,11 @@
     try {
       const data = await apiPost('/api/auth/login', { email, password });
       if (data.error) { showFlash('gate-login-flash', data.error, 'err'); return; }
+      if (!data.user || data.user.role !== 'admin') {
+        await apiPost('/api/auth/logout', {}).catch(() => {});
+        showFlash('gate-login-flash', 'Access denied. This dashboard is for farm administrators only.', 'err');
+        return;
+      }
       currentUser = data.user;
       document.getElementById('gate-login-password').value = '';
       hideAuthGate();
@@ -2949,6 +2954,11 @@
     try {
       const data = await apiPost('/api/auth/register', { name, email, password });
       if (data.error) { showFlash('gate-register-flash', data.error, 'err'); return; }
+      if (!data.user || data.user.role !== 'admin') {
+        await apiPost('/api/auth/logout', {}).catch(() => {});
+        showFlash('gate-register-flash', 'Account created, but dashboard access is restricted to administrators.', 'warn');
+        return;
+      }
       currentUser = data.user;
       document.getElementById('gate-reg-password').value = '';
       document.getElementById('gate-reg-confirm').value  = '';
@@ -2991,6 +3001,15 @@
     updateCustomPlanDisplay();
 
     if (currentUser) {
+      if (currentUser.role !== 'admin') {
+        // Logged in but not admin — log out and show error
+        await apiPost('/api/auth/logout', {}).catch(() => {});
+        currentUser = null;
+        showAuthGate();
+        showAuthForm('login');
+        showFlash('gate-login-flash', 'Access denied. This dashboard is for farm administrators only.', 'err');
+        return;
+      }
       hideAuthGate();
       loadChecklist();
       switchView('home');
