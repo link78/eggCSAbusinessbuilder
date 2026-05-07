@@ -4,6 +4,7 @@ const { Pool } = require('pg');
 // Falls back to a local development database if not set.
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgresql://localhost/egg_csa',
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
