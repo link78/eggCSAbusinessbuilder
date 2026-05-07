@@ -3854,9 +3854,15 @@ async function cancelOrder(id) {
       document.getElementById('sidebar-user-name').textContent  = '—';
       document.getElementById('sidebar-user-email').textContent = '';
     }
-    // Show/hide "My Subscription" portal nav for logged-in users
+    // Show/hide "My Subscription" portal nav for logged-in non-admin users
     const portalNav = document.getElementById('nav-portal');
-    if (portalNav) portalNav.style.display = currentUser ? '' : 'none';
+    if (portalNav) portalNav.style.display = (currentUser && currentUser.role !== 'admin') ? '' : 'none';
+    // Hide admin-only nav items from customers
+    const isAdmin = currentUser && currentUser.role === 'admin';
+    ['nav-home', 'nav-customers', 'nav-orders', 'nav-pickup', 'nav-settings'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = isAdmin ? '' : 'none';
+    });
     // Update reviews form visibility
     const reviewForm   = document.getElementById('review-form-section');
     const reviewPrompt = document.getElementById('review-login-prompt');
@@ -3948,17 +3954,13 @@ async function cancelOrder(id) {
     try {
       const data = await apiPost('/api/auth/login', { email, password });
       if (data.error) { showFlash('gate-login-flash', data.error, 'err'); return; }
-      if (!data.user || data.user.role !== 'admin') {
-        await apiPost('/api/auth/logout', {}).catch(() => {});
-        showFlash('gate-login-flash', 'Access denied. This dashboard is for farm administrators only.', 'err');
-        return;
-      }
+      if (!data.user) { showFlash('gate-login-flash', 'Login failed. Please try again.', 'err'); return; }
       currentUser = data.user;
       document.getElementById('gate-login-password').value = '';
       hideAuthGate();
       updateSidebarUser();
-      loadChecklist();
-      switchView('home');
+      if (currentUser.role === 'admin') loadChecklist();
+      switchView(currentUser.role === 'admin' ? 'home' : 'portal');
     } catch (e) {
       showFlash('gate-login-flash', 'Login failed. Please try again.', 'err');
     }
@@ -3978,18 +3980,14 @@ async function cancelOrder(id) {
     try {
       const data = await apiPost('/api/auth/register', { name, email, password });
       if (data.error) { showFlash('gate-register-flash', data.error, 'err'); return; }
-      if (!data.user || data.user.role !== 'admin') {
-        await apiPost('/api/auth/logout', {}).catch(() => {});
-        showFlash('gate-register-flash', 'Account created, but dashboard access is restricted to administrators.', 'warn');
-        return;
-      }
+      if (!data.user) { showFlash('gate-register-flash', 'Registration failed. Please try again.', 'err'); return; }
       currentUser = data.user;
       document.getElementById('gate-reg-password').value = '';
       document.getElementById('gate-reg-confirm').value  = '';
       hideAuthGate();
       updateSidebarUser();
-      loadChecklist();
-      switchView('home');
+      if (currentUser.role === 'admin') loadChecklist();
+      switchView(currentUser.role === 'admin' ? 'home' : 'portal');
     } catch (e) {
       showFlash('gate-register-flash', 'Registration failed. Please try again.', 'err');
     }
@@ -4095,18 +4093,9 @@ async function cancelOrder(id) {
     loadPlanConfig();  // Load plan config for Edit Plan modal
 
     if (currentUser) {
-      if (currentUser.role !== 'admin') {
-        // Logged in but not admin — log out and show error
-        await apiPost('/api/auth/logout', {}).catch(() => {});
-        currentUser = null;
-        showAuthGate();
-        showAuthForm('login');
-        showFlash('gate-login-flash', 'Access denied. This dashboard is for farm administrators only.', 'err');
-        return;
-      }
       hideAuthGate();
-      loadChecklist();
-      switchView('home');
+      if (currentUser.role === 'admin') loadChecklist();
+      switchView(currentUser.role === 'admin' ? 'home' : 'portal');
     } else {
       showAuthGate();
       showAuthForm('login');
