@@ -67,6 +67,27 @@ async function init() {
       user_id         INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
       completed_steps TEXT NOT NULL DEFAULT '[]'
     );
+
+    CREATE TABLE IF NOT EXISTS plan_config (
+      id                   SERIAL PRIMARY KEY,
+      plan_key             TEXT UNIQUE NOT NULL,
+      display_name         TEXT NOT NULL,
+      price_monthly        INTEGER NOT NULL,
+      eggs_per_week        INTEGER NOT NULL,
+      delivery_fee_enabled BOOLEAN NOT NULL DEFAULT true
+    );
+  `);
+
+  // ── Seed plan configurations ─────────────────────────────────────────────────
+  // Insert default plan config rows; skip if they already exist (idempotent).
+  await query(`
+    INSERT INTO plan_config (plan_key, display_name, price_monthly, eggs_per_week, delivery_fee_enabled)
+    VALUES
+      ('small_family', 'Small Family',  20, 12, true),
+      ('family',       'Family',        28, 18, true),
+      ('solo_couple',  'Solo / Couple', 10, 12, true),
+      ('custom',       'Custom Plan',    0, 24, true)
+    ON CONFLICT (plan_key) DO NOTHING
   `);
 
   // ── Seed admins ─────────────────────────────────────────────────────────────

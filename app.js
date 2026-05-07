@@ -10,6 +10,7 @@ const ordersRoutes    = require('./routes/orders');
 const reviewsRoutes   = require('./routes/reviews');
 const checklistRoutes = require('./routes/checklist');
 const adminRoutes     = require('./routes/admin');
+const planConfigRoutes = require('./routes/planConfig');
 
 const app        = express();
 const IS_PROD    = process.env.NODE_ENV === 'production';
@@ -82,11 +83,12 @@ app.use('/api', (req, res, next) => {
 
 // ── API Routes ───────────────────────────────────────────────────────────────
 
-app.use('/api/auth',      authLimiter,  authRoutes);
-app.use('/api/orders',    apiLimiter,   ordersRoutes);
-app.use('/api/reviews',   apiLimiter,   reviewsRoutes);
-app.use('/api/checklist', apiLimiter,   checklistRoutes);
-app.use('/api/admin',     apiLimiter,   adminRoutes);
+app.use('/api/auth',        authLimiter,  authRoutes);
+app.use('/api/orders',      apiLimiter,   ordersRoutes);
+app.use('/api/reviews',     apiLimiter,   reviewsRoutes);
+app.use('/api/checklist',   apiLimiter,   checklistRoutes);
+app.use('/api/admin',       apiLimiter,   adminRoutes);
+app.use('/api/plan-config', apiLimiter,   planConfigRoutes);
 
 // ── Static Files ─────────────────────────────────────────────────────────────
 

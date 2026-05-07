@@ -366,6 +366,47 @@
       border: 1px solid #f0e8d8;
     }
 
+    /* ── EDIT PLAN BUTTON (on plan cards, admin-only dashboard) ── */
+    .plan-card { position: relative; }
+    .plan-edit-btn {
+      position: absolute; top: .75rem; right: .75rem;
+      background: #e2d9f3; color: #6f42c1;
+      border: none; border-radius: 6px;
+      padding: .28rem .65rem; font-size: .78rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap; z-index: 1;
+    }
+    .plan-edit-btn:hover { background: #d3c6ed; }
+
+    /* ── EDIT PLAN MODAL ── */
+    #edit-plan-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.45); z-index: 2000;
+      align-items: center; justify-content: center;
+    }
+    #edit-plan-modal.open { display: flex; }
+    #edit-plan-modal-box {
+      background: #fff; border-radius: 14px; padding: 1.8rem;
+      width: min(420px, 92vw); box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    }
+    #edit-plan-modal-box h3 { margin: 0 0 1rem; font-size: 1.1rem; color: #c45203; }
+    .edit-plan-field { margin-bottom: 1rem; }
+    .edit-plan-field label { display: block; font-size: .84rem; font-weight: 600; margin-bottom: .3rem; }
+    .edit-plan-field input[type="text"],
+    .edit-plan-field input[type="number"] {
+      width: 100%; padding: .45rem .7rem;
+      border: 1px solid #ddd; border-radius: 7px; font-size: .9rem;
+    }
+    .edit-plan-field-inline {
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .9rem; cursor: pointer;
+    }
+    .edit-plan-field-inline input[type="checkbox"] {
+      width: 16px; height: 16px; accent-color: #e85d04; cursor: pointer;
+    }
+    .edit-plan-modal-actions {
+      display: flex; gap: .7rem; justify-content: flex-end; margin-top: 1.2rem;
+    }
+
     /* ── EDIT PROFILE ── */
     .edit-profile-section { margin-top: 1.2rem; }
     .edit-profile-section h3 { font-size: 1.05rem; font-weight: 700; color: #c45203; margin-bottom: .9rem; }
@@ -1387,6 +1428,7 @@
 
     <!-- Solo / Couple (flexible, min 1 box) -->
     <div class="plan-card">
+      <button class="plan-edit-btn" onclick="openEditPlanModal('solo_couple')" title="Edit this plan">✏️ Edit</button>
       <div class="plan-emoji">🐣</div>
       <h3>Solo / Couple</h3>
       <p class="plan-tagline">For 1–2 people · choose your box size</p>
@@ -1423,6 +1465,7 @@
 
     <!-- Small Family -->
     <div class="plan-card featured">
+      <button class="plan-edit-btn" onclick="openEditPlanModal('small_family')" title="Edit this plan">✏️ Edit</button>
       <div class="badge-popular">⭐ Most Popular</div>
       <div class="plan-emoji">👨‍👩‍👦</div>
       <h3>Small Family</h3>
@@ -1454,6 +1497,7 @@
 
     <!-- Family -->
     <div class="plan-card">
+      <button class="plan-edit-btn" onclick="openEditPlanModal('family')" title="Edit this plan">✏️ Edit</button>
       <div class="plan-emoji">👨‍👩‍👧‍👦</div>
       <h3>Family</h3>
       <p class="plan-tagline">For 4+ people</p>
@@ -1484,6 +1528,7 @@
 
     <!-- Custom Plan -->
     <div class="plan-card custom-plan-card">
+      <button class="plan-edit-btn" onclick="openEditPlanModal('custom')" title="Edit this plan">✏️ Edit</button>
       <div class="plan-emoji">🛠️</div>
       <h3>Custom Plan</h3>
       <p class="plan-tagline">Mix box sizes &amp; choose duration</p>
@@ -1531,6 +1576,8 @@
   <div id="plan-selected-msg" style="display:none;" class="info-note" role="status">
     ✅ <strong id="plan-msg-text"></strong> — Great choice! Use the Revenue Calculator tab to see what this means for your income.
   </div>
+
+  <div id="plans-flash"></div>
 
   <div class="info-note" style="margin-top:.8rem;">
     <strong>Tip:</strong> The <strong>Family plan at $28/month</strong> tends to be the easiest sell in Lincoln — families go through eggs quickly and value the convenience of local delivery. Lead with that tier in your marketing.
@@ -1993,6 +2040,38 @@
   Sakinah Ridge Farm LLC · Raymond, Nebraska · Nebraska Cottage Food Law applies · Not legal or financial advice
 </footer>
 
+<!-- ══════════════════════════════════════════
+     EDIT PLAN MODAL
+═══════════════════════════════════════════ -->
+<div id="edit-plan-modal" onclick="closeEditPlanModal(event)" role="dialog" aria-modal="true" aria-labelledby="edit-plan-modal-title">
+  <div id="edit-plan-modal-box" onclick="event.stopPropagation()">
+    <h3 id="edit-plan-modal-title">✏️ Edit Plan</h3>
+    <div id="edit-plan-flash"></div>
+    <div class="edit-plan-field">
+      <label for="edit-plan-name">Plan Name</label>
+      <input type="text" id="edit-plan-name" maxlength="120" placeholder="e.g. Small Family" />
+    </div>
+    <div class="edit-plan-field">
+      <label for="edit-plan-eggs">Eggs per Week</label>
+      <input type="number" id="edit-plan-eggs" min="0" max="999" placeholder="12" />
+    </div>
+    <div class="edit-plan-field">
+      <label for="edit-plan-price">Monthly Price ($)</label>
+      <input type="number" id="edit-plan-price" min="0" max="9999" placeholder="20" />
+    </div>
+    <div class="edit-plan-field">
+      <label class="edit-plan-field-inline">
+        <input type="checkbox" id="edit-plan-delivery" />
+        Delivery fee enabled (+$2/week for delivery orders)
+      </label>
+    </div>
+    <div class="edit-plan-modal-actions">
+      <button class="btn-secondary" onclick="closeEditPlanModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveEditPlan()">Save</button>
+    </div>
+  </div>
+</div>
+
     </div><!-- /.main-content -->
   </div><!-- /.app-layout -->
 </div><!-- /#main-app -->
@@ -2003,6 +2082,8 @@
   ═══════════════════════════════════════════════════════ */
   let currentUser   = null;
   let selectedRating = 0;
+  let _planConfigs  = [];   // cached plan configurations
+  let _editingPlanId = null;
 
   /* ═══════════════════════════════════════════════════════
      AUTH GATE
@@ -3659,6 +3740,82 @@
   /* ═══════════════════════════════════════════════════════
      INIT
   ═══════════════════════════════════════════════════════ */
+  /* ═══════════════════════════════════════════════════════
+     EDIT PLAN (Admin)
+  ═══════════════════════════════════════════════════════ */
+
+  async function loadPlanConfig() {
+    try {
+      const data = await apiFetch('/api/plan-config');
+      _planConfigs = data.plans || [];
+    } catch (_) {
+      _planConfigs = [];
+    }
+  }
+
+  function openEditPlanModal(planKey) {
+    const plan = _planConfigs.find(p => p.plan_key === planKey);
+    if (!plan) {
+      showFlash('plans-flash', 'Plan configuration not loaded. Please refresh and try again.', 'err');
+      return;
+    }
+    _editingPlanId = plan.id;
+    document.getElementById('edit-plan-name').value      = plan.display_name;
+    document.getElementById('edit-plan-eggs').value      = plan.eggs_per_week;
+    document.getElementById('edit-plan-price').value     = plan.price_monthly;
+    document.getElementById('edit-plan-delivery').checked = plan.delivery_fee_enabled;
+    document.getElementById('edit-plan-flash').innerHTML = '';
+    document.getElementById('edit-plan-modal').classList.add('open');
+  }
+
+  function closeEditPlanModal(e) {
+    if (e && e.target !== document.getElementById('edit-plan-modal')) return;
+    document.getElementById('edit-plan-modal').classList.remove('open');
+    _editingPlanId = null;
+  }
+
+  async function saveEditPlan() {
+    if (!_editingPlanId) return;
+    const display_name         = document.getElementById('edit-plan-name').value.trim();
+    const eggs_per_week        = Number(document.getElementById('edit-plan-eggs').value);
+    const price_monthly        = Number(document.getElementById('edit-plan-price').value);
+    const delivery_fee_enabled = document.getElementById('edit-plan-delivery').checked;
+
+    if (!display_name) {
+      showFlash('edit-plan-flash', 'Plan name cannot be empty.', 'warn');
+      return;
+    }
+    if (isNaN(eggs_per_week) || eggs_per_week < 0) {
+      showFlash('edit-plan-flash', 'Eggs per week must be a non-negative number.', 'warn');
+      return;
+    }
+    if (isNaN(price_monthly) || price_monthly < 0) {
+      showFlash('edit-plan-flash', 'Monthly price must be a non-negative number.', 'warn');
+      return;
+    }
+
+    const btn = document.querySelector('#edit-plan-modal-box .btn-primary');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    try {
+      const data = await apiPut(`/api/admin/plan-config/${_editingPlanId}`, {
+        display_name, eggs_per_week, price_monthly, delivery_fee_enabled
+      });
+      if (data.error) { showFlash('edit-plan-flash', data.error, 'err'); return; }
+      // Update local cache
+      const idx = _planConfigs.findIndex(p => p.id === _editingPlanId);
+      if (idx !== -1) _planConfigs[idx] = data.plan;
+      document.getElementById('edit-plan-modal').classList.remove('open');
+      _editingPlanId = null;
+      showFlash('plans-flash', `Plan "${escHtml(data.plan.display_name)}" updated successfully.`, 'ok');
+    } catch (_) {
+      showFlash('edit-plan-flash', 'Failed to save. Please try again.', 'err');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save';
+    }
+  }
+
   async function init() {
     await getCsrfToken();
     try {
@@ -3672,6 +3829,7 @@
     updateCalc();
     updateSoloPlanDisplay();
     updateCustomPlanDisplay();
+    loadPlanConfig();  // Load plan config for Edit Plan modal
 
     if (currentUser) {
       if (currentUser.role !== 'admin') {
