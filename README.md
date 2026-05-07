@@ -49,7 +49,7 @@ The SQLite database (`egg_csa.db`) is created automatically on first run — no 
 ## Features
 
 - 📊 **Revenue Calculator** — real-time supply/demand sliders
-- 📦 **Subscription Plans** — Solo/Couple ($9), Small Family ($19), Family ($28) per month (priced at $7/18 eggs), plus a fully **customizable plan** (min 2 boxes, min 2 weeks)
+- 📦 **Subscription Plans** — Small Family ($19/mo), Family ($28/mo); **Solo / Couple** (flexible, min 1 box, 12-egg $5/wk or 18-egg $7/wk); **Custom Plan** (min 2 boxes, 2 weeks, mixed 12-egg and/or 18-egg boxes). All plans: +$2/delivery when choosing local delivery.
   - Choose **pick-up** (select a preferred day) or **local delivery** (enter your address)
   - Monthly billing with a "cancel anytime" policy
 - ✅ **Launch Checklist** — 8-step guide saved to your account
