@@ -1,16 +1,25 @@
 const { Pool } = require('pg');
 
-// Requires DATABASE_URL env var — use the Supabase connection string from
-//   Project Settings → Database → Connection string (URI), e.g.:
-//   postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-  family: 4,          // force IPv4; prevents ENETUNREACH on IPv6-only hosts
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
-});
+// Requires DATABASE_URL env var pointing at your PostgreSQL host (e.g. Aiven.io).
+// Aiven uses a private CA so the full certificate chain cannot be verified with
+// the default system trust store.  pg@8.x derives the SSL mode from the
+// connection string and defaults to verify-full, which raises
+// SELF_SIGNED_CERT_IN_CHAIN.  We force sslmode=require (use SSL but skip chain
+// verification) and also set rejectUnauthorized:false at the Node.js TLS level.
+function buildPoolConfig() {
+  const url = new URL(process.env.DATABASE_URL);
+  url.searchParams.set('sslmode', 'require');
+  return {
+    connectionString: url.toString(),
+    ssl: { rejectUnauthorized: false },
+    family: 4,          // force IPv4; prevents ENETUNREACH on IPv6-only hosts
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+  };
+}
+
+const pool = new Pool(buildPoolConfig());
 
 /**
  * Run a parameterised SQL query.
