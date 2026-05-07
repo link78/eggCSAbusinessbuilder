@@ -1054,6 +1054,9 @@
       </div>
 
       <nav class="sidebar-nav" aria-label="Dashboard navigation">
+        <a class="sidebar-nav-item" href="/" style="text-decoration:none;display:flex;align-items:center;gap:.55rem;">
+          <span class="nav-icon">🏠</span> Home
+        </a>
         <div class="sidebar-nav-item active" id="nav-home"       onclick="switchView('home')">
           <span class="nav-icon">📊</span> Dashboard
         </div>
@@ -3394,14 +3397,7 @@
 
   async function doLogout() {
     try { await apiPost('/api/auth/logout', {}); } catch (_) {}
-    _csrfToken = null;
-    currentUser = null;
-    updateSidebarUser();
-    // Clear checklist done states
-    document.querySelectorAll('#checklist li').forEach(li => li.classList.remove('done'));
-    updateProgress();
-    showAuthGate();
-    showAuthForm('login');
+    window.location.href = '/';
   }
 
   /* ═══════════════════════════════════════════════════════

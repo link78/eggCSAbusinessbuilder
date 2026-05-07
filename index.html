@@ -895,7 +895,7 @@
         <div class="plan-sub-price">${c.sub}</div>
         <ul class="plan-features">${c.feats.map(f => `<li>${f}</li>`).join('')}</ul>
         <button class="btn-plan${c.featured ? ' btn-plan-featured' : ''}"
-                onclick="openSubscribeModal(${JSON.stringify(c.name)})">
+                onclick="openSubscribeModal('${c.name}')">
           Choose Plan
         </button>
       </div>`).join('');
