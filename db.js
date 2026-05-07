@@ -99,6 +99,8 @@ module.exports = db;
 
 // ── Seed admin ───────────────────────────────────────────────────────────────
 // Promote absalim78@yahoo.com to admin role if the account already exists.
+// NOTE: The account must be registered through the app first; this migration
+// will then automatically elevate it to admin on every server restart.
 {
   const target = db.prepare("SELECT id FROM users WHERE email = 'absalim78@yahoo.com'").get();
   if (target) {
