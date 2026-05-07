@@ -2184,7 +2184,7 @@
       : (o.boxes_per_delivery ? `${o.boxes_per_delivery} boxes` : '—');
 
     const cancelBtn = o.status === 'active'
-      ? `<button class="btn-admin-cancel-order" onclick="adminCancelOrder(${o.id})">Cancel</button>`
+      ? `<button class="btn-admin-cancel-order" data-order-id="${o.id}" onclick="adminCancelOrder(this)">Cancel</button>`
       : '';
 
     return `<tr>
@@ -2201,14 +2201,21 @@
       <td style="font-size:.78rem;white-space:nowrap;">${date}</td>
       <td>
         <div class="admin-order-actions">
-          <button class="btn-admin-edit" onclick="openAdminEditOrder(${o.id}, '${escHtml(o.plan_name).replace(/'/g, "\\'")}', '${o.status}')">Edit</button>
+          <button class="btn-admin-edit"
+            data-order-id="${o.id}"
+            data-plan-name="${escHtml(o.plan_name)}"
+            data-status="${escHtml(o.status)}"
+            onclick="openAdminEditOrder(this)">Edit</button>
           ${cancelBtn}
         </div>
       </td>
     </tr>`;
   }
 
-  function openAdminEditOrder(orderId, planName, status) {
+  function openAdminEditOrder(btn) {
+    const orderId  = Number(btn.dataset.orderId);
+    const planName = btn.dataset.planName;
+    const status   = btn.dataset.status;
     _editingOrderId = orderId;
     document.getElementById('edit-order-id-label').textContent = `(#${orderId})`;
     document.getElementById('edit-order-plan').value   = planName;
@@ -2246,7 +2253,8 @@
     }
   }
 
-  async function adminCancelOrder(orderId) {
+  async function adminCancelOrder(btn) {
+    const orderId = Number(btn.dataset.orderId);
     if (!confirm(`Cancel order #${orderId}?`)) return;
     try {
       const data = await apiDelete(`/api/admin/orders/${orderId}`);
