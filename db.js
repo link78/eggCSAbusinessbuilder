@@ -1,10 +1,9 @@
 const { Pool } = require('pg');
 
-// Requires DATABASE_URL env var in production (e.g. postgresql://user:pass@host/dbname).
-// Falls back to a local development database if not set.
+// Requires DATABASE_URL env var (e.g. postgres://user:pass@host/dbname).
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost/egg_csa',
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
   family: 4,
   max: 10,
   idleTimeoutMillis: 30000,
