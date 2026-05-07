@@ -5,6 +5,7 @@ const { Pool } = require('pg');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgresql://localhost/egg_csa',
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+  family: 4,
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
