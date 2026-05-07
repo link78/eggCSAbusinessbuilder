@@ -490,6 +490,153 @@
       margin-top: 1rem;
     }
 
+    /* ═══════════════════════════════════════════════════════
+       AUTH GATE
+    ═══════════════════════════════════════════════════════ */
+    #auth-gate {
+      position: fixed; inset: 0; z-index: 500;
+      background: linear-gradient(135deg, #f0ebe0 0%, #e8f4e8 100%);
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    #auth-gate.visible { display: flex; }
+    .auth-card {
+      background: #fff; border-radius: 20px;
+      padding: 2.5rem 2.2rem; width: min(440px, 100%);
+      box-shadow: 0 12px 48px rgba(0,0,0,.14);
+    }
+    .auth-logo { text-align: center; margin-bottom: 1.8rem; }
+    .auth-logo .logo-icon { font-size: 3rem; display: block; line-height: 1; }
+    .auth-logo h1 { font-size: 1.4rem; font-weight: 800; color: #2a4f26; margin-top: .5rem; }
+    .auth-tagline { font-size: .85rem; color: #888; margin-top: .25rem; }
+    .btn-full { width: 100%; margin-top: .4rem; padding: .75rem; font-size: 1rem; }
+    .auth-links {
+      display: flex; justify-content: space-between; flex-wrap: wrap;
+      margin-top: 1rem; gap: .5rem;
+    }
+    .auth-links a { font-size: .84rem; color: #e85d04; font-weight: 600; text-decoration: none; }
+    .auth-links a:hover { text-decoration: underline; }
+
+    /* ═══════════════════════════════════════════════════════
+       APP LAYOUT
+    ═══════════════════════════════════════════════════════ */
+    #main-app { display: none; min-height: 100vh; }
+    #main-app.visible { display: block; }
+    .app-layout { display: flex; min-height: 100vh; }
+
+    /* ═══════════════════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════════════════ */
+    .sidebar {
+      width: 250px; flex-shrink: 0;
+      background: #1c2e1a; color: #fff;
+      display: flex; flex-direction: column;
+      position: sticky; top: 0; height: 100vh;
+      overflow-y: auto; z-index: 50;
+    }
+    .sidebar-header {
+      padding: 1.4rem 1.3rem 1.2rem;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .sidebar-logo {
+      display: flex; align-items: center; gap: .6rem;
+      font-weight: 800; font-size: .98rem; color: #fff;
+    }
+    .sidebar-logo .logo-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .sidebar-logo-sub { font-size: .72rem; color: rgba(255,255,255,.5); margin-top: .25rem; }
+    .sidebar-nav { flex: 1; padding: .8rem 0; }
+    .sidebar-nav-item {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .72rem 1.3rem; cursor: pointer;
+      font-size: .9rem; font-weight: 600;
+      color: rgba(255,255,255,.65); transition: all .15s;
+      border-left: 3px solid transparent; user-select: none;
+    }
+    .sidebar-nav-item:hover { background: rgba(255,255,255,.08); color: rgba(255,255,255,.9); }
+    .sidebar-nav-item.active {
+      background: rgba(255,255,255,.1); color: #fff;
+      border-left-color: #e85d04;
+    }
+    .sidebar-nav-item .nav-icon { font-size: 1.05rem; width: 22px; text-align: center; flex-shrink: 0; }
+    .sidebar-footer {
+      padding: 1rem 1.3rem 1.4rem;
+      border-top: 1px solid rgba(255,255,255,.1);
+    }
+    .sidebar-user-info { margin-bottom: .75rem; }
+    .sidebar-user-name { font-weight: 700; font-size: .92rem; }
+    .sidebar-user-email { font-size: .76rem; color: rgba(255,255,255,.5); margin-top: .1rem; word-break: break-all; }
+    .btn-sidebar-logout {
+      width: 100%; padding: .5rem .8rem; border-radius: 8px;
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
+      color: rgba(255,255,255,.8); font-size: .85rem; font-weight: 600;
+      cursor: pointer; transition: background .15s; font-family: inherit;
+    }
+    .btn-sidebar-logout:hover { background: rgba(255,255,255,.2); color: #fff; }
+
+    /* ═══════════════════════════════════════════════════════
+       MAIN CONTENT
+    ═══════════════════════════════════════════════════════ */
+    .main-content { flex: 1; min-width: 0; background: #fdf8f0; overflow-y: auto; }
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+    .main-content .tab-panel { padding: 1.5rem; max-width: 860px; margin: 0 auto; }
+
+    /* ═══════════════════════════════════════════════════════
+       DASHBOARD HOME
+    ═══════════════════════════════════════════════════════ */
+    #view-home { padding: 2rem; max-width: 1000px; }
+    .dash-greeting { font-size: 1.65rem; font-weight: 800; color: #2a4f26; margin-bottom: 1.8rem; }
+    .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-bottom: 2rem; }
+    .metric-card {
+      background: #fff; border-radius: 14px; padding: 1.4rem 1.3rem;
+      box-shadow: 0 2px 14px rgba(0,0,0,.07);
+    }
+    .metric-card .metric-icon { font-size: 1.7rem; margin-bottom: .5rem; }
+    .metric-card .metric-label {
+      font-size: .76rem; font-weight: 700; color: #888;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .metric-card .metric-value { font-size: 1.9rem; font-weight: 800; color: #2a4f26; margin-top: .2rem; line-height: 1.1; }
+    .metric-card .metric-sub { font-size: .78rem; color: #bbb; margin-top: .2rem; }
+    .chart-card {
+      background: #fff; border-radius: 14px; padding: 1.5rem;
+      box-shadow: 0 2px 14px rgba(0,0,0,.07); margin-bottom: 2rem;
+    }
+    .chart-card h3 { font-size: 1.05rem; font-weight: 700; color: #2a4f26; margin-bottom: 1.1rem; }
+    #revenue-chart { width: 100%; display: block; }
+    .quick-actions-card {
+      background: #fff; border-radius: 14px; padding: 1.5rem;
+      box-shadow: 0 2px 14px rgba(0,0,0,.07);
+    }
+    .quick-actions-card h3 { font-size: 1.05rem; font-weight: 700; color: #2a4f26; margin-bottom: 1rem; }
+    .quick-actions-grid { display: flex; gap: .85rem; flex-wrap: wrap; }
+    .quick-action-btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .72rem 1.2rem; border-radius: 10px;
+      background: #f8f4ee; border: 2px solid #e0d8cc;
+      font-size: .9rem; font-weight: 700; color: #2d2d2d;
+      cursor: pointer; transition: all .15s; font-family: inherit;
+    }
+    .quick-action-btn:hover { border-color: #e85d04; color: #e85d04; background: #fff8f0; }
+
+    /* ── Customers / Orders views ── */
+    #view-customers, #view-orders { padding: 2rem; max-width: 860px; }
+    #view-customers .section-title, #view-orders .section-title { font-size: 1.4rem; font-weight: 700; color: #c45203; margin-bottom: .3rem; }
+    #view-customers .section-subtitle, #view-orders .section-subtitle { font-size: .95rem; color: #666; margin-bottom: 1.5rem; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .app-layout { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; position: relative; }
+      .sidebar-nav { display: flex; flex-wrap: nowrap; overflow-x: auto; padding: 0; }
+      .sidebar-nav-item { flex-shrink: 0; border-left: none; border-bottom: 3px solid transparent; padding: .65rem .9rem; font-size: .82rem; }
+      .sidebar-nav-item.active { border-left-color: transparent; border-bottom-color: #e85d04; }
+      .sidebar-footer { display: none; }
+      .metrics-row { grid-template-columns: 1fr; }
+      #view-home, #view-customers, #view-orders { padding: 1rem; }
+    }
+
     /* ── REVIEWS TAB ── */
     .review-form-card { margin-bottom: 1.4rem; }
     .review-form-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; }
@@ -692,30 +839,191 @@
 </head>
 <body>
 
-<header>
-  <span class="egg-icon" role="img" aria-label="Egg icon">🥚</span>
-  <h1>Sakinah Ridge Farm LLC</h1>
-  <p>Your complete guide to turning your Lincoln flock into recurring revenue</p>
-</header>
-<div id="header-auth-bar">
-  <span id="auth-bar-text">Not signed in</span>
-  <button id="auth-bar-btn" onclick="switchTab(5)">Sign In</button>
+<!-- ══════════════════════════════════════════
+     AUTH GATE (shown when not logged in)
+═══════════════════════════════════════════ -->
+<div id="auth-gate" role="dialog" aria-modal="true" aria-label="Sign in">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="logo-icon">🌿</span>
+      <h1>Sakinah Ridge Farm</h1>
+      <p class="auth-tagline">Farm Management Dashboard</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" id="gate-tab-login-btn"    onclick="showAuthForm('login')">Sign In</button>
+      <button class="auth-tab-btn"        id="gate-tab-register-btn" onclick="showAuthForm('register')">Create Account</button>
+    </div>
+
+    <!-- Login Form -->
+    <div class="auth-form-wrap active" id="gate-login-form-wrap">
+      <div id="gate-login-flash"></div>
+      <div class="form-group">
+        <label for="gate-login-email">Email</label>
+        <input type="email" id="gate-login-email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="gate-login-password">Password</label>
+        <input type="password" id="gate-login-password" placeholder="Your password"
+               autocomplete="current-password"
+               onkeydown="if(event.key==='Enter') doLogin()" />
+      </div>
+      <button class="btn-primary btn-full" onclick="doLogin()">Login</button>
+      <div class="auth-links">
+        <a href="#" onclick="showForgotMsg(); return false;">Forgot password</a>
+        <a href="#" onclick="showAuthForm('register'); return false;">Create account</a>
+      </div>
+    </div>
+
+    <!-- Register Form -->
+    <div class="auth-form-wrap" id="gate-register-form-wrap">
+      <div id="gate-register-flash"></div>
+      <div class="form-group">
+        <label for="gate-reg-name">Full Name</label>
+        <input type="text" id="gate-reg-name" placeholder="Jane Smith" autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="gate-reg-email">Email</label>
+        <input type="email" id="gate-reg-email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="gate-reg-password">Password <small style="color:#aaa;">(min. 6 characters)</small></label>
+        <input type="password" id="gate-reg-password" placeholder="Create a password" autocomplete="new-password" />
+      </div>
+      <div class="form-group">
+        <label for="gate-reg-confirm">Confirm Password</label>
+        <input type="password" id="gate-reg-confirm" placeholder="Confirm your password"
+               autocomplete="new-password"
+               onkeydown="if(event.key==='Enter') doRegister()" />
+      </div>
+      <button class="btn-primary btn-full" onclick="doRegister()">Create Account</button>
+      <div class="auth-links">
+        <a href="#" onclick="showAuthForm('login'); return false;">Already have an account? Sign in</a>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- Tab Bar -->
-<nav class="tab-bar" role="tablist">
-  <button class="active" role="tab" aria-selected="true"  onclick="switchTab(0)">📊 Revenue Calculator</button>
-  <button role="tab" aria-selected="false" onclick="switchTab(1)">📦 Subscription Plans</button>
-  <button role="tab" aria-selected="false" onclick="switchTab(2)">✅ Launch Checklist</button>
-  <button role="tab" aria-selected="false" onclick="switchTab(3)">🗓️ 90-Day Roadmap</button>
-  <button role="tab" aria-selected="false" onclick="switchTab(4)">⭐ Reviews</button>
-  <button role="tab" aria-selected="false" onclick="switchTab(5)" id="tab-account">👤 Account</button>
-</nav>
+<!-- ══════════════════════════════════════════
+     MAIN APP (shown when logged in)
+═══════════════════════════════════════════ -->
+<div id="main-app">
+  <div class="app-layout">
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <span class="logo-icon">🌿</span>
+          <div>
+            <div>Sakinah Ridge Farm</div>
+            <div class="sidebar-logo-sub">Raymond, Nebraska</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Dashboard navigation">
+        <div class="sidebar-nav-item active" id="nav-home"       onclick="switchView('home')">
+          <span class="nav-icon">📊</span> Dashboard
+        </div>
+        <div class="sidebar-nav-item" id="nav-calculator"  onclick="switchView('calculator')">
+          <span class="nav-icon">🧮</span> Revenue Calculator
+        </div>
+        <div class="sidebar-nav-item" id="nav-plans"       onclick="switchView('plans')">
+          <span class="nav-icon">📦</span> Subscription Plans
+        </div>
+        <div class="sidebar-nav-item" id="nav-customers"   onclick="switchView('customers')">
+          <span class="nav-icon">👥</span> Customers
+        </div>
+        <div class="sidebar-nav-item" id="nav-orders"      onclick="switchView('orders')">
+          <span class="nav-icon">📋</span> Orders
+        </div>
+        <div class="sidebar-nav-item" id="nav-reviews"     onclick="switchView('reviews')">
+          <span class="nav-icon">⭐</span> Reviews
+        </div>
+        <div class="sidebar-nav-item" id="nav-settings"    onclick="switchView('settings')">
+          <span class="nav-icon">⚙️</span> Settings
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebar-user-name">—</div>
+          <div class="sidebar-user-email" id="sidebar-user-email">—</div>
+        </div>
+        <button class="btn-sidebar-logout" onclick="doLogout()">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <div class="main-content" id="main-content-area">
+
+      <!-- DASHBOARD HOME ──────────────────────────────────── -->
+      <section class="view-panel active" id="view-home">
+        <div id="dash-greeting" class="dash-greeting">Good morning 👋</div>
+
+        <div class="metrics-row">
+          <div class="metric-card">
+            <div class="metric-icon">👥</div>
+            <div class="metric-label">Active Subscribers</div>
+            <div class="metric-value" id="metric-subscribers">—</div>
+            <div class="metric-sub">current active plans</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon">💰</div>
+            <div class="metric-label">Monthly Revenue</div>
+            <div class="metric-value" id="metric-revenue">—</div>
+            <div class="metric-sub">from active monthly plans</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon">🥚</div>
+            <div class="metric-label">Weekly Egg Demand</div>
+            <div class="metric-value" id="metric-eggs">—</div>
+            <div class="metric-sub">dozen / week needed</div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h3>📈 Revenue Over Time</h3>
+          <canvas id="revenue-chart" height="160"></canvas>
+        </div>
+
+        <div class="quick-actions-card">
+          <h3>⚡ Quick Actions</h3>
+          <div class="quick-actions-grid">
+            <button class="quick-action-btn" onclick="switchView('plans')">
+              <span>➕</span> Add Subscriber
+            </button>
+            <button class="quick-action-btn" onclick="switchView('plans')">
+              <span>✏️</span> Edit Plans
+            </button>
+            <button class="quick-action-btn" onclick="switchView('orders')">
+              <span>📋</span> View Pickup List
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- CUSTOMERS VIEW ──────────────────────────────────── -->
+      <section class="view-panel" id="view-customers">
+        <h2 class="section-title">Customers</h2>
+        <p class="section-subtitle">Manage your subscribers and their account roles.</p>
+        <div id="view-customers-flash"></div>
+        <div id="view-customers-list"><div style="color:#aaa;font-size:.9rem;">Loading…</div></div>
+      </section>
+
+      <!-- ORDERS VIEW ─────────────────────────────────────── -->
+      <section class="view-panel" id="view-orders">
+        <h2 class="section-title">Orders (Pickup / Delivery)</h2>
+        <p class="section-subtitle">All subscriber orders — edit plan / status or cancel.</p>
+        <div id="view-orders-flash"></div>
+        <div id="view-orders-list"><div style="color:#aaa;font-size:.9rem;">Loading…</div></div>
+      </section>
 
 <!-- ══════════════════════════════════════════
      TAB 0 – REVENUE CALCULATOR
 ═══════════════════════════════════════════ -->
-<section class="tab-panel active" id="panel-0">
+<section class="view-panel tab-panel" id="panel-0">
   <h2 class="section-title">Revenue Calculator</h2>
   <p class="section-subtitle">Drag the sliders to see if your flock can cover demand — and what you'll earn.</p>
 
@@ -785,7 +1093,7 @@
 <!-- ══════════════════════════════════════════
      TAB 1 – SUBSCRIPTION PLANS
 ═══════════════════════════════════════════ -->
-<section class="tab-panel" id="panel-1">
+<section class="view-panel tab-panel" id="panel-1">
   <h2 class="section-title">Subscription Plans</h2>
   <p class="section-subtitle">Choose a fixed plan or build your own. Pick-up or local delivery. +$2 per weekly delivery.</p>
 
@@ -946,7 +1254,7 @@
 <!-- ══════════════════════════════════════════
      TAB 2 – LAUNCH CHECKLIST
 ═══════════════════════════════════════════ -->
-<section class="tab-panel" id="panel-2">
+<section class="view-panel tab-panel" id="panel-2">
   <h2 class="section-title">Launch Checklist</h2>
   <p class="section-subtitle">8 concrete steps from zero to first paying customer. Click each step to mark it done.</p>
 
@@ -1045,7 +1353,7 @@
 <!-- ══════════════════════════════════════════
      TAB 3 – 90-DAY ROADMAP
 ═══════════════════════════════════════════ -->
-<section class="tab-panel" id="panel-3">
+<section class="view-panel tab-panel" id="panel-3">
   <h2 class="section-title">90-Day Roadmap</h2>
   <p class="section-subtitle">A realistic week-by-week plan to reach 15–20 subscribers — your sustainable base.</p>
 
@@ -1262,7 +1570,7 @@
 <!-- ══════════════════════════════════════════
      TAB 4 – REVIEWS
 ═══════════════════════════════════════════ -->
-<section class="tab-panel" id="panel-4">
+<section class="view-panel tab-panel" id="panel-4">
   <h2 class="section-title">Customer Reviews</h2>
   <p class="section-subtitle">Hear from Lincoln families who subscribe — and share your own experience.</p>
 
@@ -1307,56 +1615,14 @@
 </section>
 
 <!-- ══════════════════════════════════════════
-     TAB 5 – ACCOUNT
+     TAB 5 – SETTINGS (ACCOUNT)
 ═══════════════════════════════════════════ -->
-<section class="tab-panel" id="panel-5">
-  <h2 class="section-title" id="account-title">My Account</h2>
-  <p class="section-subtitle" id="account-subtitle">Sign in or create an account to place orders and save your progress.</p>
+<section class="view-panel tab-panel" id="panel-5">
+  <h2 class="section-title" id="account-title">Settings</h2>
+  <p class="section-subtitle" id="account-subtitle">Manage your profile, password, and account details.</p>
 
-  <!-- NOT LOGGED IN: login/register forms -->
-  <div id="auth-forms-wrap">
-    <div class="auth-tabs">
-      <button class="auth-tab-btn active" id="tab-login-btn"    onclick="showAuthForm('login')">Sign In</button>
-      <button class="auth-tab-btn"        id="tab-register-btn" onclick="showAuthForm('register')">Create Account</button>
-    </div>
-
-    <!-- Login form -->
-    <div class="auth-form-wrap active card" id="login-form-wrap">
-      <div id="login-flash"></div>
-      <div class="form-group">
-        <label for="login-email">Email</label>
-        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" />
-      </div>
-      <div class="form-group">
-        <label for="login-password">Password</label>
-        <input type="password" id="login-password" placeholder="Your password" autocomplete="current-password" />
-      </div>
-      <button class="btn-primary" onclick="doLogin()">Sign In</button>
-      <button class="btn-secondary" onclick="showAuthForm('register')">Create Account</button>
-    </div>
-
-    <!-- Register form -->
-    <div class="auth-form-wrap card" id="register-form-wrap">
-      <div id="register-flash"></div>
-      <div class="form-group">
-        <label for="reg-name">Full Name</label>
-        <input type="text" id="reg-name" placeholder="Jane Smith" autocomplete="name" />
-      </div>
-      <div class="form-group">
-        <label for="reg-email">Email</label>
-        <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email" />
-      </div>
-      <div class="form-group">
-        <label for="reg-password">Password <small style="color:#aaa;">(min. 6 characters)</small></label>
-        <input type="password" id="reg-password" placeholder="Create a password" autocomplete="new-password" />
-      </div>
-      <button class="btn-primary" id="register-submit-btn" onclick="doRegister()">Create Account</button>
-      <button class="btn-secondary" onclick="showAuthForm('login')">Already have an account?</button>
-    </div>
-  </div>
-
-  <!-- LOGGED IN: profile + orders -->
-  <div id="account-logged-in" style="display:none;">
+  <!-- LOGGED IN: profile + orders + admin -->
+  <div id="account-logged-in">
     <div class="profile-card">
       <div id="profile-avatar-wrap">
         <div class="profile-avatar" id="profile-avatar">?</div>
@@ -1438,8 +1704,12 @@
 </section>
 
 <footer>
-  Sakinah Ridge Farm LLC · Lincoln, Nebraska · Nebraska Cottage Food Law applies · Not legal or financial advice
+  Sakinah Ridge Farm LLC · Raymond, Nebraska · Nebraska Cottage Food Law applies · Not legal or financial advice
 </footer>
+
+    </div><!-- /.main-content -->
+  </div><!-- /.app-layout -->
+</div><!-- /#main-app -->
 
 <script>
   /* ═══════════════════════════════════════════════════════
@@ -1449,19 +1719,81 @@
   let selectedRating = 0;
 
   /* ═══════════════════════════════════════════════════════
-     TAB SWITCHING
+     AUTH GATE
   ═══════════════════════════════════════════════════════ */
-  const panels = document.querySelectorAll('.tab-panel');
-  const tabs   = document.querySelectorAll('.tab-bar button');
+  function showAuthGate() {
+    document.getElementById('auth-gate').classList.add('visible');
+    document.getElementById('main-app').classList.remove('visible');
+  }
 
+  function hideAuthGate() {
+    document.getElementById('auth-gate').classList.remove('visible');
+    document.getElementById('main-app').classList.add('visible');
+  }
+
+  function showAuthForm(which) {
+    const loginWrap = document.getElementById('gate-login-form-wrap');
+    const regWrap   = document.getElementById('gate-register-form-wrap');
+    const loginBtn  = document.getElementById('gate-tab-login-btn');
+    const regBtn    = document.getElementById('gate-tab-register-btn');
+    loginWrap.classList.toggle('active', which === 'login');
+    regWrap.classList.toggle('active',   which === 'register');
+    loginBtn.classList.toggle('active',  which === 'login');
+    regBtn.classList.toggle('active',    which === 'register');
+  }
+
+  function showForgotMsg() {
+    showFlash('gate-login-flash',
+      'Password reset is not yet available. Please contact the farm administrator.', 'warn');
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     SIDEBAR / VIEW SWITCHING
+  ═══════════════════════════════════════════════════════ */
+  const VIEW_MAP = {
+    home:       { panelId: 'view-home',       navId: 'nav-home' },
+    calculator: { panelId: 'panel-0',         navId: 'nav-calculator' },
+    plans:      { panelId: 'panel-1',         navId: 'nav-plans' },
+    checklist:  { panelId: 'panel-2',         navId: null },
+    roadmap:    { panelId: 'panel-3',         navId: null },
+    reviews:    { panelId: 'panel-4',         navId: 'nav-reviews' },
+    settings:   { panelId: 'panel-5',         navId: 'nav-settings' },
+    customers:  { panelId: 'view-customers',  navId: 'nav-customers' },
+    orders:     { panelId: 'view-orders',     navId: 'nav-orders' },
+  };
+
+  function switchView(name) {
+    const target = VIEW_MAP[name];
+    if (!target) return;
+
+    // Hide all view panels
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    // Deactivate all sidebar nav items
+    document.querySelectorAll('.sidebar-nav-item').forEach(n => n.classList.remove('active'));
+
+    // Show target panel
+    const panel = document.getElementById(target.panelId);
+    if (panel) panel.classList.add('active');
+
+    // Activate sidebar item
+    if (target.navId) {
+      const nav = document.getElementById(target.navId);
+      if (nav) nav.classList.add('active');
+    }
+
+    // Side-effects
+    if (name === 'reviews')   loadReviews();
+    if (name === 'settings')  renderSettings();
+    if (name === 'customers') loadViewCustomers();
+    if (name === 'orders')    loadViewOrders();
+    if (name === 'home')      loadDashboardMetrics();
+  }
+
+  // Legacy switchTab compatibility — maps old tab indices to views
+  const TAB_VIEW_NAMES = ['calculator', 'plans', 'checklist', 'roadmap', 'reviews', 'settings'];
   function switchTab(idx) {
-    panels.forEach((p, i) => p.classList.toggle('active', i === idx));
-    tabs.forEach((t, i) => {
-      t.classList.toggle('active', i === idx);
-      t.setAttribute('aria-selected', i === idx);
-    });
-    if (idx === 4) loadReviews();
-    if (idx === 5) renderAccountTab();
+    const name = TAB_VIEW_NAMES[idx];
+    if (name) switchView(name);
   }
 
   /* ═══════════════════════════════════════════════════════
@@ -1469,7 +1801,6 @@
   ═══════════════════════════════════════════════════════ */
   const TIER_SNAPS = [19, 28];
   const tierEggs = { 19: 12, 28: 18 };
-  // Minimum value to avoid division by zero when flock slider is at minimum
   const MIN_EGGS_AVAILABLE = 1;
 
   function formatCurrency(n) {
@@ -1481,7 +1812,6 @@
     const subs  = +document.getElementById('subs').value;
     const rate  = +document.getElementById('rate').value;
     const rawTier = +document.getElementById('tier').value;
-    // Snap to nearest plan price
     const tier = TIER_SNAPS.reduce((a, b) => Math.abs(b - rawTier) < Math.abs(a - rawTier) ? b : a);
 
     document.getElementById('flock-val').textContent = flock + ' hens';
@@ -1517,42 +1847,302 @@
   }
 
   /* ═══════════════════════════════════════════════════════
+     DASHBOARD HOME — METRICS & CHART
+  ═══════════════════════════════════════════════════════ */
+  async function loadDashboardMetrics() {
+    // Set greeting based on time of day
+    const hour = new Date().getHours();
+    const period = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+    const name = currentUser ? currentUser.name.split(' ')[0] : '';
+    document.getElementById('dash-greeting').textContent =
+      `Good ${period}${name ? ', ' + name : ''} 👋`;
+
+    // Default placeholders
+    document.getElementById('metric-subscribers').textContent = '—';
+    document.getElementById('metric-revenue').textContent     = '—';
+    document.getElementById('metric-eggs').textContent        = '—';
+
+    try {
+      let orders = [];
+      if (currentUser && currentUser.role === 'admin') {
+        const data = await apiFetch('/api/admin/orders');
+        orders = data.orders || [];
+      } else if (currentUser) {
+        const data = await apiFetch('/api/orders');
+        orders = data.orders || [];
+      }
+
+      const active = orders.filter(o => o.status === 'active');
+      const subscribers = active.length;
+
+      // Monthly revenue: sum of monthly plan prices (exclude one-time Custom plans with duration_weeks)
+      const monthlyRevenue = active
+        .filter(o => !o.duration_weeks)
+        .reduce((sum, o) => sum + (parseFloat(o.price) || 0), 0);
+
+      // Weekly egg demand: sum of eggs_per_week
+      const weeklyEggs = active.reduce((sum, o) => sum + (parseInt(o.eggs_per_week) || 0), 0);
+      const weeklyDozens = (weeklyEggs / 12).toFixed(1);
+
+      document.getElementById('metric-subscribers').textContent = subscribers;
+      document.getElementById('metric-revenue').textContent = formatCurrency(monthlyRevenue);
+      document.getElementById('metric-eggs').textContent = weeklyDozens + ' doz';
+
+      renderRevenueChart(active);
+    } catch (_) {
+      // silently keep placeholders
+    }
+  }
+
+  function renderRevenueChart(activeOrders) {
+    const canvas = document.getElementById('revenue-chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    // Build monthly revenue data for the last 6 months from order created_at dates
+    const now     = new Date();
+    const months  = [];
+    const labels  = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push(d);
+      labels.push(d.toLocaleDateString('en-US', { month: 'short' }));
+    }
+
+    const values = months.map(m => {
+      // Orders that were active during this month (created on or before month end)
+      const monthEnd = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+      return activeOrders
+        .filter(o => !o.duration_weeks && new Date(o.created_at) <= monthEnd)
+        .reduce((sum, o) => sum + (parseFloat(o.price) || 0), 0);
+    });
+
+    // Canvas dimensions
+    const dpr  = window.devicePixelRatio || 1;
+    const W    = canvas.parentElement.clientWidth || 600;
+    const H    = 160;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+
+    // Colors
+    const barColor  = '#e85d04';
+    const gridColor = '#f0e8d8';
+    const textColor = '#888';
+
+    const maxVal    = Math.max(...values, 1);
+    const padTop    = 20, padBot = 30, padL = 44, padR = 12;
+    const chartW    = W - padL - padR;
+    const chartH    = H - padTop - padBot;
+    const barW      = Math.max(8, chartW / labels.length * 0.55);
+    const step      = chartW / labels.length;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid lines
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth   = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = padTop + chartH - (chartH * i / 4);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+      ctx.fillStyle = textColor;
+      ctx.font      = '10px system-ui';
+      ctx.textAlign = 'right';
+      ctx.fillText('$' + Math.round(maxVal * i / 4), padL - 4, y + 4);
+    }
+
+    // Bars + labels
+    labels.forEach((label, idx) => {
+      const x   = padL + step * idx + step / 2 - barW / 2;
+      const pct = values[idx] / maxVal;
+      const barH = Math.max(2, pct * chartH);
+      const y    = padTop + chartH - barH;
+
+      ctx.fillStyle = barColor + 'cc';
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(x, y, barW, barH, 3);
+      } else {
+        ctx.rect(x, y, barW, barH);
+      }
+      ctx.fill();
+
+      // Value label on top of bar
+      if (values[idx] > 0) {
+        ctx.fillStyle = '#c45203';
+        ctx.font      = 'bold 10px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('$' + Math.round(values[idx]), x + barW / 2, y - 4);
+      }
+
+      // Month label
+      ctx.fillStyle = textColor;
+      ctx.font      = '10px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x + barW / 2, H - 6);
+    });
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     CUSTOMERS VIEW
+  ═══════════════════════════════════════════════════════ */
+  async function loadViewCustomers() {
+    const container = document.getElementById('view-customers-list');
+    if (!currentUser || currentUser.role !== 'admin') {
+      container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">Admin access required.</p>';
+      return;
+    }
+    container.innerHTML = '<div style="color:#aaa;font-size:.9rem;">Loading…</div>';
+    try {
+      const data = await apiFetch('/api/admin/users');
+      if (data.error) { container.innerHTML = `<p style="color:#c0392b;">${escHtml(data.error)}</p>`; return; }
+      if (!data.users || data.users.length === 0) {
+        container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">No users found.</p>';
+        return;
+      }
+      container.innerHTML = `<div class="card">${
+        data.users.map(u => `
+          <div class="admin-user-row">
+            <div class="admin-user-info">
+              <div class="admin-user-name">${escHtml(u.name)}</div>
+              <div class="admin-user-email">${escHtml(u.email)}</div>
+            </div>
+            <span class="admin-role-badge ${u.role === 'admin' ? 'role-admin' : 'role-user'}">${escHtml(u.role)}</span>
+            ${u.id !== currentUser.id
+              ? `<button class="btn-role-toggle" onclick="toggleViewUserRole(${u.id}, '${u.role === 'admin' ? 'user' : 'admin'}')"
+                  >${u.role === 'admin' ? 'Remove Admin' : 'Make Admin'}</button>`
+              : '<span style="font-size:.78rem;color:#aaa;">(you)</span>'}
+          </div>`).join('')
+      }</div>`;
+    } catch (_) {
+      container.innerHTML = '<p style="color:#c0392b;font-size:.9rem;">Could not load customers.</p>';
+    }
+  }
+
+  async function toggleViewUserRole(userId, newRole) {
+    try {
+      const data = await apiPut(`/api/admin/users/${userId}/role`, { role: newRole });
+      if (data.error) { showFlash('view-customers-flash', data.error, 'err'); return; }
+      loadViewCustomers();
+    } catch (_) {
+      showFlash('view-customers-flash', 'Failed to update role.', 'err');
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     ORDERS VIEW
+  ═══════════════════════════════════════════════════════ */
+  async function loadViewOrders() {
+    const container = document.getElementById('view-orders-list');
+    if (!currentUser || currentUser.role !== 'admin') {
+      container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">Admin access required.</p>';
+      return;
+    }
+    container.innerHTML = '<div style="color:#aaa;font-size:.9rem;">Loading…</div>';
+    try {
+      const data = await apiFetch('/api/admin/orders');
+      if (data.error) { container.innerHTML = `<p style="color:#c0392b;">${escHtml(data.error)}</p>`; return; }
+      if (!data.orders || data.orders.length === 0) {
+        container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">No orders yet.</p>';
+        return;
+      }
+      container.innerHTML = `<div class="card admin-orders-table-wrap">
+        <table class="admin-orders-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Subscriber</th><th>Plan</th><th>Price</th>
+              <th>Fulfillment</th><th>Boxes</th><th>Status</th><th>Created</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>${data.orders.map(o => viewOrderRow(o)).join('')}</tbody>
+        </table>
+      </div>`;
+    } catch (_) {
+      container.innerHTML = '<p style="color:#c0392b;font-size:.9rem;">Could not load orders.</p>';
+    }
+  }
+
+  function viewOrderRow(o) {
+    const date        = new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const statusCls   = o.status === 'active' ? 'order-status-active' : 'order-status-cancelled';
+    const fulfillIcon = o.fulfillment_method === 'delivery' ? '🚗' : '🏡';
+    const fulfillInfo = o.fulfillment_method === 'delivery'
+      ? `${fulfillIcon} ${escHtml(o.delivery_address || '—')}`
+      : `${fulfillIcon} ${escHtml(o.pickup_day || '—')}s`;
+    const b12 = o.boxes12_per_delivery || 0;
+    const b18 = o.boxes18_per_delivery || 0;
+    const boxInfo = (b12 || b18)
+      ? [b12 > 0 ? `${b12}×12` : '', b18 > 0 ? `${b18}×18` : ''].filter(Boolean).join(', ')
+      : (o.boxes_per_delivery ? `${o.boxes_per_delivery} boxes` : '—');
+    const cancelBtn = o.status === 'active'
+      ? `<button class="btn-admin-cancel-order" data-order-id="${o.id}" onclick="viewCancelOrder(this)">Cancel</button>`
+      : '';
+    return `<tr>
+      <td>${o.id}</td>
+      <td><div style="font-weight:700;">${escHtml(o.user_name || '—')}</div>
+          <div style="color:#888;font-size:.78rem;">${escHtml(o.user_email || '—')}</div></td>
+      <td>${escHtml(o.plan_name)}</td>
+      <td>$${o.price}${o.duration_weeks ? ' total' : '/mo'}</td>
+      <td style="font-size:.8rem;">${fulfillInfo}</td>
+      <td style="font-size:.8rem;">${escHtml(boxInfo)}</td>
+      <td><span class="${statusCls}">${escHtml(o.status)}</span></td>
+      <td style="font-size:.78rem;white-space:nowrap;">${date}</td>
+      <td>
+        <div class="admin-order-actions">
+          <button class="btn-admin-edit"
+            data-order-id="${o.id}" data-plan-name="${escHtml(o.plan_name)}" data-status="${escHtml(o.status)}"
+            onclick="openAdminEditOrder(this)">Edit</button>
+          ${cancelBtn}
+        </div>
+      </td>
+    </tr>`;
+  }
+
+  async function viewCancelOrder(btn) {
+    const orderId = Number(btn.dataset.orderId);
+    if (!confirm(`Cancel order #${orderId}?`)) return;
+    try {
+      const data = await apiDelete(`/api/admin/orders/${orderId}`);
+      if (data.error) { showFlash('view-orders-flash', data.error, 'err'); return; }
+      showFlash('view-orders-flash', `Order #${orderId} cancelled.`, 'ok');
+      loadViewOrders();
+    } catch (_) {
+      showFlash('view-orders-flash', 'Failed to cancel order.', 'err');
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
      SUBSCRIPTION PLANS — modal order flow
   ═══════════════════════════════════════════════════════ */
   let _pendingPlanName  = null;
   let _pendingPlanPrice = null;
-  let _pendingBoxType   = null;   // 'dozen' or '18' for Small Family / Family
+  let _pendingBoxType   = null;
 
-  // Pricing constants (mirror server)
   const PRICE_PER_12_BOX      = 5;
   const PRICE_PER_18_BOX      = 7;
   const DELIVERY_FEE_PER_WEEK = 2;
   const MONTHLY_WEEKS         = 4;
 
-  // Fixed plan box-type pricing helpers
   function fixedPlanPrice(boxType)   { return (boxType === 'dozen' ? PRICE_PER_12_BOX : PRICE_PER_18_BOX) * MONTHLY_WEEKS; }
   function fixedPlanEggs(boxType)    { return boxType === 'dozen' ? 12 : 18; }
   function fixedPlanPerWeek(boxType) { return boxType === 'dozen' ? '$5.00/week · 12 eggs/wk' : '$7.00/week · 18 eggs/wk'; }
   function fixedPlanBoxDesc(boxType) { return boxType === 'dozen' ? '1 dozen (12 eggs) per delivery' : '18-egg box per delivery'; }
 
-  // ── Fixed plan card display update ────────────────────────────────────────────
   function updateFixedPlanDisplay(planName) {
     const prefix    = planName === 'Small Family' ? 'sf' : 'fam';
     const radioName = prefix + '-box-type';
     const boxType   = document.querySelector(`input[name="${radioName}"]:checked`).value;
     const price     = fixedPlanPrice(boxType);
-
     document.getElementById(`${prefix}-price-display`).innerHTML = `$${price}<span>/mo</span>`;
     document.getElementById(`${prefix}-per-week`).textContent    = fixedPlanPerWeek(boxType);
     document.getElementById(`${prefix}-box-desc`).textContent    = fixedPlanBoxDesc(boxType);
   }
 
-  // Solo / Couple plan state (min 1 box total, monthly billing)
   let _soloBoxes12   = 1;
   let _soloBoxes18   = 0;
   const SOLO_MIN_BOXES = 1;
-
-  // Custom plan state (min 2 total boxes, min 2 weeks)
   let _customBoxes12 = 1;
   let _customBoxes18 = 1;
   let _customWeeks   = 2;
@@ -1561,7 +2151,6 @@
   const MAX_BOXES        = 20;
   const MAX_WEEKS        = 52;
 
-  // ── Solo / Couple plan controls ─────────────────────────────────────────────
   function adjustSolo(type, delta) {
     if (type === 'boxes12') {
       _soloBoxes12 = Math.min(MAX_BOXES, Math.max(0, _soloBoxes12 + delta));
@@ -1575,7 +2164,6 @@
     const total     = _soloBoxes12 + _soloBoxes18;
     const basePrice = (_soloBoxes12 * PRICE_PER_12_BOX + _soloBoxes18 * PRICE_PER_18_BOX) * MONTHLY_WEEKS;
     const totalEggs = _soloBoxes12 * 12 + _soloBoxes18 * 18;
-
     document.getElementById('solo-boxes12-val').textContent = _soloBoxes12;
     document.getElementById('solo-boxes18-val').textContent = _soloBoxes18;
     document.getElementById('solo-price-display').innerHTML =
@@ -1586,7 +2174,6 @@
         : `${total} box${total > 1 ? 'es' : ''} · ${totalEggs} eggs/wk`;
   }
 
-  // ── Custom plan controls ─────────────────────────────────────────────────────
   function adjustCustom(type, delta) {
     if (type === 'boxes12') {
       _customBoxes12 = Math.min(MAX_BOXES, Math.max(0, _customBoxes12 + delta));
@@ -1602,7 +2189,6 @@
     const total     = _customBoxes12 + _customBoxes18;
     const base      = (_customBoxes12 * PRICE_PER_12_BOX + _customBoxes18 * PRICE_PER_18_BOX) * _customWeeks;
     const totalEggs = _customBoxes12 * 12 + _customBoxes18 * 18;
-
     document.getElementById('custom-boxes12-val').textContent = _customBoxes12;
     document.getElementById('custom-boxes18-val').textContent = _customBoxes18;
     document.getElementById('custom-weeks-val').textContent   = _customWeeks;
@@ -1612,61 +2198,37 @@
   }
 
   function openSoloSubscribeModal() {
-    if (!currentUser) {
-      switchTab(5);
-      showFlash('login-flash', 'Please sign in or create an account to subscribe.', 'warn');
-      return;
-    }
+    if (!currentUser) { showAuthGate(); showAuthForm('login'); return; }
     const total = _soloBoxes12 + _soloBoxes18;
-    if (total < SOLO_MIN_BOXES) {
-      alert('Please select at least 1 box before subscribing.');
-      return;
-    }
-
+    if (total < SOLO_MIN_BOXES) { alert('Please select at least 1 box before subscribing.'); return; }
     _pendingPlanName  = 'Solo / Couple';
     const basePrice   = (_soloBoxes12 * PRICE_PER_12_BOX + _soloBoxes18 * PRICE_PER_18_BOX) * MONTHLY_WEEKS;
     _pendingPlanPrice = basePrice;
-
     document.getElementById('modal-plan-name').textContent = 'Solo / Couple';
     document.getElementById('modal-plan-subtitle').textContent =
       `$${basePrice}/month base · ${_soloBoxes12 * 12 + _soloBoxes18 * 18} eggs/week · Monthly`;
-
-    // Populate and show flex-plan info
     document.getElementById('modal-custom-fields').style.display = 'block';
     document.getElementById('modal-b12-count').textContent  = _soloBoxes12;
     document.getElementById('modal-b18-count').textContent  = _soloBoxes18;
     document.getElementById('modal-duration-line').style.display = 'none';
-
     _resetModalForm();
   }
 
   function openCustomSubscribeModal() {
-    if (!currentUser) {
-      switchTab(5);
-      showFlash('login-flash', 'Please sign in or create an account to subscribe.', 'warn');
-      return;
-    }
+    if (!currentUser) { showAuthGate(); showAuthForm('login'); return; }
     const total = _customBoxes12 + _customBoxes18;
-    if (total < CUSTOM_MIN_BOXES) {
-      alert(`Custom Plan requires at least ${CUSTOM_MIN_BOXES} boxes total.`);
-      return;
-    }
-
+    if (total < CUSTOM_MIN_BOXES) { alert(`Custom Plan requires at least ${CUSTOM_MIN_BOXES} boxes total.`); return; }
     _pendingPlanName  = 'Custom';
     const base        = (_customBoxes12 * PRICE_PER_12_BOX + _customBoxes18 * PRICE_PER_18_BOX) * _customWeeks;
     _pendingPlanPrice = base;
-
     document.getElementById('modal-plan-name').textContent = 'Custom Plan';
     document.getElementById('modal-plan-subtitle').textContent =
       `$${base} total base · ${_customBoxes12 * 12 + _customBoxes18 * 18} eggs/week · ${_customWeeks} weeks`;
-
-    // Populate and show flex-plan info
     document.getElementById('modal-custom-fields').style.display = 'block';
     document.getElementById('modal-b12-count').textContent  = _customBoxes12;
     document.getElementById('modal-b18-count').textContent  = _customBoxes18;
     document.getElementById('modal-duration-line').style.display = 'block';
     document.getElementById('modal-custom-weeks').textContent    = _customWeeks;
-
     _resetModalForm();
   }
 
@@ -1681,34 +2243,22 @@
   }
 
   function openSubscribeModal(name) {
-    if (!currentUser) {
-      switchTab(5);
-      showFlash('login-flash', 'Please sign in or create an account to subscribe.', 'warn');
-      return;
-    }
+    if (!currentUser) { showAuthGate(); showAuthForm('login'); return; }
     _pendingPlanName = name;
-
-    // Read selected box type from plan card radio buttons
     const prefix    = name === 'Small Family' ? 'sf' : 'fam';
     const radioEl   = document.querySelector(`input[name="${prefix}-box-type"]:checked`);
     _pendingBoxType = radioEl ? radioEl.value : (name === 'Small Family' ? 'dozen' : '18');
     _pendingPlanPrice = fixedPlanPrice(_pendingBoxType);
-
     const eggs = fixedPlanEggs(_pendingBoxType);
     document.getElementById('modal-plan-name').textContent = name;
     document.getElementById('modal-plan-subtitle').textContent =
       formatCurrency(_pendingPlanPrice) + '/month · ' + eggs + ' eggs/week · Cancel anytime';
-
-    // Hide flex-plan fields for fixed plans
     document.getElementById('modal-custom-fields').style.display = 'none';
-
-    // Reset form
     document.getElementById('ft-pickup').checked = true;
     document.getElementById('modal-pickup-day').value      = '';
     document.getElementById('modal-delivery-address').value = '';
     document.getElementById('modal-flash').style.display   = 'none';
     updateFulfillmentFields();
-
     document.getElementById('subscribe-modal').classList.add('open');
     document.getElementById('modal-pickup-day').focus();
   }
@@ -1744,7 +2294,6 @@
       document.getElementById('modal-summary').innerHTML =
         `<strong>Custom Plan</strong> — ${boxDesc} boxes/delivery · ${eggs} eggs/wk<br>` +
         `${icon} · ${_customWeeks} weeks · <strong>$${total} total</strong>${dlvNote}`;
-
     } else if (_pendingPlanName === 'Solo / Couple') {
       const b12        = _soloBoxes12;
       const b18        = _soloBoxes18;
@@ -1757,7 +2306,6 @@
       document.getElementById('modal-summary').innerHTML =
         `<strong>Solo / Couple</strong> — ${boxDesc || '—'} box/delivery · ${eggs} eggs/wk<br>` +
         `${icon} · Monthly · <strong>$${total}/month</strong>${dlvNote}`;
-
     } else {
       const boxType    = _pendingBoxType || '18';
       const eggs       = fixedPlanEggs(boxType);
@@ -1778,12 +2326,10 @@
     const pickupDay       = document.getElementById('modal-pickup-day').value;
 
     if (method === 'delivery' && !deliveryAddress) {
-      showFlash('modal-flash', 'Please enter your delivery address.', 'warn');
-      return;
+      showFlash('modal-flash', 'Please enter your delivery address.', 'warn'); return;
     }
     if (method === 'pickup' && !pickupDay) {
-      showFlash('modal-flash', 'Please choose your preferred pick-up day.', 'warn');
-      return;
+      showFlash('modal-flash', 'Please choose your preferred pick-up day.', 'warn'); return;
     }
 
     const btn = document.querySelector('#subscribe-modal .btn-primary');
@@ -1797,25 +2343,16 @@
         deliveryAddress:   method === 'delivery' ? deliveryAddress : undefined,
         pickupDay:         method === 'pickup'   ? pickupDay       : undefined
       };
-      // Include box parameters for flexible plans or box type for fixed plans
       if (_pendingPlanName === 'Custom') {
-        body.boxes12       = _customBoxes12;
-        body.boxes18       = _customBoxes18;
-        body.durationWeeks = _customWeeks;
+        body.boxes12 = _customBoxes12; body.boxes18 = _customBoxes18; body.durationWeeks = _customWeeks;
       } else if (_pendingPlanName === 'Solo / Couple') {
-        body.boxes12 = _soloBoxes12;
-        body.boxes18 = _soloBoxes18;
+        body.boxes12 = _soloBoxes12; body.boxes18 = _soloBoxes18;
       } else {
-        // Fixed plans: pass the selected box type
         body.boxType = _pendingBoxType;
       }
 
       const data = await apiPost('/api/orders', body);
-
-      if (data.error) {
-        showFlash('modal-flash', data.error, 'err');
-        return;
-      }
+      if (data.error) { showFlash('modal-flash', data.error, 'err'); return; }
 
       closeSubscribeModal();
 
@@ -1826,18 +2363,17 @@
         const b12     = data.order.boxes12_per_delivery || 0;
         const b18     = data.order.boxes18_per_delivery || 0;
         const boxDesc = [b12 > 0 ? `${b12}×12-egg` : '', b18 > 0 ? `${b18}×18-egg` : ''].filter(Boolean).join(' + ');
-        const durNote = _pendingPlanName === 'Custom'
-          ? ` · ${data.order.duration_weeks} weeks` : '';
+        const durNote = _pendingPlanName === 'Custom' ? ` · ${data.order.duration_weeks} weeks` : '';
         document.getElementById('plan-msg-text').textContent =
           `${_pendingPlanName} confirmed — $${data.order.price}` +
           (_pendingPlanName === 'Custom' ? ' total' : '/month') +
-          ` · ${boxDesc} boxes/delivery${durNote} via ${fulfillLabel}. View your subscription in My Account!`;
+          ` · ${boxDesc} boxes/delivery${durNote} via ${fulfillLabel}. View your subscription in Settings!`;
       } else {
         const boxLabel = _pendingBoxType === 'dozen' ? '1 dozen (12 eggs)' : '18 eggs';
         document.getElementById('plan-msg-text').textContent =
           _pendingPlanName + ' plan confirmed — ' +
           formatCurrency(data.order.price) + '/month · ' + boxLabel + '/delivery via ' + fulfillLabel +
-          '. View your subscription in My Account!';
+          '. View your subscription in Settings!';
       }
       msg.style.display = 'block';
       msg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1849,18 +2385,15 @@
     }
   }
 
-  // Close modal when clicking the backdrop
   document.getElementById('subscribe-modal').addEventListener('click', function(e) {
     if (e.target === this) closeSubscribeModal();
   });
-
-  // Close modal on Escape key
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeSubscribeModal();
+    if (e.key === 'Escape') { closeSubscribeModal(); closeEditOrderModal(); }
   });
 
   /* ═══════════════════════════════════════════════════════
-     LAUNCH CHECKLIST (with DB persistence when logged in)
+     LAUNCH CHECKLIST
   ═══════════════════════════════════════════════════════ */
   function toggleCheck(li) {
     li.classList.toggle('done');
@@ -1885,9 +2418,7 @@
 
   async function saveChecklist() {
     if (!currentUser) return;
-    try {
-      await apiPut('/api/checklist', { completedSteps: getCompletedSteps() });
-    } catch (_) { /* silent */ }
+    try { await apiPut('/api/checklist', { completedSteps: getCompletedSteps() }); } catch (_) {}
   }
 
   async function loadChecklist() {
@@ -1896,11 +2427,9 @@
       const data = await apiFetch('/api/checklist');
       if (!data.completedSteps) return;
       const items = document.querySelectorAll('#checklist li');
-      items.forEach((li, idx) => {
-        li.classList.toggle('done', data.completedSteps.includes(idx));
-      });
+      items.forEach((li, idx) => { li.classList.toggle('done', data.completedSteps.includes(idx)); });
       updateProgress();
-    } catch (_) { /* silent */ }
+    } catch (_) {}
   }
 
   /* ═══════════════════════════════════════════════════════
@@ -1964,86 +2493,22 @@
   }
 
   /* ═══════════════════════════════════════════════════════
-     ACCOUNT TAB
+     SETTINGS (ACCOUNT) TAB
   ═══════════════════════════════════════════════════════ */
-  function showAuthForm(which) {
-    document.getElementById('login-form-wrap').classList.toggle('active', which === 'login');
-    document.getElementById('register-form-wrap').classList.toggle('active', which === 'register');
-    document.getElementById('tab-login-btn').classList.toggle('active', which === 'login');
-    document.getElementById('tab-register-btn').classList.toggle('active', which === 'register');
-  }
-
-  async function doLogin() {
-    const email    = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
-    if (!email || !password) { showFlash('login-flash', 'Email and password are required.', 'warn'); return; }
-    try {
-      const data = await apiPost('/api/auth/login', { email, password });
-      if (data.error) { showFlash('login-flash', data.error, 'err'); return; }
-      currentUser = data.user;
-      document.getElementById('login-password').value = '';
-      renderAccountTab();
-      updateAuthBar();
-      loadChecklist();
-    } catch (e) {
-      showFlash('login-flash', 'Login failed. Please try again.', 'err');
-    }
-  }
-
-  async function doRegister() {
-    const name     = document.getElementById('reg-name').value.trim();
-    const email    = document.getElementById('reg-email').value.trim();
-    const password = document.getElementById('reg-password').value;
-    if (!name || !email || !password) { showFlash('register-flash', 'All fields are required.', 'warn'); return; }
-    try {
-      const data = await apiPost('/api/auth/register', { name, email, password });
-      if (data.error) { showFlash('register-flash', data.error, 'err'); return; }
-      currentUser = data.user;
-      document.getElementById('reg-password').value = '';
-      renderAccountTab();
-      updateAuthBar();
-      loadChecklist();
-    } catch (e) {
-      showFlash('register-flash', 'Registration failed. Please try again.', 'err');
-    }
-  }
-
-  async function doLogout() {
-    try {
-      await apiPost('/api/auth/logout', {});
-    } catch (_) { /* ignore */ }
-    // Session was regenerated on the server; clear cached CSRF token so it is refetched
-    _csrfToken = null;
-    currentUser = null;
-    updateAuthBar();
-    renderAccountTab();
-    // Clear checklist done states if not logged in (can't persist)
-    document.querySelectorAll('#checklist li').forEach(li => li.classList.remove('done'));
-    updateProgress();
-  }
-
-  function renderAccountTab() {
-    const formsWrap   = document.getElementById('auth-forms-wrap');
+  function renderSettings() {
     const loggedInWrap = document.getElementById('account-logged-in');
     if (currentUser) {
-      formsWrap.style.display    = 'none';
       loggedInWrap.style.display = 'block';
-
-      // Profile header
       renderAvatar('profile-avatar-wrap', currentUser.avatar_url, currentUser.name, 'profile-avatar');
       document.getElementById('profile-name').textContent   = currentUser.name;
       document.getElementById('profile-email').textContent  = currentUser.email;
       const since = new Date(currentUser.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
       document.getElementById('profile-since').textContent  = 'Member since ' + since;
-
-      // Pre-fill edit form
       document.getElementById('edit-name').value  = currentUser.name;
       document.getElementById('edit-email').value = currentUser.email;
       document.getElementById('edit-current-password').value = '';
       document.getElementById('edit-new-password').value     = '';
       renderEditAvatar();
-
-      // Admin panel
       const adminPanel = document.getElementById('admin-panel');
       if (currentUser.role === 'admin') {
         adminPanel.style.display = 'block';
@@ -2052,13 +2517,12 @@
       } else {
         adminPanel.style.display = 'none';
       }
-
       loadOrders();
-    } else {
-      formsWrap.style.display    = 'block';
-      loggedInWrap.style.display = 'none';
     }
   }
+
+  // Legacy alias kept for any remaining internal calls
+  function renderAccountTab() { renderSettings(); }
 
   function renderAvatar(wrapId, avatarUrl, name, existingElId) {
     const wrap = document.getElementById(wrapId);
@@ -2096,18 +2560,16 @@
     const email           = document.getElementById('edit-email').value.trim();
     const currentPassword = document.getElementById('edit-current-password').value;
     const newPassword     = document.getElementById('edit-new-password').value;
-
-    if (!name) { showFlash('edit-profile-flash', 'Name cannot be empty.', 'warn'); return; }
+    if (!name)  { showFlash('edit-profile-flash', 'Name cannot be empty.', 'warn');  return; }
     if (!email) { showFlash('edit-profile-flash', 'Email cannot be empty.', 'warn'); return; }
-
     try {
       const body = { name, email };
       if (newPassword) { body.currentPassword = currentPassword; body.newPassword = newPassword; }
       const data = await apiPut('/api/auth/me', body);
       if (data.error) { showFlash('edit-profile-flash', data.error, 'err'); return; }
       currentUser = data.user;
-      renderAccountTab();
-      updateAuthBar();
+      updateSidebarUser();
+      renderSettings();
       showFlash('edit-profile-flash', 'Profile updated successfully!', 'ok');
       document.getElementById('edit-current-password').value = '';
       document.getElementById('edit-new-password').value = '';
@@ -2119,14 +2581,10 @@
   function handleAvatarFile(event) {
     const file = event.target.files[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      showFlash('edit-profile-flash', 'Image must be under 2 MB.', 'warn');
-      return;
-    }
+    if (file.size > 2 * 1024 * 1024) { showFlash('edit-profile-flash', 'Image must be under 2 MB.', 'warn'); return; }
     const reader = new FileReader();
     reader.onload = async function(e) {
       const dataUrl = e.target.result;
-      // Preview immediately
       document.getElementById('avatar-edit-preview-wrap').innerHTML =
         `<img class="avatar-preview" src="${escHtml(dataUrl)}" alt="Avatar preview" />`;
       try {
@@ -2135,12 +2593,9 @@
         currentUser.avatar_url = dataUrl;
         renderAvatar('profile-avatar-wrap', dataUrl, currentUser.name, 'profile-avatar');
         showFlash('edit-profile-flash', 'Photo updated!', 'ok');
-      } catch (_) {
-        showFlash('edit-profile-flash', 'Failed to upload photo. Please try again.', 'err');
-      }
+      } catch (_) { showFlash('edit-profile-flash', 'Failed to upload photo.', 'err'); }
     };
     reader.readAsDataURL(file);
-    // Reset input so the same file can be re-selected
     event.target.value = '';
   }
 
@@ -2152,19 +2607,19 @@
       renderEditAvatar();
       renderAvatar('profile-avatar-wrap', null, currentUser.name, 'profile-avatar');
       showFlash('edit-profile-flash', 'Photo removed.', 'ok');
-    } catch (_) {
-      showFlash('edit-profile-flash', 'Failed to remove photo. Please try again.', 'err');
-    }
+    } catch (_) { showFlash('edit-profile-flash', 'Failed to remove photo.', 'err'); }
   }
 
+  /* ═══════════════════════════════════════════════════════
+     ADMIN PANEL (within Settings)
+  ═══════════════════════════════════════════════════════ */
   async function loadAdminUsers() {
     const container = document.getElementById('admin-users-list');
     try {
       const data = await apiFetch('/api/admin/users');
       if (data.error) { container.innerHTML = `<p style="color:#c0392b;">${escHtml(data.error)}</p>`; return; }
       if (!data.users || data.users.length === 0) {
-        container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">No users found.</p>';
-        return;
+        container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">No users found.</p>'; return;
       }
       container.innerHTML = data.users.map(u => `
         <div class="admin-user-row">
@@ -2177,8 +2632,7 @@
             ? `<button class="btn-role-toggle" onclick="toggleUserRole(${u.id}, '${u.role === 'admin' ? 'user' : 'admin'}')"
                 >${u.role === 'admin' ? 'Remove Admin' : 'Make Admin'}</button>`
             : '<span style="font-size:.78rem;color:#aaa;">(you)</span>'}
-        </div>
-      `).join('');
+        </div>`).join('');
     } catch (_) {
       container.innerHTML = '<p style="color:#c0392b;font-size:.9rem;">Could not load users.</p>';
     }
@@ -2189,13 +2643,11 @@
       const data = await apiPut(`/api/admin/users/${userId}/role`, { role: newRole });
       if (data.error) { showFlash('admin-flash', data.error, 'err'); return; }
       loadAdminUsers();
-    } catch (_) {
-      showFlash('admin-flash', 'Failed to update role. Please try again.', 'err');
-    }
+    } catch (_) { showFlash('admin-flash', 'Failed to update role.', 'err'); }
   }
 
   /* ═══════════════════════════════════════════════════════
-     ADMIN — ORDER INVENTORY
+     ADMIN — ORDER INVENTORY (within Settings)
   ═══════════════════════════════════════════════════════ */
   let _editingOrderId = null;
 
@@ -2203,38 +2655,21 @@
     const container = document.getElementById('admin-orders-list');
     try {
       const data = await apiFetch('/api/admin/orders');
-      if (data.error) {
-        container.innerHTML = `<p style="color:#c0392b;">${escHtml(data.error)}</p>`;
-        return;
-      }
+      if (data.error) { container.innerHTML = `<p style="color:#c0392b;">${escHtml(data.error)}</p>`; return; }
       if (!data.orders || data.orders.length === 0) {
-        container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">No orders yet.</p>';
-        return;
+        container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">No orders yet.</p>'; return;
       }
       container.innerHTML = `
         <div class="admin-orders-table-wrap">
           <table class="admin-orders-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Subscriber</th>
-                <th>Plan</th>
-                <th>Price</th>
-                <th>Fulfillment</th>
-                <th>Boxes</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.orders.map(o => adminOrderRow(o)).join('')}
-            </tbody>
+            <thead><tr>
+              <th>#</th><th>Subscriber</th><th>Plan</th><th>Price</th>
+              <th>Fulfillment</th><th>Boxes</th><th>Status</th><th>Created</th><th>Actions</th>
+            </tr></thead>
+            <tbody>${data.orders.map(o => adminOrderRow(o)).join('')}</tbody>
           </table>
         </div>`;
-    } catch (_) {
-      container.innerHTML = '<p style="color:#c0392b;font-size:.9rem;">Could not load orders.</p>';
-    }
+    } catch (_) { container.innerHTML = '<p style="color:#c0392b;font-size:.9rem;">Could not load orders.</p>'; }
   }
 
   function adminOrderRow(o) {
@@ -2244,39 +2679,30 @@
     const fulfillInfo = o.fulfillment_method === 'delivery'
       ? `${fulfillIcon} ${escHtml(o.delivery_address || '—')}`
       : `${fulfillIcon} ${escHtml(o.pickup_day || '—')}s`;
-
     const b12 = o.boxes12_per_delivery || 0;
     const b18 = o.boxes18_per_delivery || 0;
     const boxInfo = (b12 || b18)
       ? [b12 > 0 ? `${b12}×12` : '', b18 > 0 ? `${b18}×18` : ''].filter(Boolean).join(', ')
       : (o.boxes_per_delivery ? `${o.boxes_per_delivery} boxes` : '—');
-
     const cancelBtn = o.status === 'active'
       ? `<button class="btn-admin-cancel-order" data-order-id="${o.id}" onclick="adminCancelOrder(this)">Cancel</button>`
       : '';
-
     return `<tr>
       <td>${o.id}</td>
-      <td>
-        <div style="font-weight:700;">${escHtml(o.user_name || '—')}</div>
-        <div style="color:#888;font-size:.78rem;">${escHtml(o.user_email || '—')}</div>
-      </td>
+      <td><div style="font-weight:700;">${escHtml(o.user_name || '—')}</div>
+          <div style="color:#888;font-size:.78rem;">${escHtml(o.user_email || '—')}</div></td>
       <td>${escHtml(o.plan_name)}</td>
       <td>$${o.price}${o.duration_weeks ? ' total' : '/mo'}</td>
       <td style="font-size:.8rem;">${fulfillInfo}</td>
       <td style="font-size:.8rem;">${escHtml(boxInfo)}</td>
       <td><span class="${statusCls}">${escHtml(o.status)}</span></td>
       <td style="font-size:.78rem;white-space:nowrap;">${date}</td>
-      <td>
-        <div class="admin-order-actions">
-          <button class="btn-admin-edit"
-            data-order-id="${o.id}"
-            data-plan-name="${escHtml(o.plan_name)}"
-            data-status="${escHtml(o.status)}"
-            onclick="openAdminEditOrder(this)">Edit</button>
-          ${cancelBtn}
-        </div>
-      </td>
+      <td><div class="admin-order-actions">
+        <button class="btn-admin-edit"
+          data-order-id="${o.id}" data-plan-name="${escHtml(o.plan_name)}" data-status="${escHtml(o.status)}"
+          onclick="openAdminEditOrder(this)">Edit</button>
+        ${cancelBtn}
+      </div></td>
     </tr>`;
   }
 
@@ -2302,10 +2728,7 @@
     if (!_editingOrderId) return;
     const planName = document.getElementById('edit-order-plan').value.trim();
     const status   = document.getElementById('edit-order-status').value;
-    if (!planName) {
-      showFlash('edit-order-flash', 'Plan name cannot be empty.', 'warn');
-      return;
-    }
+    if (!planName) { showFlash('edit-order-flash', 'Plan name cannot be empty.', 'warn'); return; }
     const btn = document.querySelector('#edit-order-modal .btn-primary');
     btn.disabled = true; btn.textContent = 'Saving…';
     try {
@@ -2314,11 +2737,10 @@
       closeEditOrderModal();
       showFlash('admin-orders-flash', `Order #${_editingOrderId} updated.`, 'ok');
       loadAdminOrders();
-    } catch (_) {
-      showFlash('edit-order-flash', 'Failed to save. Please try again.', 'err');
-    } finally {
-      btn.disabled = false; btn.textContent = 'Save Changes';
-    }
+      // Also refresh the Orders view if it's open
+      loadViewOrders();
+    } catch (_) { showFlash('edit-order-flash', 'Failed to save. Please try again.', 'err'); }
+    finally { btn.disabled = false; btn.textContent = 'Save Changes'; }
   }
 
   async function adminCancelOrder(btn) {
@@ -2329,17 +2751,12 @@
       if (data.error) { showFlash('admin-orders-flash', data.error, 'err'); return; }
       showFlash('admin-orders-flash', `Order #${orderId} cancelled.`, 'ok');
       loadAdminOrders();
-    } catch (_) {
-      showFlash('admin-orders-flash', 'Failed to cancel order. Please try again.', 'err');
-    }
+      loadViewOrders();
+    } catch (_) { showFlash('admin-orders-flash', 'Failed to cancel order.', 'err'); }
   }
 
-  // Close edit-order modal on backdrop click or Escape
   document.getElementById('edit-order-modal').addEventListener('click', function(e) {
     if (e.target === this) closeEditOrderModal();
-  });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeEditOrderModal();
   });
 
   async function loadOrders() {
@@ -2347,7 +2764,7 @@
     try {
       const data = await apiFetch('/api/orders');
       if (!data.orders || data.orders.length === 0) {
-        container.innerHTML = '<div class="orders-empty">No subscriptions yet. <a href="#" onclick="switchTab(1);return false;" style="color:#e85d04;">Browse plans →</a></div>';
+        container.innerHTML = '<div class="orders-empty">No subscriptions yet. <a href="#" onclick="switchView(\'plans\');return false;" style="color:#e85d04;">Browse plans →</a></div>';
         return;
       }
       container.innerHTML = data.orders.map(o => orderCard(o)).join('');
@@ -2360,49 +2777,29 @@
     const date       = new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const statusCls  = o.status === 'active' ? 'status-active' : 'status-cancelled';
     const cancelBtn  = o.status === 'active'
-      ? `<button class="btn-danger" onclick="cancelOrder(${o.id})">Cancel</button>`
-      : '';
-
-    // Fulfillment line
+      ? `<button class="btn-danger" onclick="cancelOrder(${o.id})">Cancel</button>` : '';
     let fulfillLine = '';
-    if (o.fulfillment_method === 'delivery') {
-      fulfillLine = `🚗 Delivery → ${escHtml(o.delivery_address || '—')}`;
-    } else if (o.fulfillment_method === 'pickup') {
-      fulfillLine = `🏡 Pick-up · ${escHtml(o.pickup_day || '—')}s`;
-    }
-
-    // Price / detail line — flex plans show box breakdown + duration
+    if (o.fulfillment_method === 'delivery') fulfillLine = `🚗 Delivery → ${escHtml(o.delivery_address || '—')}`;
+    else if (o.fulfillment_method === 'pickup') fulfillLine = `🏡 Pick-up · ${escHtml(o.pickup_day || '—')}s`;
     let priceDetail;
     const isFlexPlan = (o.plan_name === 'Custom' || o.plan_name === 'Solo / Couple');
     if (isFlexPlan) {
-      const b12     = o.boxes12_per_delivery || 0;
-      const b18     = o.boxes18_per_delivery || 0;
+      const b12 = o.boxes12_per_delivery || 0, b18 = o.boxes18_per_delivery || 0;
       const boxDesc = [b12 > 0 ? `${b12}×12-egg` : '', b18 > 0 ? `${b18}×18-egg` : ''].filter(Boolean).join(' + ') || '—';
-      if (o.plan_name === 'Custom') {
-        priceDetail = `$${o.price} total · ${boxDesc} boxes/wk · ${o.eggs_per_week} eggs/wk · ${o.duration_weeks} weeks · Started ${date}`;
-      } else {
-        priceDetail = `$${o.price}/mo · ${boxDesc} boxes/wk · ${o.eggs_per_week} eggs/wk · Started ${date}`;
-      }
+      priceDetail = o.plan_name === 'Custom'
+        ? `$${o.price} total · ${boxDesc} boxes/wk · ${o.eggs_per_week} eggs/wk · ${o.duration_weeks} weeks · Started ${date}`
+        : `$${o.price}/mo · ${boxDesc} boxes/wk · ${o.eggs_per_week} eggs/wk · Started ${date}`;
     } else {
-      // Fixed plans: show box type if stored, otherwise show eggs/week
-      const b12 = o.boxes12_per_delivery || 0;
-      const b18 = o.boxes18_per_delivery || 0;
+      const b12 = o.boxes12_per_delivery || 0, b18 = o.boxes18_per_delivery || 0;
       const boxLabel = b12 > 0 ? '1 dozen (12 eggs)' : b18 > 0 ? '18-egg box' : `${o.eggs_per_week} eggs`;
       priceDetail = `$${o.price}/mo · ${boxLabel}/delivery · Started ${date}`;
     }
-
-    // Next billing line (only for ongoing monthly plans)
     let billingLine = '';
     if (o.plan_name !== 'Custom' && o.next_billing_date && o.status === 'active' && /^\d{4}-\d{2}-\d{2}$/.test(o.next_billing_date)) {
       const bd = new Date(o.next_billing_date + 'T00:00:00');
-      if (!isNaN(bd.getTime())) {
-        billingLine = `💳 Next billing: ${bd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-      }
+      if (!isNaN(bd.getTime())) billingLine = `💳 Next billing: ${bd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
     }
-
-    const extraLines = [fulfillLine, billingLine].filter(Boolean)
-      .map(l => `<div>${l}</div>`).join('');
-
+    const extraLines = [fulfillLine, billingLine].filter(Boolean).map(l => `<div>${l}</div>`).join('');
     return `<div class="order-card">
       <div class="order-info">
         <div class="order-plan">${escHtml(o.plan_name)}</div>
@@ -2422,30 +2819,29 @@
       const data = await apiDelete('/api/orders/' + id);
       if (data.error) { alert('Error: ' + data.error); return; }
       loadOrders();
-    } catch (e) {
-      alert('Failed to cancel. Please try again.');
-    }
+    } catch (e) { alert('Failed to cancel. Please try again.'); }
   }
 
   /* ═══════════════════════════════════════════════════════
-     AUTH BAR (top of page)
+     SIDEBAR USER INFO
   ═══════════════════════════════════════════════════════ */
-  function updateAuthBar() {
-    const text = document.getElementById('auth-bar-text');
-    const btn  = document.getElementById('auth-bar-btn');
-    // Update reviews form visibility
-    document.getElementById('review-form-section').style.display  = currentUser ? 'block' : 'none';
-    document.getElementById('review-login-prompt').style.display  = currentUser ? 'none'  : 'block';
+  function updateSidebarUser() {
     if (currentUser) {
-      text.textContent    = 'Hi, ' + currentUser.name;
-      btn.textContent     = 'Sign Out';
-      btn.onclick         = doLogout;
+      document.getElementById('sidebar-user-name').textContent  = currentUser.name;
+      document.getElementById('sidebar-user-email').textContent = currentUser.email;
     } else {
-      text.textContent    = 'Not signed in';
-      btn.textContent     = 'Sign In';
-      btn.onclick         = () => switchTab(5);
+      document.getElementById('sidebar-user-name').textContent  = '—';
+      document.getElementById('sidebar-user-email').textContent = '';
     }
+    // Update reviews form visibility
+    const reviewForm   = document.getElementById('review-form-section');
+    const reviewPrompt = document.getElementById('review-login-prompt');
+    if (reviewForm)   reviewForm.style.display   = currentUser ? 'block' : 'none';
+    if (reviewPrompt) reviewPrompt.style.display = currentUser ? 'none'  : 'block';
   }
+
+  // Legacy alias
+  function updateAuthBar() { updateSidebarUser(); }
 
   /* ═══════════════════════════════════════════════════════
      FLASH MESSAGES
@@ -2460,7 +2856,7 @@
   }
 
   /* ═══════════════════════════════════════════════════════
-     API HELPERS  (CSRF token is fetched once and cached)
+     API HELPERS
   ═══════════════════════════════════════════════════════ */
   let _csrfToken = null;
 
@@ -2480,8 +2876,7 @@
   async function apiPost(url, body) {
     const token = await getCsrfToken();
     const res = await fetch(url, {
-      method: 'POST',
-      credentials: 'same-origin',
+      method: 'POST', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
       body: JSON.stringify(body)
     });
@@ -2491,8 +2886,7 @@
   async function apiPut(url, body) {
     const token = await getCsrfToken();
     const res = await fetch(url, {
-      method: 'PUT',
-      credentials: 'same-origin',
+      method: 'PUT', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
       body: JSON.stringify(body)
     });
@@ -2502,8 +2896,7 @@
   async function apiDelete(url) {
     const token = await getCsrfToken();
     const res = await fetch(url, {
-      method: 'DELETE',
-      credentials: 'same-origin',
+      method: 'DELETE', credentials: 'same-origin',
       headers: { 'X-CSRF-Token': token }
     });
     return res.json();
@@ -2522,27 +2915,94 @@
   }
 
   /* ═══════════════════════════════════════════════════════
+     AUTH — LOGIN / REGISTER / LOGOUT
+  ═══════════════════════════════════════════════════════ */
+  async function doLogin() {
+    const email    = document.getElementById('gate-login-email').value.trim();
+    const password = document.getElementById('gate-login-password').value;
+    if (!email || !password) { showFlash('gate-login-flash', 'Email and password are required.', 'warn'); return; }
+    try {
+      const data = await apiPost('/api/auth/login', { email, password });
+      if (data.error) { showFlash('gate-login-flash', data.error, 'err'); return; }
+      currentUser = data.user;
+      document.getElementById('gate-login-password').value = '';
+      hideAuthGate();
+      updateSidebarUser();
+      loadChecklist();
+      switchView('home');
+    } catch (e) {
+      showFlash('gate-login-flash', 'Login failed. Please try again.', 'err');
+    }
+  }
+
+  async function doRegister() {
+    const name     = document.getElementById('gate-reg-name').value.trim();
+    const email    = document.getElementById('gate-reg-email').value.trim();
+    const password = document.getElementById('gate-reg-password').value;
+    const confirm  = document.getElementById('gate-reg-confirm').value;
+    if (!name || !email || !password || !confirm) {
+      showFlash('gate-register-flash', 'All fields are required.', 'warn'); return;
+    }
+    if (password !== confirm) {
+      showFlash('gate-register-flash', 'Passwords do not match.', 'err'); return;
+    }
+    try {
+      const data = await apiPost('/api/auth/register', { name, email, password });
+      if (data.error) { showFlash('gate-register-flash', data.error, 'err'); return; }
+      currentUser = data.user;
+      document.getElementById('gate-reg-password').value = '';
+      document.getElementById('gate-reg-confirm').value  = '';
+      hideAuthGate();
+      updateSidebarUser();
+      loadChecklist();
+      switchView('home');
+    } catch (e) {
+      showFlash('gate-register-flash', 'Registration failed. Please try again.', 'err');
+    }
+  }
+
+  async function doLogout() {
+    try { await apiPost('/api/auth/logout', {}); } catch (_) {}
+    _csrfToken = null;
+    currentUser = null;
+    updateSidebarUser();
+    // Clear checklist done states
+    document.querySelectorAll('#checklist li').forEach(li => li.classList.remove('done'));
+    updateProgress();
+    showAuthGate();
+    showAuthForm('login');
+  }
+
+  /* ═══════════════════════════════════════════════════════
      INIT
   ═══════════════════════════════════════════════════════ */
   async function init() {
-    // Fetch CSRF token first (initializes session cookie)
     await getCsrfToken();
-    // Check if already logged in (existing session)
     try {
       const data = await apiFetch('/api/auth/me');
       currentUser = data.user || null;
     } catch (_) {
       currentUser = null;
     }
-    updateAuthBar();
+
+    updateSidebarUser();
     updateCalc();
     updateSoloPlanDisplay();
     updateCustomPlanDisplay();
-    if (currentUser) loadChecklist();
+
+    if (currentUser) {
+      hideAuthGate();
+      loadChecklist();
+      switchView('home');
+    } else {
+      showAuthGate();
+      showAuthForm('login');
+    }
   }
 
   init();
 </script>
+
 
 </body>
 </html>
