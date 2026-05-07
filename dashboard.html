@@ -625,6 +625,70 @@
     #view-customers .section-title, #view-orders .section-title { font-size: 1.4rem; font-weight: 700; color: #c45203; margin-bottom: .3rem; }
     #view-customers .section-subtitle, #view-orders .section-subtitle { font-size: .95rem; color: #666; margin-bottom: 1.5rem; }
 
+    /* ── Pickup / Delivery List view ── */
+    #view-pickup { padding: 2rem; max-width: 860px; }
+    .pickup-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .8rem; margin-bottom: 1.2rem; }
+    .pickup-header h2 { font-size: 1.4rem; font-weight: 700; color: #c45203; margin: 0; }
+    .pickup-filters { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .pickup-filter-btn {
+      padding: .4rem .9rem; border-radius: 20px; border: 1.5px solid #ddd;
+      background: #fff; color: #555; font-size: .83rem; font-weight: 600;
+      cursor: pointer; transition: all .15s; font-family: inherit;
+    }
+    .pickup-filter-btn.active { background: #e85d04; border-color: #e85d04; color: #fff; }
+    .pickup-filter-btn:hover:not(.active) { border-color: #e85d04; color: #e85d04; }
+    #pickup-list-container { margin-bottom: 1.2rem; }
+    .pickup-list {
+      background: #fff; border-radius: 12px; overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    }
+    .pickup-list-header {
+      display: grid; grid-template-columns: 1fr 110px 160px 90px;
+      padding: .6rem 1.1rem; background: #f7f2ea;
+      font-size: .76rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .05em;
+    }
+    .pickup-row {
+      display: grid; grid-template-columns: 1fr 110px 160px 90px;
+      padding: .8rem 1.1rem; border-top: 1px solid #f0e8d8;
+      align-items: center; transition: background .1s;
+    }
+    .pickup-row:hover { background: #fffaf4; }
+    .pickup-row.completed { opacity: .55; text-decoration: line-through; }
+    .pickup-row-name { font-weight: 700; font-size: .92rem; }
+    .pickup-row-email { font-size: .74rem; color: #999; }
+    .pickup-row-eggs { font-size: .88rem; color: #444; }
+    .pickup-row-method { font-size: .82rem; color: #555; }
+    .pickup-row-method .method-tag {
+      display: inline-block; padding: .15rem .55rem; border-radius: 12px; font-size: .72rem; font-weight: 700;
+    }
+    .method-tag.pickup  { background: #e8f5e9; color: #2e7d32; }
+    .method-tag.delivery { background: #fff3e0; color: #e65100; }
+    .pickup-row-check { display: flex; justify-content: center; }
+    .pickup-check-input { width: 17px; height: 17px; cursor: pointer; accent-color: #e85d04; }
+    .pickup-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .pickup-export-btn {
+      padding: .45rem 1rem; border-radius: 8px; border: 1.5px solid #ddd;
+      background: #fff; color: #555; font-size: .83rem; font-weight: 600;
+      cursor: pointer; transition: all .15s; font-family: inherit;
+    }
+    .pickup-export-btn:hover { border-color: #e85d04; color: #e85d04; background: #fff8f0; }
+    .pickup-export-btn.mark-all { border-color: #2e7d32; color: #2e7d32; }
+    .pickup-export-btn.mark-all:hover { background: #e8f5e9; }
+    .pickup-empty { padding: 2rem; text-align: center; color: #aaa; font-size: .9rem; }
+
+    /* Print style — hide everything except the pickup list */
+    @media print {
+      body > * { display: none !important; }
+      #main-app { display: block !important; }
+      .app-layout { display: block !important; }
+      .sidebar, .auth-gate, header { display: none !important; }
+      .main-content { display: block !important; }
+      .view-panel { display: none !important; }
+      #view-pickup { display: block !important; padding: 0 !important; max-width: 100% !important; }
+      .pickup-filters, .pickup-actions, .pickup-row-check, .pickup-list-header > :last-child { display: none !important; }
+      .pickup-list-header, .pickup-row { grid-template-columns: 1fr 110px 160px; }
+    }
+
     /* ── Responsive ── */
     @media (max-width: 768px) {
       .app-layout { flex-direction: column; }
@@ -634,7 +698,9 @@
       .sidebar-nav-item.active { border-left-color: transparent; border-bottom-color: #e85d04; }
       .sidebar-footer { display: none; }
       .metrics-row { grid-template-columns: 1fr; }
-      #view-home, #view-customers, #view-orders { padding: 1rem; }
+      #view-home, #view-customers, #view-orders, #view-pickup { padding: 1rem; }
+      .pickup-list-header, .pickup-row { grid-template-columns: 1fr 90px 1fr; }
+      .pickup-list-header > :last-child, .pickup-row-check { display: none; }
     }
 
     /* ── REVIEWS TAB ── */
@@ -1072,6 +1138,9 @@
         <div class="sidebar-nav-item" id="nav-orders"      onclick="switchView('orders')">
           <span class="nav-icon">📋</span> Orders
         </div>
+        <div class="sidebar-nav-item" id="nav-pickup"      onclick="switchView('pickup')">
+          <span class="nav-icon">🚚</span> Pickup List
+        </div>
         <div class="sidebar-nav-item" id="nav-reviews"     onclick="switchView('reviews')">
           <span class="nav-icon">⭐</span> Reviews
         </div>
@@ -1215,6 +1284,26 @@
         <p class="section-subtitle">All subscriber orders — edit plan / status or cancel.</p>
         <div id="view-orders-flash"></div>
         <div id="view-orders-list"><div style="color:#aaa;font-size:.9rem;">Loading…</div></div>
+      </section>
+
+      <!-- PICKUP / DELIVERY LIST ───────────────────────────── -->
+      <section class="view-panel" id="view-pickup">
+        <div class="pickup-header">
+          <h2>🚚 Weekly Pickup / Delivery List</h2>
+          <div class="pickup-filters" role="group" aria-label="Filter week">
+            <button class="pickup-filter-btn active" id="pf-thisweek"  onclick="setPickupFilter('thisweek')">This Week</button>
+            <button class="pickup-filter-btn"         id="pf-nextweek"  onclick="setPickupFilter('nextweek')">Next Week</button>
+            <button class="pickup-filter-btn"         id="pf-delivery"  onclick="setPickupFilter('delivery')">Delivery Only</button>
+          </div>
+        </div>
+        <div id="pickup-list-container">
+          <div style="color:#aaa;font-size:.9rem;">Loading…</div>
+        </div>
+        <div class="pickup-actions">
+          <button class="pickup-export-btn" onclick="pickupPrint()">🖨 Print</button>
+          <button class="pickup-export-btn" onclick="pickupCopy()">📋 Copy</button>
+          <button class="pickup-export-btn mark-all" onclick="pickupMarkAll()">✅ Mark All Completed</button>
+        </div>
       </section>
 
 <!-- ══════════════════════════════════════════
@@ -1957,6 +2046,7 @@
     settings:   { panelId: 'panel-5',         navId: 'nav-settings' },
     customers:  { panelId: 'view-customers',  navId: 'nav-customers' },
     orders:     { panelId: 'view-orders',     navId: 'nav-orders' },
+    pickup:     { panelId: 'view-pickup',     navId: 'nav-pickup' },
   };
 
   function switchView(name) {
@@ -1983,6 +2073,7 @@
     if (name === 'settings')  renderSettings();
     if (name === 'customers') loadViewCustomers();
     if (name === 'orders')    loadViewOrders();
+    if (name === 'pickup')    loadPickupList();
     if (name === 'home')      loadDashboardMetrics();
   }
 
@@ -2536,6 +2627,171 @@
       showFlash('view-orders-flash', 'Failed to cancel order.', 'err');
     }
   }
+
+  /* ═══════════════════════════════════════════════════════
+     PICKUP / DELIVERY LIST
+  ═══════════════════════════════════════════════════════ */
+  let _pickupFilter = 'thisweek'; // 'thisweek' | 'nextweek' | 'delivery'
+  let _pickupOrders = [];
+
+  // Return the date of the upcoming occurrence of a given day name (e.g. 'Friday')
+  // relative to a reference Date. offset=0 → current week, offset=7 → next week.
+  function nextOccurrence(dayName, referenceDate, weekOffset) {
+    const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    // Normalize to title-case to handle varying DB casing (e.g. 'friday' → 'Friday')
+    const normalized = dayName ? dayName.charAt(0).toUpperCase() + dayName.slice(1).toLowerCase() : '';
+    const targetIdx = DAYS.indexOf(normalized);
+    if (targetIdx < 0) return null;
+    const base = new Date(referenceDate);
+    base.setDate(base.getDate() + weekOffset);
+    const diff = (targetIdx - base.getDay() + 7) % 7;
+    base.setDate(base.getDate() + diff);
+    return base;
+  }
+
+  function pickupDateLabel(order, weekOffset) {
+    if (order.fulfillment_method === 'delivery') {
+      const today = new Date();
+      today.setDate(today.getDate() + weekOffset);
+      return 'Delivery — ' + today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+    if (order.pickup_day) {
+      const d = nextOccurrence(order.pickup_day, new Date(), weekOffset);
+      if (d) return 'Pickup ' + d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+    return '—';
+  }
+
+  function filterPickupOrders(orders, filter) {
+    const active = orders.filter(o => o.status === 'active');
+    if (filter === 'delivery') return active.filter(o => o.fulfillment_method === 'delivery');
+    return active; // thisweek and nextweek both show all active (different date labels only)
+  }
+
+  function setPickupFilter(filter) {
+    _pickupFilter = filter;
+    document.querySelectorAll('.pickup-filter-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById('pf-' + filter);
+    if (btn) btn.classList.add('active');
+    renderPickupList();
+  }
+
+  function renderPickupList() {
+    const container = document.getElementById('pickup-list-container');
+    if (!container) return;
+    const weekOffset = _pickupFilter === 'nextweek' ? 7 : 0;
+    const rows = filterPickupOrders(_pickupOrders, _pickupFilter);
+
+    if (rows.length === 0) {
+      container.innerHTML = '<div class="pickup-list"><div class="pickup-empty">No orders found for this filter.</div></div>';
+      return;
+    }
+
+    // Sort: pickups first by day, then deliveries
+    const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    rows.sort((a, b) => {
+      const am = a.fulfillment_method === 'delivery';
+      const bm = b.fulfillment_method === 'delivery';
+      if (am !== bm) return am ? 1 : -1; // pickups first
+      if (!am && !bm) {
+        return (DAYS.indexOf(a.pickup_day) || 99) - (DAYS.indexOf(b.pickup_day) || 99);
+      }
+      return (a.user_name || '').localeCompare(b.user_name || '');
+    });
+
+    const rowsHtml = rows.map((o, i) => {
+      const name = escHtml(o.user_name || '—');
+      const email = escHtml(o.user_email || '');
+      const b12 = o.boxes12_per_delivery || 0;
+      const b18 = o.boxes18_per_delivery || 0;
+      const eggLabel = o.eggs_per_week ? `${o.eggs_per_week} eggs` : (b12 || b18
+        ? [b12 > 0 ? `${b12 * 12}` : '', b18 > 0 ? `${b18 * 18}` : ''].filter(Boolean).join('/') + ' eggs'
+        : '—');
+      const methodTag = o.fulfillment_method === 'delivery'
+        ? `<span class="method-tag delivery">🚗 Delivery</span><br><span style="font-size:.74rem;color:#888;">${escHtml(o.delivery_address || '')}</span>`
+        : `<span class="method-tag pickup">🏡 Pickup</span><br><span style="font-size:.74rem;color:#888;">${pickupDateLabel(o, weekOffset)}</span>`;
+      return `<div class="pickup-row" id="pickup-row-${i}">
+        <div>
+          <div class="pickup-row-name">${name}</div>
+          <div class="pickup-row-email">${email}</div>
+        </div>
+        <div class="pickup-row-eggs">${eggLabel}</div>
+        <div class="pickup-row-method">${methodTag}</div>
+        <div class="pickup-row-check">
+          <input type="checkbox" class="pickup-check-input" aria-label="Mark completed"
+            onchange="togglePickupRow(${i}, this.checked)">
+        </div>
+      </div>`;
+    }).join('');
+
+    container.innerHTML = `<div class="pickup-list">
+      <div class="pickup-list-header">
+        <div>Subscriber</div>
+        <div>Eggs</div>
+        <div>Method / Schedule</div>
+        <div style="text-align:center;">Done</div>
+      </div>
+      ${rowsHtml}
+    </div>`;
+  }
+
+  function togglePickupRow(idx, done) {
+    const row = document.getElementById('pickup-row-' + idx);
+    if (row) row.classList.toggle('completed', done);
+  }
+
+  async function loadPickupList() {
+    const container = document.getElementById('pickup-list-container');
+    if (!currentUser || currentUser.role !== 'admin') {
+      container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">Admin access required.</p>';
+      return;
+    }
+    container.innerHTML = '<div style="color:#aaa;font-size:.9rem;">Loading…</div>';
+    try {
+      const data = await apiFetch('/api/admin/orders');
+      if (data.error) { container.innerHTML = `<p style="color:#c0392b;">${escHtml(data.error)}</p>`; return; }
+      _pickupOrders = data.orders || [];
+      renderPickupList();
+    } catch (_) {
+      container.innerHTML = '<p style="color:#c0392b;font-size:.9rem;">Could not load list.</p>';
+    }
+  }
+
+  function pickupPrint() { window.print(); }
+
+  function pickupCopy() {
+    const weekOffset = _pickupFilter === 'nextweek' ? 7 : 0;
+    const rows = filterPickupOrders(_pickupOrders, _pickupFilter);
+    if (!rows.length) { alert('No items to copy.'); return; }
+    const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    rows.sort((a, b) => {
+      const am = a.fulfillment_method === 'delivery';
+      const bm = b.fulfillment_method === 'delivery';
+      if (am !== bm) return am ? 1 : -1;
+      if (!am && !bm) return (DAYS.indexOf(a.pickup_day) || 99) - (DAYS.indexOf(b.pickup_day) || 99);
+      return (a.user_name || '').localeCompare(b.user_name || '');
+    });
+    const lines = ['Weekly Pickup / Delivery List', ''];
+    rows.forEach(o => {
+      const eggs = o.eggs_per_week ? `${o.eggs_per_week} eggs` : '—';
+      const method = o.fulfillment_method === 'delivery'
+        ? `Delivery ($${DELIVERY_FEE_PER_WEEK}) — ${o.delivery_address || ''}`
+        : pickupDateLabel(o, weekOffset);
+      lines.push(`${o.user_name || '—'} — ${eggs} — ${method}`);
+    });
+    navigator.clipboard.writeText(lines.join('\n')).then(
+      ()  => showFlash('view-orders-flash', 'List copied to clipboard.', 'ok'),
+      ()  => alert('Could not copy to clipboard. Please check browser permissions or copy manually.')
+    );
+  }
+
+  function pickupMarkAll() {
+    document.querySelectorAll('.pickup-check-input').forEach((cb, i) => {
+      cb.checked = true;
+      togglePickupRow(i, true);
+    });
+  }
+
 
   /* ═══════════════════════════════════════════════════════
      SUBSCRIPTION PLANS — modal order flow
