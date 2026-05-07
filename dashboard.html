@@ -2236,7 +2236,7 @@
           ? `<button class="btn-cust-cancel" onclick="cancelCustomerSubscription(${activeOrder.id},${u.id})">Cancel Subscription</button>`
           : '';
         const changePlanBtn = activeOrder
-          ? `<button class="btn-cust-change" onclick="openChangePlanModal(${activeOrder.id},'${escHtml(activeOrder.plan_name).replace(/'/g, "\\'")}')">Change Plan</button>`
+          ? `<button class="btn-cust-change" data-order-id="${activeOrder.id}" data-plan-name="${escHtml(activeOrder.plan_name)}" onclick="openChangePlanModal(this.dataset.orderId, this.dataset.planName)">Change Plan</button>`
           : '';
 
         return `<tr>
