@@ -9,10 +9,10 @@ const PRICE_PER_18_BOX      = 7;  // $7 per box of 18 eggs
 const DELIVERY_FEE_PER_WEEK = 2;  // $2 per weekly delivery when method = delivery
 const MONTHLY_WEEKS         = 4;  // Standard monthly plans span 4 weeks
 
-// Fixed plans — price is set regardless of box customisation
+// Fixed plans — one box per weekly delivery; price depends on box type chosen by subscriber
 const FIXED_PLANS = {
-  'Small Family': { basePrice: 19, eggsPerWeek: 12 },
-  'Family':       { basePrice: 28, eggsPerWeek: 18 }
+  'Small Family': { boxes: 1 },
+  'Family':       { boxes: 1 }
 };
 
 // Flexible plan constraints
@@ -42,7 +42,12 @@ function requireAuth(req, res, next) {
 // GET /api/orders/plans — public plan catalogue and pricing constants
 router.get('/plans', (req, res) => {
   const plans = Object.entries(FIXED_PLANS).map(([name, p]) => ({
-    name, price: p.basePrice, eggsPerWeek: p.eggsPerWeek
+    name,
+    boxes:        p.boxes,
+    price12:      p.boxes * PRICE_PER_12_BOX * MONTHLY_WEEKS,
+    price18:      p.boxes * PRICE_PER_18_BOX * MONTHLY_WEEKS,
+    eggsPerWeek12: p.boxes * 12,
+    eggsPerWeek18: p.boxes * 18
   }));
   res.json({
     plans,
@@ -149,18 +154,26 @@ router.post('/', requireAuth, (req, res) => {
     price        = base + dlvFee;
 
   } else {
-    // Fixed plan (Small Family / Family)
+    // Fixed plan (Small Family / Family) — subscriber picks box type: dozen or 18-egg
     const plan = FIXED_PLANS[planName];
     if (!plan) {
       return res.status(400).json({ error: 'Invalid plan name.' });
     }
+
+    const rawBoxType = (req.body.boxType || '').toLowerCase();
+    // Default: Small Family → dozen, Family → 18-egg (mirrors original plan defaults)
+    const boxType = (rawBoxType === 'dozen' || rawBoxType === '18')
+      ? rawBoxType
+      : (planName === 'Small Family' ? 'dozen' : '18');
+
+    b12        = boxType === 'dozen' ? plan.boxes : 0;
+    b18        = boxType === '18'    ? plan.boxes : 0;
+    eggsPerWeek = b12 * 12 + b18 * 18;
+    totalBoxes  = plan.boxes;
+    weeks       = null;
+
     const dlvFee = method === 'delivery' ? DELIVERY_FEE_PER_WEEK * MONTHLY_WEEKS : 0;
-    price        = plan.basePrice + dlvFee;
-    eggsPerWeek  = plan.eggsPerWeek;
-    b12          = null;
-    b18          = null;
-    weeks        = null;
-    totalBoxes   = null;
+    price        = (b12 * PRICE_PER_12_BOX + b18 * PRICE_PER_18_BOX) * MONTHLY_WEEKS + dlvFee;
   }
 
   // Cancel any existing active order before creating a new one
