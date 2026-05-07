@@ -1289,10 +1289,10 @@
       <!-- PICKUP / DELIVERY LIST ───────────────────────────── -->
       <section class="view-panel" id="view-pickup">
         <div class="pickup-header">
-          <h2>🚚 Weekly Pickup / Delivery List</h2>
-          <div class="pickup-filters" role="group" aria-label="Filter week">
-            <button class="pickup-filter-btn active" id="pf-thisweek"  onclick="setPickupFilter('thisweek')">This Week</button>
-            <button class="pickup-filter-btn"         id="pf-nextweek"  onclick="setPickupFilter('nextweek')">Next Week</button>
+          <h2>🚚 Bi-Weekly Pickup / Delivery List</h2>
+          <div class="pickup-filters" role="group" aria-label="Filter delivery period">
+            <button class="pickup-filter-btn active" id="pf-thisweek"  onclick="setPickupFilter('thisweek')">This Delivery</button>
+            <button class="pickup-filter-btn"         id="pf-nextweek"  onclick="setPickupFilter('nextweek')">Next Delivery</button>
             <button class="pickup-filter-btn"         id="pf-delivery"  onclick="setPickupFilter('delivery')">Delivery Only</button>
           </div>
         </div>
@@ -1381,7 +1381,7 @@
 ═══════════════════════════════════════════ -->
 <section class="view-panel tab-panel" id="panel-1">
   <h2 class="section-title">Subscription Plans</h2>
-  <p class="section-subtitle">Choose a fixed plan or build your own. Pick-up or local delivery. +$2 per weekly delivery.</p>
+  <p class="section-subtitle">Choose a fixed plan or build your own. Pick-up or local delivery. +$2 per bi-weekly delivery.</p>
 
   <div class="plans-grid">
 
@@ -1390,8 +1390,8 @@
       <div class="plan-emoji">🐣</div>
       <h3>Solo / Couple</h3>
       <p class="plan-tagline">For 1–2 people · choose your box size</p>
-      <div class="plan-price" id="solo-price-display">$20<span>/mo</span></div>
-      <p class="per-week" id="solo-summary-line">1 box · 12 eggs/wk</p>
+      <div class="plan-price" id="solo-price-display">$10<span>/mo</span></div>
+      <p class="per-week" id="solo-summary-line">1 box · 12 eggs/delivery</p>
 
       <div class="custom-plan-controls">
         <div class="custom-control-row">
@@ -1414,7 +1414,7 @@
 
       <ul>
         <li>Minimum 1 box (12-egg or 18-egg)</li>
-        <li>12-egg: $5/wk · 18-egg: $7/wk</li>
+        <li>12-egg: $5/delivery · 18-egg: $7/delivery</li>
         <li>+$2/delivery for local delivery</li>
         <li>Monthly billing · Cancel anytime</li>
       </ul>

@@ -97,7 +97,7 @@ describe('POST /api/orders', () => {
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
       plan_name:            'Solo / Couple',
-      price:                20,   // 1×$5 × 4 weeks
+      price:                10,   // 1×$5 × 2 deliveries
       eggs_per_week:        12,
       boxes12_per_delivery: 1,
       boxes18_per_delivery: 0,
@@ -118,7 +118,7 @@ describe('POST /api/orders', () => {
     });
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
-      price:                28,  // 1×$7 × 4 weeks
+      price:                14,  // 1×$7 × 2 deliveries
       eggs_per_week:        18,
       boxes12_per_delivery: 0,
       boxes18_per_delivery: 1
@@ -134,8 +134,8 @@ describe('POST /api/orders', () => {
       boxes18: 0
     });
     expect(res.status).toBe(200);
-    // base = 1×$5 × 4 = $20, delivery fee = $2×4 = $8, total = $28
-    expect(res.body.order.price).toBe(28);
+    // base = 1×$5 × 2 = $10, delivery fee = $2×2 = $4, total = $14
+    expect(res.body.order.price).toBe(14);
   });
 
   it('rejects Solo/Couple order with no boxes selected', async () => {
@@ -161,7 +161,7 @@ describe('POST /api/orders', () => {
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
       plan_name:            'Small Family',
-      price:                20,   // 1×$5 × 4 weeks (dozen default)
+      price:                10,   // 1×$5 × 2 deliveries (dozen default)
       eggs_per_week:        12,
       boxes12_per_delivery: 1,
       boxes18_per_delivery: 0,
@@ -179,7 +179,7 @@ describe('POST /api/orders', () => {
     });
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
-      price:                20,
+      price:                10,
       eggs_per_week:        12,
       boxes12_per_delivery: 1,
       boxes18_per_delivery: 0
@@ -195,7 +195,7 @@ describe('POST /api/orders', () => {
     });
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
-      price:                28,   // 1×$7 × 4 weeks
+      price:                14,   // 1×$7 × 2 deliveries
       eggs_per_week:        18,
       boxes12_per_delivery: 0,
       boxes18_per_delivery: 1
@@ -211,7 +211,7 @@ describe('POST /api/orders', () => {
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
       plan_name:            'Family',
-      price:                28,   // 1×$7 × 4 weeks (18-egg default)
+      price:                14,   // 1×$7 × 2 deliveries (18-egg default)
       eggs_per_week:        18,
       boxes12_per_delivery: 0,
       boxes18_per_delivery: 1
@@ -227,7 +227,7 @@ describe('POST /api/orders', () => {
     });
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
-      price:                20,   // 1×$5 × 4 weeks
+      price:                10,   // 1×$5 × 2 deliveries
       eggs_per_week:        12,
       boxes12_per_delivery: 1,
       boxes18_per_delivery: 0
@@ -239,12 +239,12 @@ describe('POST /api/orders', () => {
       planName: 'Family',
       fulfillmentMethod: 'delivery',
       deliveryAddress: '123 Main St, Lincoln, NE'
-      // defaults to 18-egg → $28 base + $8 delivery = $36
+      // defaults to 18-egg → $14 base + $4 delivery = $18
     });
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
       plan_name:        'Family',
-      price:            36,   // $28 base + $2×4 delivery fee
+      price:            18,   // $14 base + $2×2 delivery fee
       fulfillment_method: 'delivery',
       delivery_address: '123 Main St, Lincoln, NE'
     });
@@ -258,8 +258,8 @@ describe('POST /api/orders', () => {
       boxType: 'dozen'
     });
     expect(res.status).toBe(200);
-    // base = 1×$5 × 4 = $20, delivery fee = $2×4 = $8, total = $28
-    expect(res.body.order.price).toBe(28);
+    // base = 1×$5 × 2 = $10, delivery fee = $2×2 = $4, total = $14
+    expect(res.body.order.price).toBe(14);
   });
 
   // ── Custom plan (fully flexible) ─────────────────────────────────────────────

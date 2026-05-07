@@ -7,7 +7,7 @@ const router = express.Router();
 const PRICE_PER_12_BOX      = 5;  // $5 per box of 12 eggs
 const PRICE_PER_18_BOX      = 7;  // $7 per box of 18 eggs
 const DELIVERY_FEE_PER_WEEK = 2;  // $2 per weekly delivery when method = delivery
-const MONTHLY_WEEKS         = 4;  // Standard monthly plans span 4 weeks
+const MONTHLY_WEEKS         = 2;  // Bi-weekly plans: 2 deliveries per month
 
 // Fixed plans — one box per weekly delivery; price depends on box type chosen by subscriber
 const FIXED_PLANS = {
