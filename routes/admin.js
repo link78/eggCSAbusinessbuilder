@@ -22,6 +22,22 @@ router.get('/users', requireAdmin, async (req, res) => {
   res.json({ users });
 });
 
+// GET /api/admin/users/:id — get a single user + their orders
+router.get('/users/:id', requireAdmin, async (req, res) => {
+  const user = (await db.query(
+    'SELECT id, name, email, role, avatar_url, created_at FROM users WHERE id = $1',
+    [req.params.id]
+  )).rows[0];
+  if (!user) return res.status(404).json({ error: 'User not found.' });
+
+  const orders = (await db.query(
+    'SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC',
+    [req.params.id]
+  )).rows;
+
+  res.json({ user, orders });
+});
+
 // PUT /api/admin/users/:id/role — set role to 'user' or 'admin'
 router.put('/users/:id/role', requireAdmin, async (req, res) => {
   const { role } = req.body || {};

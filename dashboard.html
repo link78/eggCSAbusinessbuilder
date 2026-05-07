@@ -835,6 +835,137 @@
     .modal-actions .btn-primary  { padding: .6rem 1.4rem; }
     .modal-actions .btn-secondary { padding: .6rem 1.2rem; }
     #modal-flash { margin-bottom: .7rem; }
+
+    /* ── CUSTOMER MANAGEMENT TABLE ── */
+    .customers-table-wrap { overflow-x: auto; }
+    .customers-table {
+      width: 100%; border-collapse: collapse; font-size: .85rem;
+    }
+    .customers-table th {
+      background: #f8f3ec; text-align: left; padding: .6rem .8rem;
+      font-weight: 700; border-bottom: 2px solid #e0d8cc; white-space: nowrap;
+    }
+    .customers-table td {
+      padding: .6rem .8rem; border-bottom: 1px solid #f0e8d8; vertical-align: middle;
+    }
+    .customers-table tr:last-child td { border-bottom: none; }
+    .customers-table tr:hover td { background: #fffaf4; }
+    .cust-name { font-weight: 700; }
+    .cust-email { font-size: .78rem; color: #888; }
+    .cust-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .btn-cust-profile {
+      background: #e2d9f3; color: #6f42c1; border: none; border-radius: 6px;
+      padding: .28rem .65rem; font-size: .78rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+    }
+    .btn-cust-profile:hover { background: #d3c6ed; }
+    .btn-cust-cancel {
+      background: #fde8e8; color: #c0392b; border: none; border-radius: 6px;
+      padding: .28rem .65rem; font-size: .78rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+    }
+    .btn-cust-cancel:hover { background: #f5c6c6; }
+    .btn-cust-change {
+      background: #e8f4fd; color: #0c6dbf; border: none; border-radius: 6px;
+      padding: .28rem .65rem; font-size: .78rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+    }
+    .btn-cust-change:hover { background: #cce5ff; }
+
+    /* ── CUSTOMER PROFILE SLIDE-OVER ── */
+    #customer-profile-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1500;
+      background: rgba(0,0,0,.4);
+    }
+    #customer-profile-overlay.open { display: block; }
+    #customer-profile-panel {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: min(640px, 100vw);
+      background: #fdf8f0; box-shadow: -4px 0 24px rgba(0,0,0,.15);
+      overflow-y: auto; z-index: 1501;
+      transform: translateX(100%);
+      transition: transform .25s ease;
+    }
+    #customer-profile-overlay.open #customer-profile-panel {
+      transform: translateX(0);
+    }
+    .profile-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 1.4rem; background: #1c2e1a; color: #fff;
+      gap: 1rem;
+    }
+    .profile-panel-header h2 { font-size: 1.05rem; font-weight: 700; margin: 0; }
+    .btn-close-panel {
+      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+      color: #fff; border-radius: 6px; padding: .3rem .75rem; font-size: .85rem;
+      cursor: pointer; transition: background .15s;
+    }
+    .btn-close-panel:hover { background: rgba(255,255,255,.28); }
+    .profile-panel-body { padding: 1.4rem; }
+    .profile-panel-cols {
+      display: grid; grid-template-columns: 1fr 1.4fr; gap: 1.2rem;
+    }
+    @media (max-width: 520px) { .profile-panel-cols { grid-template-columns: 1fr; } }
+    .profile-panel-left .pp-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, #e85d04, #f48c06);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; color: #fff; font-weight: 700;
+      margin-bottom: .9rem;
+    }
+    .profile-panel-left .pp-avatar img {
+      width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+    }
+    .pp-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em;
+      color: #888; font-weight: 700; margin-bottom: .15rem; }
+    .pp-value { font-size: .9rem; color: #2d2d2d; margin-bottom: .75rem; word-break: break-word; }
+    .pp-card {
+      background: #fff; border-radius: 10px; padding: 1rem 1.1rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06); margin-bottom: .9rem;
+    }
+    .pp-card h4 {
+      font-size: .9rem; font-weight: 700; color: #c45203;
+      margin: 0 0 .7rem; display: flex; align-items: center; gap: .4rem;
+    }
+    .pp-history-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .35rem 0; border-bottom: 1px solid #f0e8d8;
+      font-size: .82rem; flex-wrap: wrap; gap: .4rem;
+    }
+    .pp-history-row:last-child { border-bottom: none; }
+    .pp-sched-row {
+      font-size: .85rem; color: #444; padding: .3rem 0;
+      border-bottom: 1px solid #f5f0e8;
+    }
+    .pp-sched-row:last-child { border-bottom: none; }
+    .pp-notes-area {
+      width: 100%; resize: vertical; min-height: 70px;
+      border: 1.5px solid #e0d8cc; border-radius: 8px;
+      padding: .5rem .7rem; font-size: .88rem; font-family: inherit;
+      background: #fffdf9; color: #2d2d2d; outline: none;
+      transition: border-color .2s;
+    }
+    .pp-notes-area:focus { border-color: #e85d04; }
+    .pp-notes-save {
+      margin-top: .5rem;
+      background: #e85d04; color: #fff; border: none; border-radius: 7px;
+      padding: .4rem .9rem; font-size: .82rem; font-weight: 700;
+      cursor: pointer; transition: background .2s;
+    }
+    .pp-notes-save:hover { background: #c44f03; }
+
+    /* Change Plan modal for customer */
+    #change-plan-modal-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.45); z-index: 2100;
+      align-items: center; justify-content: center;
+    }
+    #change-plan-modal-backdrop.open { display: flex; }
+    #change-plan-modal-box {
+      background: #fff; border-radius: 14px; padding: 1.8rem;
+      width: min(400px, 92vw); box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    }
+    #change-plan-modal-box h3 { margin: 0 0 1rem; font-size: 1.1rem; color: #c45203; }
   </style>
 </head>
 <body>
@@ -1007,10 +1138,73 @@
       <!-- CUSTOMERS VIEW ──────────────────────────────────── -->
       <section class="view-panel" id="view-customers">
         <h2 class="section-title">Customers</h2>
-        <p class="section-subtitle">Manage your subscribers and their account roles.</p>
+        <p class="section-subtitle">Manage your subscribers — view profiles, change plans, or cancel subscriptions.</p>
         <div id="view-customers-flash"></div>
         <div id="view-customers-list"><div style="color:#aaa;font-size:.9rem;">Loading…</div></div>
       </section>
+
+      <!-- CUSTOMER PROFILE SLIDE-OVER ─────────────────────── -->
+      <div id="customer-profile-overlay" onclick="closeCustomerProfile(event)">
+        <div id="customer-profile-panel">
+          <div class="profile-panel-header">
+            <h2 id="pp-header-name">Customer Profile</h2>
+            <button class="btn-close-panel" onclick="closeCustomerProfile()">✕ Close</button>
+          </div>
+          <div class="profile-panel-body">
+            <div id="pp-flash"></div>
+            <div class="profile-panel-cols">
+              <div class="profile-panel-left" id="pp-left">
+                <div class="pp-avatar" id="pp-avatar">?</div>
+                <div class="pp-label">Full Name</div>
+                <div class="pp-value" id="pp-name">—</div>
+                <div class="pp-label">Email</div>
+                <div class="pp-value" id="pp-email">—</div>
+                <div class="pp-label">Address / Pickup</div>
+                <div class="pp-value" id="pp-address">—</div>
+                <div class="pp-label">Subscription Status</div>
+                <div class="pp-value" id="pp-status">—</div>
+                <div class="pp-label">Member Since</div>
+                <div class="pp-value" id="pp-since">—</div>
+              </div>
+              <div class="profile-panel-right">
+                <div class="pp-card">
+                  <h4>📦 Current Plan</h4>
+                  <div id="pp-current-plan">—</div>
+                </div>
+                <div class="pp-card">
+                  <h4>💳 Billing History</h4>
+                  <div id="pp-billing">—</div>
+                </div>
+                <div class="pp-card">
+                  <h4>🗓 Pickup / Delivery Schedule</h4>
+                  <div id="pp-schedule">—</div>
+                </div>
+                <div class="pp-card">
+                  <h4>📝 Notes</h4>
+                  <textarea class="pp-notes-area" id="pp-notes" placeholder="Internal notes about this customer…"></textarea>
+                  <button class="pp-notes-save" onclick="saveCustomerNotes()">Save Notes</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHANGE PLAN MODAL ───────────────────────────────── -->
+      <div id="change-plan-modal-backdrop" onclick="closeChangePlanModal(event)">
+        <div id="change-plan-modal-box" onclick="event.stopPropagation()">
+          <h3>✏️ Change Plan</h3>
+          <div id="change-plan-flash"></div>
+          <div class="modal-field">
+            <label for="change-plan-input">New Plan Name</label>
+            <input type="text" id="change-plan-input" placeholder="e.g. Small Family" maxlength="120" />
+          </div>
+          <div class="modal-actions" style="margin-top:.8rem;">
+            <button class="btn-secondary" onclick="closeChangePlanModal()">Cancel</button>
+            <button class="btn-primary" onclick="saveChangePlan()">Save</button>
+          </div>
+        </div>
+      </div>
 
       <!-- ORDERS VIEW ─────────────────────────────────────── -->
       <section class="view-panel" id="view-orders">
@@ -1988,6 +2182,9 @@
   /* ═══════════════════════════════════════════════════════
      CUSTOMERS VIEW
   ═══════════════════════════════════════════════════════ */
+  // Cache for customer data (user id → {user, orders})
+  const _custCache = {};
+
   async function loadViewCustomers() {
     const container = document.getElementById('view-customers-list');
     if (!currentUser || currentUser.role !== 'admin') {
@@ -1996,26 +2193,81 @@
     }
     container.innerHTML = '<div style="color:#aaa;font-size:.9rem;">Loading…</div>';
     try {
-      const data = await apiFetch('/api/admin/users');
-      if (data.error) { container.innerHTML = `<p style="color:#c0392b;">${escHtml(data.error)}</p>`; return; }
-      if (!data.users || data.users.length === 0) {
-        container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">No users found.</p>';
+      const [usersData, ordersData] = await Promise.all([
+        apiFetch('/api/admin/users'),
+        apiFetch('/api/admin/orders'),
+      ]);
+      if (usersData.error) { container.innerHTML = `<p style="color:#c0392b;">${escHtml(usersData.error)}</p>`; return; }
+
+      const users  = usersData.users  || [];
+      const orders = ordersData.orders || [];
+
+      // Build a map: userId → array of orders
+      const ordersByUser = {};
+      for (const o of orders) {
+        if (!ordersByUser[o.user_id]) ordersByUser[o.user_id] = [];
+        ordersByUser[o.user_id].push(o);
+      }
+
+      if (users.length === 0) {
+        container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">No customers yet.</p>';
         return;
       }
-      container.innerHTML = `<div class="card">${
-        data.users.map(u => `
-          <div class="admin-user-row">
-            <div class="admin-user-info">
-              <div class="admin-user-name">${escHtml(u.name)}</div>
-              <div class="admin-user-email">${escHtml(u.email)}</div>
+
+      const rows = users.map(u => {
+        const userOrders = ordersByUser[u.id] || [];
+        const activeOrder = userOrders.find(o => o.status === 'active');
+        const planName    = activeOrder ? escHtml(activeOrder.plan_name) : '<span style="color:#aaa;">—</span>';
+        const statusBadge = activeOrder
+          ? '<span class="order-status status-active">active</span>'
+          : '<span class="order-status status-cancelled">no active plan</span>';
+
+        // Next pickup: delivery address or pickup day
+        let nextPickup = '—';
+        if (activeOrder) {
+          if (activeOrder.fulfillment_method === 'delivery' && activeOrder.delivery_address) {
+            nextPickup = escHtml(activeOrder.delivery_address);
+          } else if (activeOrder.pickup_day) {
+            nextPickup = escHtml(activeOrder.pickup_day) + 's';
+          }
+        }
+
+        const cancelBtn = activeOrder
+          ? `<button class="btn-cust-cancel" onclick="cancelCustomerSubscription(${activeOrder.id},${u.id})">Cancel Subscription</button>`
+          : '';
+        const changePlanBtn = activeOrder
+          ? `<button class="btn-cust-change" onclick="openChangePlanModal(${activeOrder.id},'${escHtml(activeOrder.plan_name).replace(/'/g, "\\'")}')">Change Plan</button>`
+          : '';
+
+        return `<tr>
+          <td>
+            <div class="cust-name">${escHtml(u.name)}</div>
+            <div class="cust-email">${escHtml(u.email)}</div>
+          </td>
+          <td>${planName}</td>
+          <td>${statusBadge}</td>
+          <td style="font-size:.82rem;color:#555;">${nextPickup}</td>
+          <td>
+            <div class="cust-actions">
+              <button class="btn-cust-profile" onclick="openCustomerProfile(${u.id})">View Profile</button>
+              ${cancelBtn}
+              ${changePlanBtn}
             </div>
-            <span class="admin-role-badge ${u.role === 'admin' ? 'role-admin' : 'role-user'}">${escHtml(u.role)}</span>
-            ${u.id !== currentUser.id
-              ? `<button class="btn-role-toggle" onclick="toggleViewUserRole(${u.id}, '${u.role === 'admin' ? 'user' : 'admin'}')"
-                  >${u.role === 'admin' ? 'Remove Admin' : 'Make Admin'}</button>`
-              : '<span style="font-size:.78rem;color:#aaa;">(you)</span>'}
-          </div>`).join('')
-      }</div>`;
+          </td>
+        </tr>`;
+      }).join('');
+
+      container.innerHTML = `<div class="card customers-table-wrap">
+        <table class="customers-table">
+          <thead>
+            <tr>
+              <th>Name</th><th>Plan</th><th>Status</th>
+              <th>Next Pickup / Delivery</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
     } catch (_) {
       container.innerHTML = '<p style="color:#c0392b;font-size:.9rem;">Could not load customers.</p>';
     }
@@ -2029,6 +2281,175 @@
     } catch (_) {
       showFlash('view-customers-flash', 'Failed to update role.', 'err');
     }
+  }
+
+  async function cancelCustomerSubscription(orderId, userId) {
+    if (!confirm(`Cancel order #${orderId}?`)) return;
+    try {
+      const data = await apiDelete(`/api/admin/orders/${orderId}`);
+      if (data.error) { showFlash('view-customers-flash', data.error, 'err'); return; }
+      showFlash('view-customers-flash', `Order #${orderId} cancelled.`, 'ok');
+      loadViewCustomers();
+    } catch (_) {
+      showFlash('view-customers-flash', 'Failed to cancel subscription.', 'err');
+    }
+  }
+
+  // ── Change Plan Modal ────────────────────────────────────────────────────────
+  let _changePlanOrderId = null;
+
+  function openChangePlanModal(orderId, currentPlan) {
+    _changePlanOrderId = orderId;
+    document.getElementById('change-plan-input').value = currentPlan || '';
+    document.getElementById('change-plan-flash').innerHTML = '';
+    document.getElementById('change-plan-modal-backdrop').classList.add('open');
+  }
+
+  function closeChangePlanModal(e) {
+    if (e && e.target !== document.getElementById('change-plan-modal-backdrop')) return;
+    document.getElementById('change-plan-modal-backdrop').classList.remove('open');
+    _changePlanOrderId = null;
+  }
+
+  async function saveChangePlan() {
+    const planName = document.getElementById('change-plan-input').value.trim();
+    if (!planName) { showFlash('change-plan-flash', 'Plan name is required.', 'warn'); return; }
+    try {
+      const data = await apiPut(`/api/admin/orders/${_changePlanOrderId}`, { plan_name: planName });
+      if (data.error) { showFlash('change-plan-flash', data.error, 'err'); return; }
+      document.getElementById('change-plan-modal-backdrop').classList.remove('open');
+      showFlash('view-customers-flash', 'Plan updated.', 'ok');
+      loadViewCustomers();
+    } catch (_) {
+      showFlash('change-plan-flash', 'Failed to update plan.', 'err');
+    }
+  }
+
+  // ── Customer Profile Panel ───────────────────────────────────────────────────
+  let _profileUserId = null;
+
+  async function openCustomerProfile(userId) {
+    _profileUserId = userId;
+    const overlay = document.getElementById('customer-profile-overlay');
+    overlay.classList.add('open');
+    document.getElementById('pp-flash').innerHTML = '';
+    document.getElementById('pp-header-name').textContent = 'Loading…';
+    // clear fields
+    ['pp-name','pp-email','pp-address','pp-status','pp-since','pp-current-plan','pp-billing','pp-schedule'].forEach(id => {
+      document.getElementById(id).textContent = '—';
+    });
+    document.getElementById('pp-notes').value = '';
+    document.getElementById('pp-avatar').innerHTML = '?';
+
+    try {
+      const data = await apiFetch(`/api/admin/users/${userId}`);
+      if (data.error) { showFlash('pp-flash', data.error, 'err'); return; }
+      renderCustomerProfile(data.user, data.orders || []);
+    } catch (_) {
+      showFlash('pp-flash', 'Could not load customer profile.', 'err');
+    }
+  }
+
+  function renderCustomerProfile(user, orders) {
+    document.getElementById('pp-header-name').textContent = user.name;
+    document.getElementById('pp-name').textContent  = user.name;
+    document.getElementById('pp-email').textContent = user.email;
+    document.getElementById('pp-since').textContent =
+      new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+    // Avatar
+    const avatarEl = document.getElementById('pp-avatar');
+    if (user.avatar_url) {
+      avatarEl.innerHTML = `<img src="${escHtml(user.avatar_url)}" alt="${escHtml(user.name)}" />`;
+    } else {
+      avatarEl.textContent = (user.name || '?').charAt(0).toUpperCase();
+    }
+
+    const activeOrder = orders.find(o => o.status === 'active');
+
+    // Address / pickup
+    if (activeOrder) {
+      if (activeOrder.fulfillment_method === 'delivery' && activeOrder.delivery_address) {
+        document.getElementById('pp-address').textContent = activeOrder.delivery_address;
+      } else if (activeOrder.pickup_day) {
+        document.getElementById('pp-address').textContent = activeOrder.pickup_day + 's (pickup)';
+      } else {
+        document.getElementById('pp-address').textContent = '—';
+      }
+    } else {
+      document.getElementById('pp-address').textContent = '—';
+    }
+
+    // Status
+    document.getElementById('pp-status').innerHTML = activeOrder
+      ? '<span class="order-status status-active">Active</span>'
+      : '<span class="order-status status-cancelled">No active plan</span>';
+
+    // Current plan
+    const cpEl = document.getElementById('pp-current-plan');
+    if (activeOrder) {
+      const del = activeOrder.fulfillment_method === 'delivery' ? '🚗 Delivery' : '🏡 Pickup';
+      const b12 = activeOrder.boxes12_per_delivery || 0;
+      const b18 = activeOrder.boxes18_per_delivery || 0;
+      const boxes = (b12 || b18)
+        ? [b12 > 0 ? `${b12}×12-egg` : '', b18 > 0 ? `${b18}×18-egg` : ''].filter(Boolean).join(', ')
+        : '';
+      cpEl.innerHTML = `
+        <div class="pp-value" style="margin-bottom:.3rem;font-weight:700;">${escHtml(activeOrder.plan_name)}</div>
+        <div class="pp-value" style="color:#555;">$${activeOrder.price}${activeOrder.duration_weeks ? ' total' : '/mo'} · ${del}</div>
+        ${boxes ? `<div class="pp-value" style="color:#888;">${boxes}</div>` : ''}`;
+    } else {
+      cpEl.textContent = 'No active subscription.';
+    }
+
+    // Billing history
+    const billingEl = document.getElementById('pp-billing');
+    if (orders.length === 0) {
+      billingEl.textContent = 'No orders found.';
+    } else {
+      billingEl.innerHTML = orders.map(o => {
+        const date = new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const statusCls = o.status === 'active' ? 'status-active' : 'status-cancelled';
+        return `<div class="pp-history-row">
+          <span>${escHtml(o.plan_name)}</span>
+          <span>$${o.price}${o.duration_weeks ? ' total' : '/mo'}</span>
+          <span class="order-status ${statusCls}">${escHtml(o.status)}</span>
+          <span style="color:#aaa;">${date}</span>
+        </div>`;
+      }).join('');
+    }
+
+    // Schedule
+    const schedEl = document.getElementById('pp-schedule');
+    const schedOrders = orders.filter(o => o.status === 'active');
+    if (schedOrders.length === 0) {
+      schedEl.textContent = 'No active subscriptions.';
+    } else {
+      schedEl.innerHTML = schedOrders.map(o => {
+        const method = o.fulfillment_method === 'delivery' ? '🚗 Delivery' : '🏡 Pickup';
+        const detail = o.fulfillment_method === 'delivery'
+          ? (o.delivery_address || '—')
+          : (o.pickup_day ? o.pickup_day + 's' : '—');
+        return `<div class="pp-sched-row">${method}: <strong>${escHtml(detail)}</strong> — ${escHtml(o.plan_name)}</div>`;
+      }).join('');
+    }
+
+    // Notes (stored in localStorage per userId since no DB column)
+    const noteKey = `cust_notes_${user.id}`;
+    document.getElementById('pp-notes').value = localStorage.getItem(noteKey) || '';
+  }
+
+  function saveCustomerNotes() {
+    if (!_profileUserId) return;
+    const notes = document.getElementById('pp-notes').value;
+    localStorage.setItem(`cust_notes_${_profileUserId}`, notes);
+    showFlash('pp-flash', 'Notes saved.', 'ok');
+  }
+
+  function closeCustomerProfile(e) {
+    if (e && e.target !== document.getElementById('customer-profile-overlay')) return;
+    document.getElementById('customer-profile-overlay').classList.remove('open');
+    _profileUserId = null;
   }
 
   /* ═══════════════════════════════════════════════════════
