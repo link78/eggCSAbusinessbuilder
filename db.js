@@ -87,6 +87,12 @@ db.exec(`
   if (!orderCols.includes('duration_weeks')) {
     db.exec('ALTER TABLE orders ADD COLUMN duration_weeks INTEGER');
   }
+  if (!orderCols.includes('boxes12_per_delivery')) {
+    db.exec('ALTER TABLE orders ADD COLUMN boxes12_per_delivery INTEGER');
+  }
+  if (!orderCols.includes('boxes18_per_delivery')) {
+    db.exec('ALTER TABLE orders ADD COLUMN boxes18_per_delivery INTEGER');
+  }
 }
 
 module.exports = db;

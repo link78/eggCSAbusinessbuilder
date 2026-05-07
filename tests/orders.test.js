@@ -5,7 +5,6 @@ let agent;
 
 beforeAll(async () => {
   agent = makeAgent(app);
-  // Register and login a test user
   await agent.post('/api/auth/register', {
     name: 'Dana', email: 'dana@example.com', password: 'password123'
   });
@@ -14,12 +13,11 @@ beforeAll(async () => {
 // ── GET /api/orders/plans ─────────────────────────────────────────────────────
 
 describe('GET /api/orders/plans', () => {
-  it('returns all three standard plans', async () => {
+  it('returns the two fixed plans (Small Family, Family)', async () => {
     const res = await agent.get('/api/orders/plans');
     expect(res.status).toBe(200);
-    expect(res.body.plans).toHaveLength(3);
+    expect(res.body.plans).toHaveLength(2);
     const names = res.body.plans.map(p => p.name);
-    expect(names).toContain('Solo / Couple');
     expect(names).toContain('Small Family');
     expect(names).toContain('Family');
   });
@@ -33,13 +31,27 @@ describe('GET /api/orders/plans', () => {
     }
   });
 
+  it('returns delivery fee per week', async () => {
+    const res = await agent.get('/api/orders/plans');
+    expect(res.body.deliveryFeePerWeek).toBe(2);
+  });
+
+  it('returns solo couple constraints', async () => {
+    const res = await agent.get('/api/orders/plans');
+    expect(res.body.soloCoupleConstraints).toMatchObject({
+      minBoxes:      1,
+      pricePerBox12: 5,
+      pricePerBox18: 7
+    });
+  });
+
   it('returns custom plan constraints', async () => {
     const res = await agent.get('/api/orders/plans');
     expect(res.body.customPlan).toMatchObject({
-      pricePerBox: 7,
-      eggsPerBox:  18,
-      minBoxes:    2,
-      minWeeks:    2
+      pricePerBox12: 5,
+      pricePerBox18: 7,
+      minBoxes:      2,
+      minWeeks:      2
     });
   });
 });
@@ -63,25 +75,91 @@ describe('GET /api/orders', () => {
 // ── POST /api/orders ──────────────────────────────────────────────────────────
 
 describe('POST /api/orders', () => {
-  it('places a pickup order', async () => {
+
+  // ── Solo / Couple (flexible monthly) ────────────────────────────────────────
+
+  it('places a Solo/Couple pickup order with one 12-egg box', async () => {
     const res = await agent.post('/api/orders', {
       planName: 'Solo / Couple',
       fulfillmentMethod: 'pickup',
-      pickupDay: 'Wednesday'
+      pickupDay: 'Wednesday',
+      boxes12: 1,
+      boxes18: 0
     });
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
-      plan_name: 'Solo / Couple',
-      price: 9,
-      eggs_per_week: 6,
-      fulfillment_method: 'pickup',
-      pickup_day: 'Wednesday',
-      status: 'active'
+      plan_name:            'Solo / Couple',
+      price:                20,   // 1×$5 × 4 weeks
+      eggs_per_week:        12,
+      boxes12_per_delivery: 1,
+      boxes18_per_delivery: 0,
+      fulfillment_method:   'pickup',
+      pickup_day:           'Wednesday',
+      status:               'active'
     });
     expect(res.body.order.next_billing_date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
-  it('places a delivery order', async () => {
+  it('places a Solo/Couple pickup order with one 18-egg box', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Solo / Couple',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Monday',
+      boxes12: 0,
+      boxes18: 1
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.order).toMatchObject({
+      price:                28,  // 1×$7 × 4 weeks
+      eggs_per_week:        18,
+      boxes12_per_delivery: 0,
+      boxes18_per_delivery: 1
+    });
+  });
+
+  it('adds $2/delivery delivery fee to Solo/Couple delivery order', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Solo / Couple',
+      fulfillmentMethod: 'delivery',
+      deliveryAddress: '100 Test St, Lincoln NE',
+      boxes12: 1,
+      boxes18: 0
+    });
+    expect(res.status).toBe(200);
+    // base = 1×$5 × 4 = $20, delivery fee = $2×4 = $8, total = $28
+    expect(res.body.order.price).toBe(28);
+  });
+
+  it('rejects Solo/Couple order with no boxes selected', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Solo / Couple',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Monday',
+      boxes12: 0,
+      boxes18: 0
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/at least/i);
+  });
+
+  // ── Fixed plans (Small Family / Family) ──────────────────────────────────────
+
+  it('places a fixed plan pickup order', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Small Family',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Friday'
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.order).toMatchObject({
+      plan_name:  'Small Family',
+      price:      19,   // base price, no delivery fee
+      eggs_per_week: 12,
+      status:     'active'
+    });
+  });
+
+  it('applies $2/delivery fee to a fixed plan delivery order', async () => {
     const res = await agent.post('/api/orders', {
       planName: 'Family',
       fulfillmentMethod: 'delivery',
@@ -89,64 +167,104 @@ describe('POST /api/orders', () => {
     });
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
-      plan_name: 'Family',
-      price: 28,
+      plan_name:        'Family',
+      price:            36,   // $28 base + $2×4 delivery fee = $36
       fulfillment_method: 'delivery',
       delivery_address: '123 Main St, Lincoln, NE'
     });
   });
 
-  it('places a custom plan order', async () => {
+  // ── Custom plan (fully flexible) ─────────────────────────────────────────────
+
+  it('places a Custom plan pickup order with mixed box sizes', async () => {
     const res = await agent.post('/api/orders', {
       planName: 'Custom',
       fulfillmentMethod: 'pickup',
       pickupDay: 'Friday',
-      boxesPerDelivery: 3,
+      boxes12: 1,
+      boxes18: 1,
       durationWeeks: 4
     });
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
-      plan_name: 'Custom',
-      price: 84,            // 3 boxes × $7 × 4 weeks
-      eggs_per_week: 54,    // 3 × 18
-      boxes_per_delivery: 3,
-      duration_weeks: 4,
-      status: 'active'
+      plan_name:            'Custom',
+      price:                48,  // (1×$5 + 1×$7) × 4 = $48
+      eggs_per_week:        30,  // 1×12 + 1×18 = 30
+      boxes12_per_delivery: 1,
+      boxes18_per_delivery: 1,
+      boxes_per_delivery:   2,
+      duration_weeks:       4,
+      status:               'active'
     });
   });
 
-  it('rejects custom plan with fewer than 2 boxes', async () => {
+  it('places a Custom plan with only 18-egg boxes', async () => {
     const res = await agent.post('/api/orders', {
       planName: 'Custom',
       fulfillmentMethod: 'pickup',
       pickupDay: 'Monday',
-      boxesPerDelivery: 1,
+      boxes12: 0,
+      boxes18: 3,
+      durationWeeks: 2
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.order).toMatchObject({
+      price:                42,   // 3×$7 × 2 = $42
+      eggs_per_week:        54,   // 3×18
+      boxes12_per_delivery: 0,
+      boxes18_per_delivery: 3
+    });
+  });
+
+  it('adds $2/delivery fee to Custom plan delivery order', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Custom',
+      fulfillmentMethod: 'delivery',
+      deliveryAddress: '200 Elm St, Lincoln NE',
+      boxes12: 1,
+      boxes18: 1,
+      durationWeeks: 4
+    });
+    expect(res.status).toBe(200);
+    // base = $12/wk × 4 = $48, delivery fee = $2×4 = $8, total = $56
+    expect(res.body.order.price).toBe(56);
+  });
+
+  it('rejects Custom plan with fewer than 2 boxes total', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Custom',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Monday',
+      boxes12: 1,
+      boxes18: 0,   // total = 1, below minimum 2
       durationWeeks: 2
     });
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/boxesPerDelivery/i);
+    expect(res.body.error).toMatch(/2 boxes/i);
   });
 
-  it('rejects custom plan with fewer than 2 weeks', async () => {
+  it('rejects Custom plan with fewer than 2 weeks', async () => {
     const res = await agent.post('/api/orders', {
       planName: 'Custom',
       fulfillmentMethod: 'pickup',
       pickupDay: 'Monday',
-      boxesPerDelivery: 2,
+      boxes12: 1,
+      boxes18: 1,
       durationWeeks: 1
     });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/durationWeeks/i);
   });
 
+  // ── General validation ───────────────────────────────────────────────────────
+
   it('cancels the previous active order when placing a new one', async () => {
-    // Place first order
     await agent.post('/api/orders', {
       planName: 'Solo / Couple',
       fulfillmentMethod: 'pickup',
-      pickupDay: 'Monday'
+      pickupDay: 'Monday',
+      boxes12: 1, boxes18: 0
     });
-    // Place second order — should cancel the first
     await agent.post('/api/orders', {
       planName: 'Small Family',
       fulfillmentMethod: 'pickup',
@@ -215,7 +333,8 @@ describe('DELETE /api/orders/:id', () => {
     const create = await agent.post('/api/orders', {
       planName: 'Solo / Couple',
       fulfillmentMethod: 'pickup',
-      pickupDay: 'Tuesday'
+      pickupDay: 'Tuesday',
+      boxes12: 1, boxes18: 0
     });
     const orderId = create.body.order.id;
 
@@ -233,16 +352,15 @@ describe('DELETE /api/orders/:id', () => {
     expect(res.status).toBe(404);
   });
 
-  it('does not allow cancelling another user\'s order', async () => {
-    // Create an order for the primary user
+  it("does not allow cancelling another user's order", async () => {
     const create = await agent.post('/api/orders', {
       planName: 'Solo / Couple',
       fulfillmentMethod: 'pickup',
-      pickupDay: 'Monday'
+      pickupDay: 'Monday',
+      boxes12: 1, boxes18: 0
     });
     const orderId = create.body.order.id;
 
-    // Try to cancel from a different user's session
     const otherAgent = makeAgent(app);
     await otherAgent.post('/api/auth/register', {
       name: 'Eve', email: 'eve@example.com', password: 'password123'

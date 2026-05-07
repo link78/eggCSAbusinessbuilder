@@ -3,22 +3,24 @@ const db      = require('../db');
 
 const router = express.Router();
 
-// Canonical plan definitions — price and eggs are never trusted from the client
-// Pricing: 18 eggs = $7/week; monthly = weekly price × 4 weeks
-const PLANS = {
-  'Solo / Couple': { price: 9,  eggsPerWeek: 6  },  // 6 eggs/wk  = $7×(6/18)×4  ≈ $9/mo
-  'Small Family':  { price: 19, eggsPerWeek: 12 },  // 12 eggs/wk = $7×(12/18)×4 ≈ $19/mo
-  'Family':        { price: 28, eggsPerWeek: 18 }   // 18 eggs/wk = $7×1×4       = $28/mo
+// ── Pricing constants ──────────────────────────────────────────────────────────
+const PRICE_PER_12_BOX      = 5;  // $5 per box of 12 eggs
+const PRICE_PER_18_BOX      = 7;  // $7 per box of 18 eggs
+const DELIVERY_FEE_PER_WEEK = 2;  // $2 per weekly delivery when method = delivery
+const MONTHLY_WEEKS         = 4;  // Standard monthly plans span 4 weeks
+
+// Fixed plans — price is set regardless of box customisation
+const FIXED_PLANS = {
+  'Small Family': { basePrice: 19, eggsPerWeek: 12 },
+  'Family':       { basePrice: 28, eggsPerWeek: 18 }
 };
 
-// Price per box of 18 eggs for custom plans
-const PRICE_PER_BOX = 7;
-const EGGS_PER_BOX  = 18;
-
-const MIN_BOXES = 2;
-const MIN_WEEKS = 2;
-const MAX_BOXES = 20;
-const MAX_WEEKS = 52;
+// Flexible plan constraints
+const SOLO_MIN_BOXES   = 1;   // Solo / Couple: at least 1 box (12-egg or 18-egg)
+const CUSTOM_MIN_BOXES = 2;   // Custom: at least 2 boxes total
+const CUSTOM_MIN_WEEKS = 2;   // Custom: at least 2 weeks duration
+const MAX_BOXES        = 20;  // max boxes per type per delivery
+const MAX_WEEKS        = 52;
 
 const VALID_PICKUP_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -37,18 +39,27 @@ function requireAuth(req, res, next) {
   next();
 }
 
-// GET /api/orders/plans — public list of available plans + custom plan info
+// GET /api/orders/plans — public plan catalogue and pricing constants
 router.get('/plans', (req, res) => {
-  const plans = Object.entries(PLANS).map(([name, p]) => ({ name, ...p }));
+  const plans = Object.entries(FIXED_PLANS).map(([name, p]) => ({
+    name, price: p.basePrice, eggsPerWeek: p.eggsPerWeek
+  }));
   res.json({
     plans,
+    deliveryFeePerWeek: DELIVERY_FEE_PER_WEEK,
+    soloCoupleConstraints: {
+      minBoxes:      SOLO_MIN_BOXES,
+      monthlyWeeks:  MONTHLY_WEEKS,
+      pricePerBox12: PRICE_PER_12_BOX,
+      pricePerBox18: PRICE_PER_18_BOX
+    },
     customPlan: {
-      pricePerBox: PRICE_PER_BOX,
-      eggsPerBox:  EGGS_PER_BOX,
-      minBoxes:    MIN_BOXES,
-      minWeeks:    MIN_WEEKS,
-      maxBoxes:    MAX_BOXES,
-      maxWeeks:    MAX_WEEKS
+      pricePerBox12: PRICE_PER_12_BOX,
+      pricePerBox18: PRICE_PER_18_BOX,
+      minBoxes:      CUSTOM_MIN_BOXES,
+      minWeeks:      CUSTOM_MIN_WEEKS,
+      maxBoxes:      MAX_BOXES,
+      maxWeeks:      MAX_WEEKS
     }
   });
 });
@@ -61,10 +72,10 @@ router.get('/', requireAuth, (req, res) => {
   res.json({ orders: rows });
 });
 
-// POST /api/orders — place a new subscription order (standard or custom)
+// POST /api/orders — place a new subscription order (standard or flexible)
 router.post('/', requireAuth, (req, res) => {
   const { planName, fulfillmentMethod, deliveryAddress, pickupDay,
-          boxesPerDelivery, durationWeeks } = req.body || {};
+          boxes12, boxes18, durationWeeks } = req.body || {};
 
   if (!planName) {
     return res.status(400).json({ error: 'planName is required.' });
@@ -90,37 +101,66 @@ router.post('/', requireAuth, (req, res) => {
   const cleanAddress = method === 'delivery' ? deliveryAddress.trim() : null;
   const cleanDay     = method === 'pickup'   ? pickupDay            : null;
 
-  let price, eggsPerWeek, boxes, weeks;
+  let price, eggsPerWeek, b12, b18, weeks, totalBoxes;
 
-  if (planName === 'Custom') {
-    // Validate custom plan parameters
-    boxes = parseInt(boxesPerDelivery, 10);
-    weeks = parseInt(durationWeeks, 10);
+  if (planName === 'Solo / Couple') {
+    // Flexible monthly plan — user picks box sizes (12-egg and/or 18-egg)
+    b12 = Math.max(0, parseInt(boxes12, 10) || 0);
+    b18 = Math.max(0, parseInt(boxes18, 10) || 0);
+    totalBoxes = b12 + b18;
 
-    if (isNaN(boxes) || boxes < MIN_BOXES) {
-      return res.status(400).json({ error: `boxesPerDelivery must be at least ${MIN_BOXES}.` });
+    if (totalBoxes < SOLO_MIN_BOXES) {
+      return res.status(400).json({
+        error: `Solo / Couple plan requires at least ${SOLO_MIN_BOXES} box (12-egg or 18-egg).`
+      });
     }
-    if (boxes > MAX_BOXES) {
-      return res.status(400).json({ error: `boxesPerDelivery cannot exceed ${MAX_BOXES}.` });
+
+    weeks        = MONTHLY_WEEKS;
+    eggsPerWeek  = b12 * 12 + b18 * 18;
+    const base   = (b12 * PRICE_PER_12_BOX + b18 * PRICE_PER_18_BOX) * MONTHLY_WEEKS;
+    const dlvFee = method === 'delivery' ? DELIVERY_FEE_PER_WEEK * MONTHLY_WEEKS : 0;
+    price        = base + dlvFee;
+
+  } else if (planName === 'Custom') {
+    // Fully flexible plan — user picks box sizes and duration
+    b12 = Math.max(0, parseInt(boxes12, 10) || 0);
+    b18 = Math.max(0, parseInt(boxes18, 10) || 0);
+    weeks      = parseInt(durationWeeks, 10);
+    totalBoxes = b12 + b18;
+
+    if (totalBoxes < CUSTOM_MIN_BOXES) {
+      return res.status(400).json({
+        error: `Custom plan requires at least ${CUSTOM_MIN_BOXES} boxes total (12-egg and/or 18-egg).`
+      });
     }
-    if (isNaN(weeks) || weeks < MIN_WEEKS) {
-      return res.status(400).json({ error: `durationWeeks must be at least ${MIN_WEEKS}.` });
+    if (totalBoxes > MAX_BOXES) {
+      return res.status(400).json({ error: `Total boxes per delivery cannot exceed ${MAX_BOXES}.` });
+    }
+    if (isNaN(weeks) || weeks < CUSTOM_MIN_WEEKS) {
+      return res.status(400).json({ error: `durationWeeks must be at least ${CUSTOM_MIN_WEEKS}.` });
     }
     if (weeks > MAX_WEEKS) {
       return res.status(400).json({ error: `durationWeeks cannot exceed ${MAX_WEEKS}.` });
     }
 
-    eggsPerWeek = boxes * EGGS_PER_BOX;
-    price       = boxes * PRICE_PER_BOX * weeks;  // total price for the full subscription period
+    eggsPerWeek  = b12 * 12 + b18 * 18;
+    const base   = (b12 * PRICE_PER_12_BOX + b18 * PRICE_PER_18_BOX) * weeks;
+    const dlvFee = method === 'delivery' ? DELIVERY_FEE_PER_WEEK * weeks : 0;
+    price        = base + dlvFee;
+
   } else {
-    const plan = PLANS[planName];
+    // Fixed plan (Small Family / Family)
+    const plan = FIXED_PLANS[planName];
     if (!plan) {
       return res.status(400).json({ error: 'Invalid plan name.' });
     }
-    price       = plan.price;
-    eggsPerWeek = plan.eggsPerWeek;
-    boxes       = null;
-    weeks       = null;
+    const dlvFee = method === 'delivery' ? DELIVERY_FEE_PER_WEEK * MONTHLY_WEEKS : 0;
+    price        = plan.basePrice + dlvFee;
+    eggsPerWeek  = plan.eggsPerWeek;
+    b12          = null;
+    b18          = null;
+    weeks        = null;
+    totalBoxes   = null;
   }
 
   // Cancel any existing active order before creating a new one
@@ -132,12 +172,12 @@ router.post('/', requireAuth, (req, res) => {
     INSERT INTO orders
       (user_id, plan_name, price, eggs_per_week,
        fulfillment_method, delivery_address, pickup_day, next_billing_date,
-       boxes_per_delivery, duration_weeks)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       boxes_per_delivery, duration_weeks, boxes12_per_delivery, boxes18_per_delivery)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     req.session.userId, planName, price, eggsPerWeek,
     method, cleanAddress, cleanDay, nextBillingDate(),
-    boxes, weeks
+    totalBoxes, weeks, b12, b18
   );
 
   const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(result.lastInsertRowid);
