@@ -147,3 +147,60 @@ describe('DELETE /api/admin/orders/:id', () => {
     expect(o.status).toBe('cancelled');
   });
 });
+
+// ── PUT /api/admin/users/:id/notes ────────────────────────────────────────────
+
+describe('PUT /api/admin/users/:id/notes', () => {
+  let bobId;
+
+  beforeAll(async () => {
+    const res = await adminAgent.get('/api/admin/users');
+    const bob = res.body.users.find(u => u.email === 'bob@example.com');
+    bobId = bob.id;
+  });
+
+  it('requires authentication', async () => {
+    const fresh = makeAgent(app);
+    const res = await fresh.put(`/api/admin/users/${bobId}/notes`, { notes: 'test' });
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects non-admin users', async () => {
+    const res = await userAgent.put(`/api/admin/users/${bobId}/notes`, { notes: 'test' });
+    expect(res.status).toBe(403);
+  });
+
+  it('returns 404 for non-existent user', async () => {
+    const res = await adminAgent.put('/api/admin/users/99999/notes', { notes: 'test' });
+    expect(res.status).toBe(404);
+  });
+
+  it('saves notes and they appear in the user profile', async () => {
+    const notes = 'Prefers Saturday pickup. Allergic to feathers.';
+    const putRes = await adminAgent.put(`/api/admin/users/${bobId}/notes`, { notes });
+    expect(putRes.status).toBe(200);
+    expect(putRes.body.ok).toBe(true);
+
+    const getRes = await adminAgent.get(`/api/admin/users/${bobId}`);
+    expect(getRes.status).toBe(200);
+    expect(getRes.body.user.notes).toBe(notes);
+  });
+
+  it('can clear notes by sending an empty string', async () => {
+    await adminAgent.put(`/api/admin/users/${bobId}/notes`, { notes: 'some notes' });
+    const putRes = await adminAgent.put(`/api/admin/users/${bobId}/notes`, { notes: '' });
+    expect(putRes.status).toBe(200);
+
+    const getRes = await adminAgent.get(`/api/admin/users/${bobId}`);
+    expect(getRes.body.user.notes).toBe('');
+  });
+
+  it('treats missing notes body as empty string', async () => {
+    await adminAgent.put(`/api/admin/users/${bobId}/notes`, { notes: 'existing' });
+    const putRes = await adminAgent.put(`/api/admin/users/${bobId}/notes`, {});
+    expect(putRes.status).toBe(200);
+
+    const getRes = await adminAgent.get(`/api/admin/users/${bobId}`);
+    expect(getRes.body.user.notes).toBe('');
+  });
+});

@@ -25,7 +25,7 @@ router.get('/users', requireAdmin, async (req, res) => {
 // GET /api/admin/users/:id — get a single user + their orders
 router.get('/users/:id', requireAdmin, async (req, res) => {
   const user = (await db.query(
-    'SELECT id, name, email, role, avatar_url, created_at FROM users WHERE id = $1',
+    'SELECT id, name, email, role, avatar_url, notes, created_at FROM users WHERE id = $1',
     [req.params.id]
   )).rows[0];
   if (!user) return res.status(404).json({ error: 'User not found.' });
@@ -54,6 +54,18 @@ router.put('/users/:id/role', requireAdmin, async (req, res) => {
   }
 
   await db.query('UPDATE users SET role = $1 WHERE id = $2', [role, req.params.id]);
+  res.json({ ok: true });
+});
+
+// PUT /api/admin/users/:id/notes — update admin notes for a customer
+router.put('/users/:id/notes', requireAdmin, async (req, res) => {
+  const target = (await db.query('SELECT id FROM users WHERE id = $1', [req.params.id])).rows[0];
+  if (!target) return res.status(404).json({ error: 'User not found.' });
+
+  const { notes } = req.body || {};
+  const newNotes = notes !== undefined ? String(notes) : '';
+
+  await db.query('UPDATE users SET notes = $1 WHERE id = $2', [newNotes, req.params.id]);
   res.json({ ok: true });
 });
 

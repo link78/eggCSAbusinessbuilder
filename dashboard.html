@@ -2609,16 +2609,26 @@
       }).join('');
     }
 
-    // Notes (stored in localStorage per userId since no DB column)
+    // Notes (loaded from server; fall back to localStorage for legacy data)
     const noteKey = `cust_notes_${user.id}`;
-    document.getElementById('pp-notes').value = localStorage.getItem(noteKey) || '';
+    const serverNotes = user.notes || '';
+    const legacyNotes = localStorage.getItem(noteKey) || '';
+    // Prefer server notes; if server is empty and legacy exists, pre-fill (migration path)
+    document.getElementById('pp-notes').value = serverNotes || legacyNotes;
   }
 
-  function saveCustomerNotes() {
+  async function saveCustomerNotes() {
     if (!_profileUserId) return;
     const notes = document.getElementById('pp-notes').value;
-    localStorage.setItem(`cust_notes_${_profileUserId}`, notes);
-    showFlash('pp-flash', 'Notes saved.', 'ok');
+    try {
+      const data = await apiPut(`/api/admin/users/${_profileUserId}/notes`, { notes });
+      if (data.error) { showFlash('pp-flash', data.error, 'err'); return; }
+      // Also update localStorage as a cache so the panel reflects saved state on re-open
+      localStorage.setItem(`cust_notes_${_profileUserId}`, notes);
+      showFlash('pp-flash', 'Notes saved.', 'ok');
+    } catch (_) {
+      showFlash('pp-flash', 'Failed to save notes.', 'err');
+    }
   }
 
   function closeCustomerProfile(e) {

@@ -82,6 +82,10 @@ async function init() {
   // Insert default plan config rows; skip if they already exist (idempotent).
   await seedPlanConfig();
 
+  // ── Schema migrations ────────────────────────────────────────────────────────
+  // Add notes column to users if it doesn't exist yet (idempotent)
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS notes TEXT NOT NULL DEFAULT ''`);
+
   // ── Seed admins ─────────────────────────────────────────────────────────────
   // Promote known admin accounts if they exist.
   const adminEmails = ['absalim78@yahoo.com', 'koandak@hotmail.com'];
