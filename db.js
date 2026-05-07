@@ -96,3 +96,12 @@ db.exec(`
 }
 
 module.exports = db;
+
+// ── Seed admin ───────────────────────────────────────────────────────────────
+// Promote absalim78@yahoo.com to admin role if the account already exists.
+{
+  const target = db.prepare("SELECT id FROM users WHERE email = 'absalim78@yahoo.com'").get();
+  if (target) {
+    db.prepare("UPDATE users SET role = 'admin' WHERE id = ?").run(target.id);
+  }
+}

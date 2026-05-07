@@ -416,6 +416,53 @@
     }
     .btn-role-toggle:hover { background: #e0d8c8; }
 
+    /* ── Admin Order Inventory ─────────────────────────────── */
+    .admin-orders-table-wrap { overflow-x: auto; }
+    .admin-orders-table {
+      width: 100%; border-collapse: collapse; font-size: .82rem;
+    }
+    .admin-orders-table th {
+      background: #f8f3ec; text-align: left; padding: .55rem .7rem;
+      font-weight: 700; border-bottom: 2px solid #e0d8cc; white-space: nowrap;
+    }
+    .admin-orders-table td {
+      padding: .5rem .7rem; border-bottom: 1px solid #f0e8d8; vertical-align: top;
+    }
+    .admin-orders-table tr:last-child td { border-bottom: none; }
+    .admin-orders-table tr:hover td { background: #fffaf4; }
+    .order-status-active   { color: #28a745; font-weight: 700; }
+    .order-status-cancelled { color: #c0392b; font-weight: 700; }
+    .admin-order-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .btn-admin-edit {
+      background: #e2d9f3; color: #6f42c1; border: none; border-radius: 6px;
+      padding: .28rem .65rem; font-size: .78rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+    }
+    .btn-admin-edit:hover { background: #d3c6ed; }
+    .btn-admin-cancel-order {
+      background: #fde8e8; color: #c0392b; border: none; border-radius: 6px;
+      padding: .28rem .65rem; font-size: .78rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+    }
+    .btn-admin-cancel-order:hover { background: #f5c6c6; }
+    /* Edit-order modal */
+    .modal-edit-order-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.45); z-index: 2000;
+      align-items: center; justify-content: center;
+    }
+    .modal-edit-order-backdrop.open { display: flex; }
+    .modal-edit-order-box {
+      background: #fff; border-radius: 14px; padding: 1.8rem;
+      width: min(420px, 92vw); box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    }
+    .modal-edit-order-box h3 { margin: 0 0 1rem; font-size: 1.1rem; color: #c45203; }
+    .modal-edit-field { margin-bottom: 1rem; }
+    .modal-edit-field label { display: block; font-size: .84rem; font-weight: 600; margin-bottom: .3rem; }
+    .modal-edit-field select,
+    .modal-edit-field input { width: 100%; padding: .45rem .7rem; border: 1px solid #ddd; border-radius: 7px; font-size: .9rem; }
+    .modal-edit-actions { display: flex; gap: .7rem; justify-content: flex-end; margin-top: 1.2rem; }
+
     /* ── Footer ── */
     footer {
       text-align: center;
@@ -1080,8 +1127,7 @@
 <!-- ══════════════════════════════════════════
      SUBSCRIPTION MODAL (outside tab panels)
 ═══════════════════════════════════════════ -->
-<div class="modal-backdrop" id="subscribe-modal" role="dialog" aria-modal="true" aria-labelledby="modal-plan-title">
-  <div class="modal-box">
+<div class="modal-backdrop" id="subscribe-modal" role="dialog" aria-modal="true" aria-labelledby="modal-plan-title">  <div class="modal-box">
     <div class="modal-title" id="modal-plan-title">Subscribe to <span id="modal-plan-name">—</span></div>
     <div class="modal-subtitle" id="modal-plan-subtitle">Monthly · Cancel anytime</div>
 
@@ -1143,6 +1189,31 @@
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeSubscribeModal()">Cancel</button>
       <button class="btn-primary"   onclick="submitSubscription()">Confirm &amp; Subscribe</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADMIN — EDIT ORDER MODAL
+═══════════════════════════════════════════ -->
+<div class="modal-edit-order-backdrop" id="edit-order-modal" role="dialog" aria-modal="true" aria-label="Edit order">
+  <div class="modal-edit-order-box">
+    <h3>✏️ Edit Order <span id="edit-order-id-label" style="font-weight:400;font-size:.9rem;color:#888;"></span></h3>
+    <div id="edit-order-flash"></div>
+    <div class="modal-edit-field">
+      <label for="edit-order-plan">Plan Name</label>
+      <input type="text" id="edit-order-plan" maxlength="60" />
+    </div>
+    <div class="modal-edit-field">
+      <label for="edit-order-status">Status</label>
+      <select id="edit-order-status">
+        <option value="active">active</option>
+        <option value="cancelled">cancelled</option>
+      </select>
+    </div>
+    <div class="modal-edit-actions">
+      <button class="btn-secondary" onclick="closeEditOrderModal()">Cancel</button>
+      <button class="btn-primary" onclick="submitAdminEditOrder()">Save Changes</button>
     </div>
   </div>
 </div>
@@ -1309,9 +1380,17 @@
     <!-- Admin Panel (only visible to admins) -->
     <div class="admin-section" id="admin-panel" style="display:none;">
       <div class="card">
-        <h3>🔑 Admin Panel</h3>
+        <h3>🔑 Admin Panel — Users</h3>
         <div id="admin-flash"></div>
         <div id="admin-users-list">Loading…</div>
+      </div>
+
+      <!-- Order Inventory -->
+      <div class="card" style="margin-top:1.2rem;">
+        <h3>📋 Order Inventory</h3>
+        <div id="admin-orders-flash"></div>
+        <p style="font-size:.84rem;color:#888;margin:.0 0 .8rem;">All subscriber orders — edit plan/status or cancel.</p>
+        <div id="admin-orders-list">Loading…</div>
       </div>
     </div>
   </div>
@@ -1901,6 +1980,7 @@
       if (currentUser.role === 'admin') {
         adminPanel.style.display = 'block';
         loadAdminUsers();
+        loadAdminOrders();
       } else {
         adminPanel.style.display = 'none';
       }
@@ -2045,6 +2125,146 @@
       showFlash('admin-flash', 'Failed to update role. Please try again.', 'err');
     }
   }
+
+  /* ═══════════════════════════════════════════════════════
+     ADMIN — ORDER INVENTORY
+  ═══════════════════════════════════════════════════════ */
+  let _editingOrderId = null;
+
+  async function loadAdminOrders() {
+    const container = document.getElementById('admin-orders-list');
+    try {
+      const data = await apiFetch('/api/admin/orders');
+      if (data.error) {
+        container.innerHTML = `<p style="color:#c0392b;">${escHtml(data.error)}</p>`;
+        return;
+      }
+      if (!data.orders || data.orders.length === 0) {
+        container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">No orders yet.</p>';
+        return;
+      }
+      container.innerHTML = `
+        <div class="admin-orders-table-wrap">
+          <table class="admin-orders-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Subscriber</th>
+                <th>Plan</th>
+                <th>Price</th>
+                <th>Fulfillment</th>
+                <th>Boxes</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.orders.map(o => adminOrderRow(o)).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    } catch (_) {
+      container.innerHTML = '<p style="color:#c0392b;font-size:.9rem;">Could not load orders.</p>';
+    }
+  }
+
+  function adminOrderRow(o) {
+    const date        = new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const statusCls   = o.status === 'active' ? 'order-status-active' : 'order-status-cancelled';
+    const fulfillIcon = o.fulfillment_method === 'delivery' ? '🚗' : '🏡';
+    const fulfillInfo = o.fulfillment_method === 'delivery'
+      ? `${fulfillIcon} ${escHtml(o.delivery_address || '—')}`
+      : `${fulfillIcon} ${escHtml(o.pickup_day || '—')}s`;
+
+    const b12 = o.boxes12_per_delivery || 0;
+    const b18 = o.boxes18_per_delivery || 0;
+    const boxInfo = (b12 || b18)
+      ? [b12 > 0 ? `${b12}×12` : '', b18 > 0 ? `${b18}×18` : ''].filter(Boolean).join(', ')
+      : (o.boxes_per_delivery ? `${o.boxes_per_delivery} boxes` : '—');
+
+    const cancelBtn = o.status === 'active'
+      ? `<button class="btn-admin-cancel-order" onclick="adminCancelOrder(${o.id})">Cancel</button>`
+      : '';
+
+    return `<tr>
+      <td>${o.id}</td>
+      <td>
+        <div style="font-weight:700;">${escHtml(o.user_name || '—')}</div>
+        <div style="color:#888;font-size:.78rem;">${escHtml(o.user_email || '—')}</div>
+      </td>
+      <td>${escHtml(o.plan_name)}</td>
+      <td>$${o.price}${o.duration_weeks ? ' total' : '/mo'}</td>
+      <td style="font-size:.8rem;">${fulfillInfo}</td>
+      <td style="font-size:.8rem;">${escHtml(boxInfo)}</td>
+      <td><span class="${statusCls}">${escHtml(o.status)}</span></td>
+      <td style="font-size:.78rem;white-space:nowrap;">${date}</td>
+      <td>
+        <div class="admin-order-actions">
+          <button class="btn-admin-edit" onclick="openAdminEditOrder(${o.id}, '${escHtml(o.plan_name).replace(/'/g, "\\'")}', '${o.status}')">Edit</button>
+          ${cancelBtn}
+        </div>
+      </td>
+    </tr>`;
+  }
+
+  function openAdminEditOrder(orderId, planName, status) {
+    _editingOrderId = orderId;
+    document.getElementById('edit-order-id-label').textContent = `(#${orderId})`;
+    document.getElementById('edit-order-plan').value   = planName;
+    document.getElementById('edit-order-status').value = status;
+    document.getElementById('edit-order-flash').style.display = 'none';
+    document.getElementById('edit-order-modal').classList.add('open');
+    document.getElementById('edit-order-plan').focus();
+  }
+
+  function closeEditOrderModal() {
+    document.getElementById('edit-order-modal').classList.remove('open');
+    _editingOrderId = null;
+  }
+
+  async function submitAdminEditOrder() {
+    if (!_editingOrderId) return;
+    const planName = document.getElementById('edit-order-plan').value.trim();
+    const status   = document.getElementById('edit-order-status').value;
+    if (!planName) {
+      showFlash('edit-order-flash', 'Plan name cannot be empty.', 'warn');
+      return;
+    }
+    const btn = document.querySelector('#edit-order-modal .btn-primary');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const data = await apiPut(`/api/admin/orders/${_editingOrderId}`, { plan_name: planName, status });
+      if (data.error) { showFlash('edit-order-flash', data.error, 'err'); return; }
+      closeEditOrderModal();
+      showFlash('admin-orders-flash', `Order #${_editingOrderId} updated.`, 'ok');
+      loadAdminOrders();
+    } catch (_) {
+      showFlash('edit-order-flash', 'Failed to save. Please try again.', 'err');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Save Changes';
+    }
+  }
+
+  async function adminCancelOrder(orderId) {
+    if (!confirm(`Cancel order #${orderId}?`)) return;
+    try {
+      const data = await apiDelete(`/api/admin/orders/${orderId}`);
+      if (data.error) { showFlash('admin-orders-flash', data.error, 'err'); return; }
+      showFlash('admin-orders-flash', `Order #${orderId} cancelled.`, 'ok');
+      loadAdminOrders();
+    } catch (_) {
+      showFlash('admin-orders-flash', 'Failed to cancel order. Please try again.', 'err');
+    }
+  }
+
+  // Close edit-order modal on backdrop click or Escape
+  document.getElementById('edit-order-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditOrderModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeEditOrderModal();
+  });
 
   async function loadOrders() {
     const container = document.getElementById('orders-list');
