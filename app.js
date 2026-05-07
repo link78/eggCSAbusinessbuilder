@@ -92,19 +92,8 @@ app.use('/api/admin',     apiLimiter,   adminRoutes);
 
 app.use(apiLimiter, express.static(path.join(__dirname)));
 
-// Farm dashboard — admin only
-app.get('/dashboard', apiLimiter, async (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect('/');
-  }
-  try {
-    const row = (await db.query('SELECT role FROM users WHERE id = $1', [req.session.userId])).rows[0];
-    if (!row || row.role !== 'admin') {
-      return res.redirect('/');
-    }
-  } catch (_) {
-    return res.redirect('/');
-  }
+// Farm dashboard — served to all; client-side auth gate handles login/access control
+app.get('/dashboard', apiLimiter, (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
