@@ -787,6 +787,47 @@
     }
     .btn-danger:hover { background: #fcd0d0; }
 
+    /* ── CUSTOMER PORTAL ── */
+    .portal-tabs {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1.2rem;
+      flex-wrap: wrap;
+    }
+    .portal-tab {
+      padding: .5rem 1.1rem;
+      border: 2px solid #f0e8d8;
+      border-radius: 8px;
+      background: #fff;
+      color: #555;
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .portal-tab:hover { background: #fdf3ec; border-color: #e85d04; color: #e85d04; }
+    .portal-tab.active { background: #e85d04; color: #fff; border-color: #e85d04; }
+    .portal-tab-panel { display: none; }
+    .portal-tab-panel.active { display: block; }
+    .portal-plan-card { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem 1.4rem; }
+    @media (max-width: 540px) { .portal-plan-card { grid-template-columns: 1fr; } }
+    .portal-plan-field { display: flex; flex-direction: column; padding: .55rem 0; border-bottom: 1px solid #f5ede4; }
+    .portal-plan-field:last-child { border-bottom: none; }
+    .portal-plan-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; color: #aaa; letter-spacing: .04em; margin-bottom: .2rem; }
+    .portal-plan-value { font-size: 1rem; font-weight: 600; color: #333; }
+    .portal-plan-cta { grid-column: 1 / -1; margin-top: .5rem; }
+    .portal-no-sub { color: #aaa; font-size: .93rem; padding: .5rem 0; }
+    .portal-billing-row { display: flex; justify-content: space-between; align-items: center; padding: .65rem 0; border-bottom: 1px solid #f5ede4; font-size: .92rem; }
+    .portal-billing-row:last-child { border-bottom: none; }
+    .portal-billing-month { font-weight: 600; color: #333; }
+    .portal-billing-amount { color: #e85d04; font-weight: 700; }
+    .portal-billing-status { font-size: .75rem; padding: .15rem .5rem; border-radius: 4px; margin-left: .5rem; }
+    .portal-cancel-card { max-width: 520px; }
+    .portal-cancel-btns { display: flex; gap: .8rem; flex-wrap: wrap; }
+    .portal-keep-btn { border-color: #27ae60; color: #27ae60; }
+    .portal-keep-btn:hover { background: #eafaf1; border-color: #27ae60; }
+
+
     .review-card {
       background: #fff; border-radius: 12px; padding: 1.2rem 1.4rem;
       box-shadow: 0 2px 10px rgba(0,0,0,.07); margin-bottom: .9rem;
@@ -1182,6 +1223,9 @@
         <div class="sidebar-nav-item" id="nav-pickup"      onclick="switchView('pickup')">
           <span class="nav-icon">🚚</span> Pickup List
         </div>
+        <div class="sidebar-nav-item" id="nav-portal"      onclick="switchView('portal')" style="display:none;">
+          <span class="nav-icon">🥚</span> My Subscription
+        </div>
         <div class="sidebar-nav-item" id="nav-reviews"     onclick="switchView('reviews')">
           <span class="nav-icon">⭐</span> Reviews
         </div>
@@ -1346,6 +1390,57 @@
           <button class="pickup-export-btn mark-all" onclick="pickupMarkAll()">✅ Mark All Completed</button>
         </div>
       </section>
+
+<!-- ══════════════════════════════════════════
+     CUSTOMER PORTAL – SUBSCRIBER VIEW
+═══════════════════════════════════════════ -->
+<section class="view-panel" id="view-portal">
+  <h2 class="section-title">My Subscription</h2>
+  <p class="section-subtitle" id="portal-subtitle">Manage your subscription, view billing history, or cancel.</p>
+  <div id="portal-flash"></div>
+
+  <!-- Sub-nav tabs -->
+  <div class="portal-tabs" role="tablist">
+    <button class="portal-tab active" id="ptab-sub"     role="tab" onclick="switchPortalTab('sub')">📦 Subscription</button>
+    <button class="portal-tab"        id="ptab-billing" role="tab" onclick="switchPortalTab('billing')">💳 Billing</button>
+    <button class="portal-tab"        id="ptab-cancel"  role="tab" onclick="switchPortalTab('cancel')">✖ Cancel</button>
+  </div>
+
+  <!-- Tab: Subscription -->
+  <div class="portal-tab-panel active" id="portal-panel-sub">
+    <div class="card portal-plan-card" id="portal-plan-card">
+      <div style="color:#aaa;font-size:.9rem;">Loading…</div>
+    </div>
+  </div>
+
+  <!-- Tab: Billing History -->
+  <div class="portal-tab-panel" id="portal-panel-billing">
+    <div class="card">
+      <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:1rem;color:#c45203;">💳 Billing History</h3>
+      <div id="portal-billing-list"><div style="color:#aaa;font-size:.9rem;">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- Tab: Cancel Subscription -->
+  <div class="portal-tab-panel" id="portal-panel-cancel">
+    <div class="card portal-cancel-card">
+      <h3 style="font-size:1.05rem;font-weight:700;color:#c45203;">✖ Cancel Subscription</h3>
+      <p style="margin:.7rem 0 1.2rem;color:#555;font-size:.93rem;">
+        We're sorry to see you go. Cancelling will stop your deliveries at the end of
+        your current billing period.
+      </p>
+      <div id="portal-cancel-status"></div>
+      <div id="portal-cancel-actions" class="portal-cancel-btns">
+        <button class="btn-secondary portal-keep-btn" onclick="switchPortalTab('sub')">
+          ✅ Keep Subscription
+        </button>
+        <button class="btn-danger" id="portal-cancel-btn" onclick="portalCancelSubscription()">
+          Cancel Subscription
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ══════════════════════════════════════════
      TAB 0 – REVENUE CALCULATOR
@@ -2123,6 +2218,7 @@
     plans:      { panelId: 'panel-1',         navId: 'nav-plans' },
     checklist:  { panelId: 'panel-2',         navId: null },
     roadmap:    { panelId: 'panel-3',         navId: null },
+    portal:     { panelId: 'view-portal',    navId: 'nav-portal' },
     reviews:    { panelId: 'panel-4',         navId: 'nav-reviews' },
     settings:   { panelId: 'panel-5',         navId: 'nav-settings' },
     customers:  { panelId: 'view-customers',  navId: 'nav-customers' },
@@ -2150,6 +2246,7 @@
     }
 
     // Side-effects
+    if (name === 'portal')    loadPortal();
     if (name === 'reviews')   loadReviews();
     if (name === 'settings')  renderSettings();
     if (name === 'customers') loadViewCustomers();
@@ -3593,9 +3690,162 @@
     } catch (e) { alert('Failed to cancel. Please try again.'); }
   }
 
+async function cancelOrder(id) {
+    if (!confirm('Cancel this subscription?')) return;
+    try {
+      const data = await apiDelete('/api/orders/' + id);
+      if (data.error) { alert('Error: ' + data.error); return; }
+      loadOrders();
+    } catch (e) { alert('Failed to cancel. Please try again.'); }
+  }
+
   /* ═══════════════════════════════════════════════════════
-     SIDEBAR USER INFO
+     CUSTOMER PORTAL
   ═══════════════════════════════════════════════════════ */
+  let _portalOrders = [];
+
+  async function loadPortal() {
+    try {
+      const data = await apiFetch('/api/orders');
+      _portalOrders = (data && data.orders) ? data.orders : [];
+    } catch (_) {
+      _portalOrders = [];
+    }
+    renderPortalSubscription();
+    renderPortalBilling();
+    renderPortalCancel();
+  }
+
+  function switchPortalTab(tab) {
+    ['sub','billing','cancel'].forEach(t => {
+      document.getElementById('ptab-' + t).classList.toggle('active', t === tab);
+      document.getElementById('portal-panel-' + t).classList.toggle('active', t === tab);
+    });
+  }
+
+  function _nextWeekdayDate(dayName) {
+    const days = { sunday:0, monday:1, tuesday:2, wednesday:3, thursday:4, friday:5, saturday:6 };
+    const target = days[(dayName || '').toLowerCase()];
+    if (target === undefined) return null;
+    const today = new Date();
+    const todayDay = today.getDay();
+    let diff = target - todayDay;
+    if (diff <= 0) diff += 7;
+    const next = new Date(today);
+    next.setDate(today.getDate() + diff);
+    return next.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  }
+
+  function renderPortalSubscription() {
+    const card = document.getElementById('portal-plan-card');
+    const active = _portalOrders.find(o => o.status === 'active');
+    if (!active) {
+      card.innerHTML = `<div class="portal-no-sub" style="grid-column:1/-1;">
+        You don't have an active subscription.
+        <a href="#" onclick="switchView('plans');return false;" style="color:#e85d04;font-weight:600;">Browse plans →</a>
+      </div>`;
+      return;
+    }
+    const fulfillMethod  = active.fulfillment_method === 'delivery' ? '🚗 Delivery' : '🏡 Pick-up';
+    const addressLine    = active.fulfillment_method === 'delivery'
+      ? (active.delivery_address || '—')
+      : `${active.pickup_day ? active.pickup_day.charAt(0).toUpperCase() + active.pickup_day.slice(1) + 's' : '—'}`;
+    const nextPickup     = active.fulfillment_method === 'pickup'
+      ? (_nextWeekdayDate(active.pickup_day) || '—')
+      : (active.next_billing_date
+          ? new Date(active.next_billing_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : '—');
+    const priceLine      = active.duration_weeks
+      ? `$${active.price} total (${active.duration_weeks} wks)`
+      : `$${active.price}/mo`;
+
+    card.innerHTML = `
+      <div class="portal-plan-field">
+        <span class="portal-plan-label">Plan</span>
+        <span class="portal-plan-value">${escHtml(active.plan_name)}</span>
+      </div>
+      <div class="portal-plan-field">
+        <span class="portal-plan-label">Eggs per Week</span>
+        <span class="portal-plan-value">${active.eggs_per_week || '—'}</span>
+      </div>
+      <div class="portal-plan-field">
+        <span class="portal-plan-label">Fulfillment</span>
+        <span class="portal-plan-value">${fulfillMethod}</span>
+      </div>
+      <div class="portal-plan-field">
+        <span class="portal-plan-label">${active.fulfillment_method === 'delivery' ? 'Delivery Address' : 'Pickup Day'}</span>
+        <span class="portal-plan-value">${escHtml(addressLine)}</span>
+      </div>
+      <div class="portal-plan-field">
+        <span class="portal-plan-label">${active.fulfillment_method === 'delivery' ? 'Next Billing' : 'Next Pickup'}</span>
+        <span class="portal-plan-value">${escHtml(nextPickup)}</span>
+      </div>
+      <div class="portal-plan-field">
+        <span class="portal-plan-label">Price</span>
+        <span class="portal-plan-value" style="color:#e85d04;">${escHtml(priceLine)}</span>
+      </div>
+      <div class="portal-plan-cta">
+        <button class="btn-primary" onclick="switchView('plans')" style="margin-top:.2rem;">✏️ Change Plan</button>
+      </div>`;
+  }
+
+  function renderPortalBilling() {
+    const container = document.getElementById('portal-billing-list');
+    if (!_portalOrders || _portalOrders.length === 0) {
+      container.innerHTML = '<div class="portal-no-sub">No billing history found.</div>';
+      return;
+    }
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    container.innerHTML = _portalOrders.map(o => {
+      const d = new Date(o.created_at);
+      const monthLabel = MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+      const statusCls  = o.status === 'active' ? 'status-active' : 'status-cancelled';
+      const statusText = o.status === 'active' ? 'Active' : 'Cancelled';
+      return `<div class="portal-billing-row">
+        <div>
+          <span class="portal-billing-month">${escHtml(monthLabel)}</span>
+          <span class="portal-billing-status order-status ${statusCls}">${statusText}</span>
+        </div>
+        <span class="portal-billing-amount">$${o.price}${o.duration_weeks ? ' total' : '/mo'}</span>
+      </div>`;
+    }).join('');
+  }
+
+  function renderPortalCancel() {
+    const statusEl  = document.getElementById('portal-cancel-status');
+    const actionsEl = document.getElementById('portal-cancel-actions');
+    const active    = _portalOrders.find(o => o.status === 'active');
+    if (!active) {
+      statusEl.innerHTML  = '<p style="color:#888;font-size:.9rem;">You don\'t have an active subscription to cancel.</p>';
+      actionsEl.style.display = 'none';
+    } else {
+      statusEl.innerHTML  = '';
+      actionsEl.style.display = 'flex';
+    }
+  }
+
+  async function portalCancelSubscription() {
+    const active = _portalOrders.find(o => o.status === 'active');
+    if (!active) return;
+    const btn = document.getElementById('portal-cancel-btn');
+    btn.disabled = true; btn.textContent = 'Cancelling…';
+    try {
+      const data = await apiDelete('/api/orders/' + active.id);
+      if (data.error) {
+        showFlash('portal-flash', data.error, 'err');
+        btn.disabled = false; btn.textContent = 'Cancel Subscription';
+        return;
+      }
+      showFlash('portal-flash', 'Your subscription has been cancelled.', 'ok');
+      await loadPortal();
+      switchPortalTab('sub');
+    } catch (_) {
+      showFlash('portal-flash', 'Failed to cancel. Please try again.', 'err');
+      btn.disabled = false; btn.textContent = 'Cancel Subscription';
+    }
+  }
+
+
   function updateSidebarUser() {
     if (currentUser) {
       document.getElementById('sidebar-user-name').textContent  = currentUser.name;
@@ -3604,6 +3854,9 @@
       document.getElementById('sidebar-user-name').textContent  = '—';
       document.getElementById('sidebar-user-email').textContent = '';
     }
+    // Show/hide "My Subscription" portal nav for logged-in users
+    const portalNav = document.getElementById('nav-portal');
+    if (portalNav) portalNav.style.display = currentUser ? '' : 'none';
     // Update reviews form visibility
     const reviewForm   = document.getElementById('review-form-section');
     const reviewPrompt = document.getElementById('review-login-prompt');
