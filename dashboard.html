@@ -3859,7 +3859,7 @@ async function cancelOrder(id) {
     if (portalNav) portalNav.style.display = (currentUser && currentUser.role !== 'admin') ? '' : 'none';
     // Hide admin-only nav items from customers
     const isAdmin = currentUser && currentUser.role === 'admin';
-    ['nav-home', 'nav-customers', 'nav-orders', 'nav-pickup', 'nav-settings'].forEach(id => {
+    ['nav-home', 'nav-calculator', 'nav-customers', 'nav-orders', 'nav-pickup', 'nav-settings'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = isAdmin ? '' : 'none';
     });
