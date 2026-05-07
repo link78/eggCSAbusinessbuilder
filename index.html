@@ -254,11 +254,191 @@
     .footer-links a { color: rgba(255,255,255,.6); transition: color .15s; }
     .footer-links a:hover { color: #fff; }
 
+    /* ── FARM UPDATES (DISCUSSION) ──────────────────────────── */
+    .updates-bg {
+      background: #fff;
+      padding: 3.5rem 1.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .updates-inner { max-width: 900px; margin: 0 auto; }
+    .updates-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+      margin-top: 1.5rem;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: .4rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .update-card {
+      display: flex;
+      gap: 1rem;
+      background: var(--cream);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.1rem 1.2rem;
+    }
+    .update-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .update-body { flex: 1; min-width: 0; }
+    .update-meta {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      margin-bottom: .35rem;
+    }
+    .update-author { font-weight: 700; font-size: .9rem; color: var(--green-dark); }
+    .update-date   { font-size: .78rem; color: var(--muted); }
+    .update-text   { font-size: .9rem; color: var(--text); line-height: 1.6; }
+    .update-photo  {
+      margin-top: .7rem;
+      border-radius: 10px;
+      overflow: hidden;
+      width: 100%;
+      max-height: 180px;
+      background: linear-gradient(135deg,#e8f4e8,#f0ebe0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: .85rem;
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+
+    /* ── CUSTOMER REVIEWS ───────────────────────────────────── */
+    .reviews-bg {
+      background: linear-gradient(135deg, #f9f5ee 0%, #edf5ed 100%);
+      padding: 4rem 1.5rem;
+    }
+    .reviews-inner { max-width: 900px; margin: 0 auto; }
+    .reviews-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .reviews-header-left {}
+    .reviews-avg {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      margin-top: .55rem;
+    }
+    .reviews-avg .stars { color: #f5a623; font-size: 1.3rem; letter-spacing: .05em; }
+    .reviews-avg .score { font-size: 1.5rem; font-weight: 800; color: var(--green-dark); }
+    .reviews-avg .count { font-size: .85rem; color: var(--muted); }
+    .btn-write-review {
+      display: inline-block;
+      padding: .6rem 1.3rem;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      white-space: nowrap;
+    }
+    .btn-write-review:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.3rem;
+    }
+    .review-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.4rem 1.3rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .review-card-top {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      margin-bottom: .7rem;
+    }
+    .reviewer-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .95rem; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .reviewer-name  { font-weight: 700; font-size: .95rem; color: var(--text); }
+    .reviewer-date  { font-size: .78rem; color: var(--muted); }
+    .review-stars   { color: #f5a623; font-size: 1rem; margin-bottom: .55rem; letter-spacing: .04em; }
+    .review-title   { font-size: .9rem; font-weight: 700; color: var(--green-dark); margin-bottom: .35rem; }
+    .review-body    { font-size: .88rem; color: var(--muted); line-height: 1.65; flex: 1; }
+    .reviews-empty  { color: var(--muted); font-size: .95rem; padding: 1.5rem 0; }
+
+    /* Write-Review modal */
+    .wr-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 600;
+      display: none; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .wr-overlay.open { display: flex; }
+    .wr-card {
+      background: #fff; border-radius: 18px;
+      padding: 2rem 1.8rem;
+      max-width: 480px; width: 100%;
+      max-height: 92vh; overflow-y: auto;
+    }
+    .wr-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.3rem; padding-bottom: .9rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .wr-header h3 { font-size: 1.1rem; font-weight: 800; color: var(--green-dark); }
+    .wr-close {
+      background: none; border: none; font-size: 1.2rem;
+      cursor: pointer; color: var(--muted); padding: .2rem .4rem;
+      border-radius: 6px; line-height: 1;
+    }
+    .wr-close:hover { background: var(--cream); color: var(--text); }
+    .star-picker { display: flex; gap: .3rem; margin-bottom: 1rem; }
+    .star-btn {
+      background: none; border: none; font-size: 1.6rem;
+      cursor: pointer; color: #ddd; transition: color .1s;
+      padding: 0; line-height: 1;
+    }
+    .star-btn.active, .star-btn:hover { color: #f5a623; }
+    .wr-flash {
+      padding: .65rem .9rem; border-radius: 8px;
+      font-size: .87rem; margin-bottom: .8rem; display: none;
+    }
+    .wr-flash.warn { background: #fff8e1; color: #7c5a00; border: 1px solid #f5d660; }
+    .wr-flash.err  { background: #fdecea; color: #a41b0b; border: 1px solid #f5c6c2; }
+    .wr-flash.ok   { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
+
     /* ── RESPONSIVE ─────────────────────────────────────────── */
     @media (max-width: 600px) {
       .navbar { padding: .8rem 1rem; }
       .navbar-logo span:last-child { display: none; }
       .section, .csa-inner { padding-left: 1rem; padding-right: 1rem; }
+      .reviews-header { flex-direction: column; align-items: flex-start; }
     }
 
     /* ── PLAN CARDS ─────────────────────────────────────────── */
@@ -518,6 +698,7 @@
       <li><a href="/">Home</a></li>
       <li><a href="#egg-csa">Egg CSA</a></li>
       <li><a href="#farm-products">Farm Products</a></li>
+      <li><a href="#reviews">Reviews</a></li>
       <li><a href="/dashboard#account" class="btn-login">Login</a></li>
     </ul>
   </nav>
@@ -537,6 +718,66 @@
     </div>
   </div>
 </section>
+
+<!-- ══════════════════════════════════════════
+     FARM UPDATES (DISCUSSION)
+═══════════════════════════════════════════ -->
+<div class="updates-bg" id="farm-updates">
+  <div class="updates-inner">
+    <span class="section-label">Farm Updates</span>
+    <h2 style="font-size:clamp(1.5rem,3.5vw,2rem);font-weight:800;color:var(--green-dark);margin-bottom:.5rem">Latest from the Farm</h2>
+    <p style="font-size:1.05rem;color:var(--muted);margin-bottom:0">Photos, notes, and updates straight from Sakinah Ridge Farm.</p>
+    <div class="updates-feed" id="updates-feed" aria-label="Farm updates feed">
+
+      <div class="update-card">
+        <div class="update-avatar">🌿</div>
+        <div class="update-body">
+          <div class="update-meta">
+            <span class="update-author">Sakinah Ridge Farm</span>
+            <span class="update-date">May 5, 2026</span>
+          </div>
+          <p class="update-text">The hens are loving this warm weather! We've been seeing record egg production this week — boxes are packed full. Pick-up days run Tuesday through Saturday. 🥚</p>
+          <div class="update-photo">📸 Spring pasture photo — hens foraging in the sunshine</div>
+        </div>
+      </div>
+
+      <div class="update-card">
+        <div class="update-avatar">🌿</div>
+        <div class="update-body">
+          <div class="update-meta">
+            <span class="update-author">Sakinah Ridge Farm</span>
+            <span class="update-date">Apr 28, 2026</span>
+          </div>
+          <p class="update-text">We just added a new flock of 30 hens to the back pasture. They'll start laying in about 6 weeks — great news for anyone on the waitlist! 🐔</p>
+        </div>
+      </div>
+
+      <div class="update-card">
+        <div class="update-avatar">🌿</div>
+        <div class="update-body">
+          <div class="update-meta">
+            <span class="update-author">Sakinah Ridge Farm</span>
+            <span class="update-date">Apr 20, 2026</span>
+          </div>
+          <p class="update-text">Reminder: the farm stand is open every Saturday 8am–noon in Raymond. Come grab your box and say hello! We also have a limited supply of raw honey this week.</p>
+        </div>
+      </div>
+
+      <div class="update-card">
+        <div class="update-avatar">🌿</div>
+        <div class="update-body">
+          <div class="update-meta">
+            <span class="update-author">Sakinah Ridge Farm</span>
+            <span class="update-date">Apr 12, 2026</span>
+          </div>
+          <p class="update-text">Spring has arrived at the farm! The pasture is greening up beautifully. Eggs are rich and flavorful as ever — you can see the deep orange yolks in this week's boxes. 🌱</p>
+          <div class="update-photo">📸 Fresh morning eggs on the collection tray</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════════
      FARM STORY
@@ -622,6 +863,99 @@
   <h2 id="products-heading">More From the Farm</h2>
   <p class="lead">Beyond eggs, Sakinah Ridge Farm brings seasonal produce and farm goods to the community. Check back as we grow — or <a href="/dashboard#account" style="color:var(--green);text-decoration:underline;">create an account</a> to get notified first.</p>
 </section>
+
+<!-- ══════════════════════════════════════════
+     CUSTOMER REVIEWS
+═══════════════════════════════════════════ -->
+<div class="reviews-bg" id="reviews">
+  <div class="reviews-inner">
+    <div class="reviews-header">
+      <div class="reviews-header-left">
+        <span class="section-label">Customer Reviews</span>
+        <h2 style="font-size:clamp(1.5rem,3.5vw,2rem);font-weight:800;color:var(--green-dark);margin-bottom:.1rem">What Our Customers Say</h2>
+        <div class="reviews-avg" id="reviews-avg" aria-label="Average rating">
+          <span class="stars">★★★★★</span>
+          <span class="score" id="avg-score">4.9</span>
+          <span class="count" id="avg-count">based on reviews</span>
+        </div>
+      </div>
+      <button class="btn-write-review" onclick="openWriteReview()" aria-label="Write a review">✏️ Write a Review</button>
+    </div>
+
+    <div id="reviews-grid" class="reviews-grid" aria-live="polite">
+      <!-- Seeded placeholder cards shown before API loads -->
+      <div class="review-card">
+        <div class="review-card-top">
+          <div class="reviewer-avatar">M</div>
+          <div>
+            <div class="reviewer-name">Maria</div>
+            <div class="reviewer-date">May 2026</div>
+          </div>
+        </div>
+        <div class="review-stars">★★★★★</div>
+        <div class="review-title">Best eggs in Lincoln</div>
+        <p class="review-body">Best eggs in Lincoln. Always fresh. I've been a subscriber for 6 months and have never been disappointed.</p>
+      </div>
+      <div class="review-card">
+        <div class="review-card-top">
+          <div class="reviewer-avatar">O</div>
+          <div>
+            <div class="reviewer-name">Omar</div>
+            <div class="reviewer-date">April 2026</div>
+          </div>
+        </div>
+        <div class="review-stars">★★★★★</div>
+        <div class="review-title">Reliable every week</div>
+        <p class="review-body">Reliable delivery every week. The eggs are noticeably better than anything from the grocery store — richer yolks and great flavor.</p>
+      </div>
+      <div class="review-card">
+        <div class="review-card-top">
+          <div class="reviewer-avatar">S</div>
+          <div>
+            <div class="reviewer-name">Sarah</div>
+            <div class="reviewer-date">April 2026</div>
+          </div>
+        </div>
+        <div class="review-stars">★★★★☆</div>
+        <div class="review-title">Love the taste</div>
+        <p class="review-body">Love the taste. Pickup is easy and the farm family is so friendly. Highly recommend to anyone in the area!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Write-Review modal -->
+<div id="write-review-modal" class="wr-overlay" role="dialog" aria-modal="true" aria-labelledby="wr-title">
+  <div class="wr-card">
+    <div class="wr-header">
+      <h3 id="wr-title">Write a Review</h3>
+      <button class="wr-close" onclick="closeWriteReview()" aria-label="Close">✕</button>
+    </div>
+    <div id="wr-flash" class="wr-flash" role="alert"></div>
+    <div id="wr-form">
+      <div class="m-section-label" style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);margin-bottom:.5rem">Your Rating</div>
+      <div class="star-picker" id="star-picker" aria-label="Select star rating">
+        <button type="button" class="star-btn" data-val="1" onclick="setStarRating(1)" aria-label="1 star">★</button>
+        <button type="button" class="star-btn" data-val="2" onclick="setStarRating(2)" aria-label="2 stars">★</button>
+        <button type="button" class="star-btn" data-val="3" onclick="setStarRating(3)" aria-label="3 stars">★</button>
+        <button type="button" class="star-btn" data-val="4" onclick="setStarRating(4)" aria-label="4 stars">★</button>
+        <button type="button" class="star-btn" data-val="5" onclick="setStarRating(5)" aria-label="5 stars">★</button>
+      </div>
+      <div class="m-group" style="margin-bottom:.75rem">
+        <label style="display:block;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.3rem" for="wr-title-input">Title</label>
+        <input id="wr-title-input" class="m-input" type="text" placeholder="e.g. Best eggs around!" maxlength="120">
+      </div>
+      <div class="m-group" style="margin-bottom:1rem">
+        <label style="display:block;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.3rem" for="wr-body">Your Review</label>
+        <textarea id="wr-body" class="m-input" rows="4" maxlength="1000" placeholder="Share your experience…" style="resize:vertical"></textarea>
+      </div>
+      <div id="wr-login-note" style="font-size:.85rem;color:var(--muted);margin-bottom:.8rem;display:none">
+        You must be <a href="/dashboard#account" style="color:var(--green);text-decoration:underline">signed in</a> to submit a review.
+      </div>
+      <button class="btn-sub" style="margin-top:0" onclick="submitReview()">Submit Review</button>
+    </div>
+  </div>
+</div>
 
 <hr class="divider" />
 
@@ -1135,6 +1469,124 @@
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSubscribeModal(); });
 
+  /* ── CUSTOMER REVIEWS ──────────────────────────────────── */
+  let _wrRating = 0;
+
+  async function loadReviews() {
+    try {
+      const r = await fetch('/api/reviews');
+      const { reviews } = await r.json();
+      if (!reviews || reviews.length === 0) return; // keep seeded cards
+      renderReviews(reviews);
+    } catch (_) { /* keep seeded placeholder cards on error */ }
+  }
+
+  function starsHtml(rating) {
+    const full  = Math.round(rating);
+    return '★'.repeat(full) + '☆'.repeat(5 - full);
+  }
+
+  function formatMonth(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
+  function renderReviews(reviews) {
+    const grid = document.getElementById('reviews-grid');
+    if (!grid) return;
+
+    const total = reviews.length;
+    const avg   = total ? (reviews.reduce((s, r) => s + r.rating, 0) / total).toFixed(1) : '—';
+
+    const scoreEl = document.getElementById('avg-score');
+    const countEl = document.getElementById('avg-count');
+    if (scoreEl) scoreEl.textContent = avg;
+    if (countEl) countEl.textContent = `based on ${total} review${total !== 1 ? 's' : ''}`;
+
+    grid.innerHTML = reviews.map(r => `
+      <div class="review-card">
+        <div class="review-card-top">
+          <div class="reviewer-avatar" style="background:var(--green)">${(r.user_name || '?')[0].toUpperCase()}</div>
+          <div>
+            <div class="reviewer-name">${escHtml(r.user_name || 'Anonymous')}</div>
+            <div class="reviewer-date">${formatMonth(r.created_at)}</div>
+          </div>
+        </div>
+        <div class="review-stars">${starsHtml(r.rating)}</div>
+        <div class="review-title">${escHtml(r.title)}</div>
+        <p class="review-body">${escHtml(r.body)}</p>
+      </div>`).join('');
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* Write-Review modal */
+  function openWriteReview() {
+    _wrRating = 0;
+    updateStarPicker(0);
+    document.getElementById('wr-title-input').value = '';
+    document.getElementById('wr-body').value = '';
+    showWrFlash('', '');
+    const note = document.getElementById('wr-login-note');
+    if (note) note.style.display = _user ? 'none' : 'block';
+    document.getElementById('write-review-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeWriteReview() {
+    document.getElementById('write-review-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function setStarRating(val) {
+    _wrRating = val;
+    updateStarPicker(val);
+  }
+
+  function updateStarPicker(val) {
+    document.querySelectorAll('.star-btn').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.dataset.val) <= val);
+    });
+  }
+
+  function showWrFlash(msg, type) {
+    const el = document.getElementById('wr-flash');
+    if (!msg) { el.style.display = 'none'; return; }
+    el.textContent   = msg;
+    el.className     = `wr-flash ${type}`;
+    el.style.display = 'block';
+  }
+
+  async function submitReview() {
+    if (!_user) {
+      showWrFlash('Please sign in before submitting a review.', 'warn');
+      return;
+    }
+    if (!_wrRating) { showWrFlash('Please select a star rating.', 'warn'); return; }
+    const title = document.getElementById('wr-title-input').value.trim();
+    const body  = document.getElementById('wr-body').value.trim();
+    if (!title) { showWrFlash('Please enter a review title.', 'warn'); return; }
+    if (!body)  { showWrFlash('Please write your review.', 'warn'); return; }
+
+    try {
+      const data = await apiPost('/api/reviews', { rating: _wrRating, title, body });
+      if (data.error) { showWrFlash(data.error, 'err'); return; }
+      showWrFlash('Thank you! Your review has been submitted.', 'ok');
+      setTimeout(closeWriteReview, 1800);
+      loadReviews();
+    } catch (_) {
+      showWrFlash('Something went wrong. Please try again.', 'err');
+    }
+  }
+
+  document.getElementById('write-review-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeWriteReview();
+  });
+
   /* ── Boot ───────────────────────────────────────────────── */
   (async () => {
     try {
@@ -1142,6 +1594,7 @@
       _user = d.user || null;
     } catch (_) {}
     loadPlans();
+    loadReviews();
   })();
 </script>
 
