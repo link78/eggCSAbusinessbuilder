@@ -23,19 +23,23 @@ router.post('/register', async (req, res) => {
   }
 
   const emailLower = email.toLowerCase().trim();
-  const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(emailLower);
+  const existing = (await db.query('SELECT id FROM users WHERE email = $1', [emailLower])).rows[0];
   if (existing) {
     return res.status(409).json({ error: 'An account with that email already exists.' });
   }
 
   try {
     const hash = await bcrypt.hash(password, 12);
-    const result = db.prepare(
-      'INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)'
-    ).run(name.trim(), emailLower, hash);
+    const insertResult = await db.query(
+      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id',
+      [name.trim(), emailLower, hash]
+    );
+    const userId = insertResult.rows[0].id;
 
-    const user = db.prepare('SELECT id, name, email, role, avatar_url, created_at FROM users WHERE id = ?')
-                   .get(result.lastInsertRowid);
+    const user = (await db.query(
+      'SELECT id, name, email, role, avatar_url, created_at FROM users WHERE id = $1',
+      [userId]
+    )).rows[0];
     req.session.userId = user.id;
     res.json({ user });
   } catch (err) {
@@ -52,7 +56,7 @@ router.post('/login', async (req, res) => {
   }
 
   const emailLower = email.toLowerCase().trim();
-  const row = db.prepare('SELECT * FROM users WHERE email = ?').get(emailLower);
+  const row = (await db.query('SELECT * FROM users WHERE email = $1', [emailLower])).rows[0];
   if (!row) {
     return res.status(401).json({ error: 'Invalid email or password.' });
   }
@@ -83,12 +87,14 @@ router.post('/logout', (req, res) => {
 });
 
 // GET /api/auth/me
-router.get('/me', (req, res) => {
+router.get('/me', async (req, res) => {
   if (!req.session.userId) {
     return res.json({ user: null });
   }
-  const row = db.prepare('SELECT id, name, email, role, avatar_url, created_at FROM users WHERE id = ?')
-                .get(req.session.userId);
+  const row = (await db.query(
+    'SELECT id, name, email, role, avatar_url, created_at FROM users WHERE id = $1',
+    [req.session.userId]
+  )).rows[0];
   if (!row) {
     req.session.destroy(() => {});
     return res.json({ user: null });
@@ -100,17 +106,20 @@ router.get('/me', (req, res) => {
 router.put('/me', requireAuth, async (req, res) => {
   const { name, email, currentPassword, newPassword } = req.body || {};
 
-  const row = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.userId);
+  const row = (await db.query('SELECT * FROM users WHERE id = $1', [req.session.userId])).rows[0];
   if (!row) return res.status(404).json({ error: 'User not found.' });
 
-  const newName  = name  ? String(name).trim()  : row.name;
+  const newName  = name  ? String(name).trim()                    : row.name;
   let   newEmail = email ? String(email).toLowerCase().trim() : row.email;
 
   if (!newName) return res.status(400).json({ error: 'Name cannot be empty.' });
 
   // Validate new email uniqueness
   if (newEmail !== row.email) {
-    const conflict = db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').get(newEmail, row.id);
+    const conflict = (await db.query(
+      'SELECT id FROM users WHERE email = $1 AND id != $2',
+      [newEmail, row.id]
+    )).rows[0];
     if (conflict) return res.status(409).json({ error: 'That email is already in use.' });
   }
 
@@ -125,22 +134,25 @@ router.put('/me', requireAuth, async (req, res) => {
     newHash = await bcrypt.hash(newPassword, 12);
   }
 
-  db.prepare(
-    'UPDATE users SET name = ?, email = ?, password_hash = ? WHERE id = ?'
-  ).run(newName, newEmail, newHash, row.id);
+  await db.query(
+    'UPDATE users SET name = $1, email = $2, password_hash = $3 WHERE id = $4',
+    [newName, newEmail, newHash, row.id]
+  );
 
-  const updated = db.prepare('SELECT id, name, email, role, avatar_url, created_at FROM users WHERE id = ?')
-                    .get(row.id);
+  const updated = (await db.query(
+    'SELECT id, name, email, role, avatar_url, created_at FROM users WHERE id = $1',
+    [row.id]
+  )).rows[0];
   res.json({ user: updated });
 });
 
 // PUT /api/auth/avatar — update profile picture (base64 data URL)
-router.put('/avatar', requireAuth, (req, res) => {
+router.put('/avatar', requireAuth, async (req, res) => {
   const { avatarUrl } = req.body || {};
 
   if (!avatarUrl) {
     // Allow clearing the avatar
-    db.prepare('UPDATE users SET avatar_url = NULL WHERE id = ?').run(req.session.userId);
+    await db.query('UPDATE users SET avatar_url = NULL WHERE id = $1', [req.session.userId]);
     return res.json({ ok: true, avatar_url: null });
   }
 
@@ -154,7 +166,7 @@ router.put('/avatar', requireAuth, (req, res) => {
     return res.status(400).json({ error: 'Image is too large. Please use an image under 2 MB.' });
   }
 
-  db.prepare('UPDATE users SET avatar_url = ? WHERE id = ?').run(avatarUrl, req.session.userId);
+  await db.query('UPDATE users SET avatar_url = $1 WHERE id = $2', [avatarUrl, req.session.userId]);
   res.json({ ok: true, avatar_url: avatarUrl });
 });
 

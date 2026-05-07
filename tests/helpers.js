@@ -1,14 +1,33 @@
 /**
  * Shared test helpers.
  *
- * Sets DB_PATH to :memory: and NODE_ENV to test BEFORE any app/db modules are
- * loaded so every test file gets a fresh in-memory SQLite database.
+ * Sets DATABASE_URL and NODE_ENV BEFORE any app/db modules are loaded so every
+ * test file connects to the dedicated test database.
  */
 
-process.env.DB_PATH   = ':memory:';
-process.env.NODE_ENV  = 'test';
+process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://runner:testpass@localhost/egg_csa_test';
+process.env.NODE_ENV     = 'test';
 
 const request = require('supertest');
+
+/**
+ * Truncate all tables and reset sequences.
+ * Call this in beforeAll() to give each test file a clean slate.
+ */
+async function resetDb() {
+  const db = require('../db');
+  await db.ready;
+  await db.reset();
+}
+
+/**
+ * Close the connection pool.
+ * Call this in afterAll() to avoid open-handle warnings.
+ */
+async function closeDb() {
+  const db = require('../db');
+  await db.close();
+}
 
 /**
  * Create a supertest agent that keeps cookies (session) between requests and
@@ -65,4 +84,4 @@ function makeAgent(app) {
   return { post, put, del, get, resetCsrf };
 }
 
-module.exports = { makeAgent };
+module.exports = { makeAgent, resetDb, closeDb };

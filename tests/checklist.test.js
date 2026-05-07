@@ -1,14 +1,19 @@
-const { makeAgent } = require('./helpers');
+const { makeAgent, resetDb, closeDb } = require('./helpers');
 const app = require('../app');
 
 let agent;
 
 beforeAll(async () => {
+  await resetDb();
   agent = makeAgent(app);
   // Register and login a test user
   await agent.post('/api/auth/register', {
     name: 'Grace', email: 'grace@example.com', password: 'password123'
   });
+});
+
+afterAll(async () => {
+  await closeDb();
 });
 
 // ── GET /api/checklist ────────────────────────────────────────────────────────

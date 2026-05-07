@@ -1,12 +1,17 @@
-// Must be first so DB_PATH / NODE_ENV are set before any require()
-const { makeAgent } = require('./helpers');
-// Jest isolates module registries per test file, so each file gets a fresh DB
+// Must be first so DATABASE_URL / NODE_ENV are set before any require()
+const { makeAgent, resetDb, closeDb } = require('./helpers');
+// Jest isolates module registries per test file, so each file gets a fresh DB connection
 const app = require('../app');
 
 let agent;
 
 beforeAll(async () => {
+  await resetDb();
   agent = makeAgent(app);
+});
+
+afterAll(async () => {
+  await closeDb();
 });
 
 // ── Registration ──────────────────────────────────────────────────────────────

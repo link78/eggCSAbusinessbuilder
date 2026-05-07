@@ -1,4 +1,4 @@
-const { makeAgent } = require('./helpers');
+const { makeAgent, resetDb, closeDb } = require('./helpers');
 const app = require('../app');
 
 let adminAgent;
@@ -6,6 +6,8 @@ let userAgent;
 let sharedOrderId;
 
 beforeAll(async () => {
+  await resetDb();
+
   // Create an admin user
   adminAgent = makeAgent(app);
   await adminAgent.post('/api/auth/register', {
@@ -13,7 +15,7 @@ beforeAll(async () => {
   });
   // Manually promote to admin via the DB directly
   const db = require('../db');
-  db.prepare("UPDATE users SET role = 'admin' WHERE email = 'admin@example.com'").run();
+  await db.query("UPDATE users SET role = 'admin' WHERE email = $1", ['admin@example.com']);
 
   // Create a regular user with an order
   userAgent = makeAgent(app);
@@ -26,6 +28,10 @@ beforeAll(async () => {
     pickupDay: 'Monday'
   });
   sharedOrderId = orderRes.body.order.id;
+});
+
+afterAll(async () => {
+  await closeDb();
 });
 
 // ── GET /api/admin/orders ─────────────────────────────────────────────────────

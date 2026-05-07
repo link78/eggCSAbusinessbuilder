@@ -70,15 +70,16 @@ router.get('/plans', (req, res) => {
 });
 
 // GET /api/orders — list current user's orders
-router.get('/', requireAuth, (req, res) => {
-  const rows = db.prepare(
-    'SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC'
-  ).all(req.session.userId);
+router.get('/', requireAuth, async (req, res) => {
+  const rows = (await db.query(
+    'SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC',
+    [req.session.userId]
+  )).rows;
   res.json({ orders: rows });
 });
 
 // POST /api/orders — place a new subscription order (standard or flexible)
-router.post('/', requireAuth, (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   const { planName, fulfillmentMethod, deliveryAddress, pickupDay,
           boxes12, boxes18, durationWeeks } = req.body || {};
 
@@ -177,39 +178,44 @@ router.post('/', requireAuth, (req, res) => {
   }
 
   // Cancel any existing active order before creating a new one
-  db.prepare(
-    "UPDATE orders SET status = 'cancelled' WHERE user_id = ? AND status = 'active'"
-  ).run(req.session.userId);
+  await db.query(
+    "UPDATE orders SET status = 'cancelled' WHERE user_id = $1 AND status = 'active'",
+    [req.session.userId]
+  );
 
-  const result = db.prepare(`
+  const insertResult = await db.query(`
     INSERT INTO orders
       (user_id, plan_name, price, eggs_per_week,
        fulfillment_method, delivery_address, pickup_day, next_billing_date,
        boxes_per_delivery, duration_weeks, boxes12_per_delivery, boxes18_per_delivery)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+    RETURNING id
+  `, [
     req.session.userId, planName, price, eggsPerWeek,
     method, cleanAddress, cleanDay, nextBillingDate(),
     totalBoxes, weeks, b12, b18
-  );
+  ]);
 
-  const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(result.lastInsertRowid);
+  const orderId = insertResult.rows[0].id;
+  const order = (await db.query('SELECT * FROM orders WHERE id = $1', [orderId])).rows[0];
   res.json({ order });
 });
 
 // DELETE /api/orders/:id — cancel an order
-router.delete('/:id', requireAuth, (req, res) => {
-  const order = db.prepare(
-    'SELECT * FROM orders WHERE id = ? AND user_id = ?'
-  ).get(req.params.id, req.session.userId);
+router.delete('/:id', requireAuth, async (req, res) => {
+  const order = (await db.query(
+    'SELECT * FROM orders WHERE id = $1 AND user_id = $2',
+    [req.params.id, req.session.userId]
+  )).rows[0];
 
   if (!order) {
     return res.status(404).json({ error: 'Order not found.' });
   }
 
-  db.prepare(
-    "UPDATE orders SET status = 'cancelled' WHERE id = ?"
-  ).run(order.id);
+  await db.query(
+    "UPDATE orders SET status = 'cancelled' WHERE id = $1",
+    [order.id]
+  );
 
   res.json({ ok: true });
 });

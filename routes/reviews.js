@@ -11,15 +11,15 @@ function requireAuth(req, res, next) {
 }
 
 // GET /api/reviews — public list of all reviews, newest first
-router.get('/', (req, res) => {
-  const rows = db.prepare(
+router.get('/', async (req, res) => {
+  const rows = (await db.query(
     'SELECT id, user_name, rating, title, body, created_at FROM reviews ORDER BY created_at DESC'
-  ).all();
+  )).rows;
   res.json({ reviews: rows });
 });
 
 // POST /api/reviews — submit a review (requires auth)
-router.post('/', requireAuth, (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   const { rating, title, body } = req.body || {};
 
   if (!rating || !title || !body) {
@@ -41,18 +41,21 @@ router.post('/', requireAuth, (req, res) => {
     return res.status(400).json({ error: 'Review must be 1–1000 characters.' });
   }
 
-  const user = db.prepare('SELECT name FROM users WHERE id = ?').get(req.session.userId);
+  const user = (await db.query('SELECT name FROM users WHERE id = $1', [req.session.userId])).rows[0];
   if (!user) {
     return res.status(401).json({ error: 'User not found.' });
   }
 
-  const result = db.prepare(
-    'INSERT INTO reviews (user_id, user_name, rating, title, body) VALUES (?, ?, ?, ?, ?)'
-  ).run(req.session.userId, user.name, ratingNum, titleTrimmed, bodyTrimmed);
+  const insertResult = await db.query(
+    'INSERT INTO reviews (user_id, user_name, rating, title, body) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+    [req.session.userId, user.name, ratingNum, titleTrimmed, bodyTrimmed]
+  );
+  const reviewId = insertResult.rows[0].id;
 
-  const review = db.prepare(
-    'SELECT id, user_name, rating, title, body, created_at FROM reviews WHERE id = ?'
-  ).get(result.lastInsertRowid);
+  const review = (await db.query(
+    'SELECT id, user_name, rating, title, body, created_at FROM reviews WHERE id = $1',
+    [reviewId]
+  )).rows[0];
 
   res.json({ review });
 });

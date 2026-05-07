@@ -10,6 +10,7 @@ Revenue calculator — drag the sliders to match your current flock size and tar
 
 - [Node.js](https://nodejs.org/) v18 or later
 - npm (included with Node.js)
+- [PostgreSQL](https://www.postgresql.org/) v14 or later
 
 ### 1. Clone the repository
 
@@ -18,21 +19,29 @@ git clone https://github.com/link78/eggCSAbusinessbuilder.git
 cd eggCSAbusinessbuilder
 ```
 
-### 2. Install dependencies
+### 2. Create the PostgreSQL database
+
+```bash
+createdb egg_csa
+```
+
+### 3. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Set the session secret (required in production)
+### 4. Set required environment variables
 
 ```bash
+export DATABASE_URL="postgresql://user:password@localhost/egg_csa"
 export SESSION_SECRET="replace-with-a-long-random-string"
 ```
 
-> In development you can skip this; a default secret will be used and a warning will be printed. **Never skip this step in production.**
+> `DATABASE_URL` points to your PostgreSQL database. The schema (tables) is created automatically on first run.
+> `SESSION_SECRET` is required in production. In development a default is used and a warning is printed — **never skip this in production.**
 
-### 4. Start the server
+### 5. Start the server
 
 ```bash
 npm start
@@ -42,7 +51,7 @@ node server.js
 
 The app will be available at **http://localhost:3000**
 
-The SQLite database (`egg_csa.db`) is created automatically on first run — no setup required.
+The database schema is created automatically on first start — no manual migration required.
 
 ---
 

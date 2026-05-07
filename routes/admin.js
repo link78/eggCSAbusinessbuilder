@@ -3,11 +3,11 @@ const db      = require('../db');
 
 const router = express.Router();
 
-function requireAdmin(req, res, next) {
+async function requireAdmin(req, res, next) {
   if (!req.session.userId) {
     return res.status(401).json({ error: 'You must be logged in.' });
   }
-  const row = db.prepare('SELECT role FROM users WHERE id = ?').get(req.session.userId);
+  const row = (await db.query('SELECT role FROM users WHERE id = $1', [req.session.userId])).rows[0];
   if (!row || row.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required.' });
   }
@@ -15,21 +15,21 @@ function requireAdmin(req, res, next) {
 }
 
 // GET /api/admin/users — list all users
-router.get('/users', requireAdmin, (req, res) => {
-  const users = db.prepare(
+router.get('/users', requireAdmin, async (req, res) => {
+  const users = (await db.query(
     'SELECT id, name, email, role, created_at FROM users ORDER BY created_at ASC'
-  ).all();
+  )).rows;
   res.json({ users });
 });
 
 // PUT /api/admin/users/:id/role — set role to 'user' or 'admin'
-router.put('/users/:id/role', requireAdmin, (req, res) => {
+router.put('/users/:id/role', requireAdmin, async (req, res) => {
   const { role } = req.body || {};
   if (role !== 'user' && role !== 'admin') {
     return res.status(400).json({ error: 'role must be "user" or "admin".' });
   }
 
-  const target = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
+  const target = (await db.query('SELECT id FROM users WHERE id = $1', [req.params.id])).rows[0];
   if (!target) return res.status(404).json({ error: 'User not found.' });
 
   // Prevent an admin from removing their own admin role
@@ -37,26 +37,26 @@ router.put('/users/:id/role', requireAdmin, (req, res) => {
     return res.status(400).json({ error: 'You cannot remove your own admin role.' });
   }
 
-  db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, req.params.id);
+  await db.query('UPDATE users SET role = $1 WHERE id = $2', [role, req.params.id]);
   res.json({ ok: true });
 });
 
 // ── Order Inventory ───────────────────────────────────────────────────────────
 
 // GET /api/admin/orders — list all orders with subscriber name and email
-router.get('/orders', requireAdmin, (req, res) => {
-  const orders = db.prepare(`
+router.get('/orders', requireAdmin, async (req, res) => {
+  const orders = (await db.query(`
     SELECT o.*, u.name AS user_name, u.email AS user_email
     FROM orders o
     JOIN users u ON u.id = o.user_id
     ORDER BY o.created_at DESC
-  `).all();
+  `)).rows;
   res.json({ orders });
 });
 
 // PUT /api/admin/orders/:id — edit an order's plan_name and/or status
-router.put('/orders/:id', requireAdmin, (req, res) => {
-  const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
+router.put('/orders/:id', requireAdmin, async (req, res) => {
+  const order = (await db.query('SELECT * FROM orders WHERE id = $1', [req.params.id])).rows[0];
   if (!order) return res.status(404).json({ error: 'Order not found.' });
 
   const { status, plan_name } = req.body || {};
@@ -66,26 +66,28 @@ router.put('/orders/:id', requireAdmin, (req, res) => {
     return res.status(400).json({ error: 'status must be "active" or "cancelled".' });
   }
 
-  const newStatus   = status    !== undefined ? status    : order.status;
+  const newStatus   = status    !== undefined ? status              : order.status;
   const newPlanName = plan_name !== undefined ? plan_name.trim() : order.plan_name;
 
   if (!newPlanName) {
     return res.status(400).json({ error: 'plan_name cannot be empty.' });
   }
 
-  db.prepare('UPDATE orders SET status = ?, plan_name = ? WHERE id = ?')
-    .run(newStatus, newPlanName, order.id);
+  await db.query(
+    'UPDATE orders SET status = $1, plan_name = $2 WHERE id = $3',
+    [newStatus, newPlanName, order.id]
+  );
 
-  const updated = db.prepare('SELECT * FROM orders WHERE id = ?').get(order.id);
+  const updated = (await db.query('SELECT * FROM orders WHERE id = $1', [order.id])).rows[0];
   res.json({ order: updated });
 });
 
 // DELETE /api/admin/orders/:id — cancel an order
-router.delete('/orders/:id', requireAdmin, (req, res) => {
-  const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
+router.delete('/orders/:id', requireAdmin, async (req, res) => {
+  const order = (await db.query('SELECT * FROM orders WHERE id = $1', [req.params.id])).rows[0];
   if (!order) return res.status(404).json({ error: 'Order not found.' });
 
-  db.prepare("UPDATE orders SET status = 'cancelled' WHERE id = ?").run(order.id);
+  await db.query("UPDATE orders SET status = 'cancelled' WHERE id = $1", [order.id]);
   res.json({ ok: true });
 });
 
