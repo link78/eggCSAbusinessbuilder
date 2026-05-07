@@ -91,7 +91,12 @@ app.use('/api/admin',     apiLimiter,   adminRoutes);
 
 app.use(apiLimiter, express.static(path.join(__dirname)));
 
-// Catch-all: serve index.html for any unmatched route
+// Farm dashboard (authenticated SPA)
+app.get('/dashboard', apiLimiter, (req, res) => {
+  res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
+
+// Catch-all: serve index.html (landing page) for any unmatched route
 app.get('*', apiLimiter, (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });

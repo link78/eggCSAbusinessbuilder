@@ -1,0 +1,2548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sakinah Ridge Farm LLC</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #fdf8f0;
+      color: #2d2d2d;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #e85d04 0%, #f48c06 100%);
+      color: #fff;
+      padding: 2rem 1.5rem 1.5rem;
+      text-align: center;
+    }
+    header .egg-icon { font-size: 2.8rem; display: block; margin-bottom: .4rem; }
+    header h1 { font-size: 1.9rem; font-weight: 700; letter-spacing: -.5px; }
+    header p  { margin-top: .4rem; opacity: .9; font-size: 1rem; }
+
+    /* ── Tab bar ── */
+    .tab-bar {
+      display: flex;
+      background: #fff;
+      border-bottom: 2px solid #f0e8d8;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab-bar button {
+      flex: 1;
+      min-width: 130px;
+      padding: .85rem .5rem;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: .85rem;
+      font-weight: 600;
+      color: #777;
+      transition: color .2s, border-bottom .2s;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+    }
+    .tab-bar button.active {
+      color: #e85d04;
+      border-bottom: 3px solid #e85d04;
+    }
+    .tab-bar button:hover:not(.active) { color: #444; }
+
+    /* ── Tab panels ── */
+    .tab-panel { display: none; padding: 1.5rem; max-width: 800px; margin: 0 auto; }
+    .tab-panel.active { display: block; }
+
+    /* ── Section headings ── */
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #c45203;
+      margin-bottom: .3rem;
+    }
+    .section-subtitle {
+      font-size: .95rem;
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.4rem 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      margin-bottom: 1.2rem;
+    }
+
+    /* ── REVENUE CALCULATOR ── */
+    .calc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 480px) { .calc-grid { grid-template-columns: 1fr; } }
+
+    .slider-group label {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      font-size: .9rem;
+      margin-bottom: .5rem;
+    }
+    .slider-group label span {
+      color: #e85d04;
+      font-size: 1rem;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #f0e8d8;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #e85d04;
+      box-shadow: 0 2px 6px rgba(232,93,4,.4);
+      cursor: pointer;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #e85d04;
+      border: none;
+      cursor: pointer;
+    }
+
+    .result-bar {
+      background: #fef9f0;
+      border: 2px solid #f4c97e;
+      border-radius: 10px;
+      padding: 1.2rem 1.4rem;
+      margin-top: .5rem;
+    }
+    .result-bar .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .4rem 0;
+      border-bottom: 1px solid #f0e8d8;
+      font-size: .93rem;
+    }
+    .result-bar .row:last-child { border-bottom: none; }
+    .result-bar .row strong { color: #2d2d2d; }
+    .result-bar .row .val { font-weight: 700; font-size: 1.05rem; color: #e85d04; }
+
+    .status-badge {
+      display: inline-block;
+      padding: .3rem .85rem;
+      border-radius: 20px;
+      font-size: .82rem;
+      font-weight: 700;
+      margin-top: .9rem;
+    }
+    .status-ok  { background: #d4f5d4; color: #1a7a1a; }
+    .status-warn{ background: #fff3cd; color: #856404; }
+    .status-err { background: #fde8e8; color: #c0392b; }
+
+    .demand-bar-wrap { margin-top: 1rem; }
+    .demand-bar-label { font-size: .82rem; color: #666; margin-bottom: .35rem; display: flex; justify-content: space-between; }
+    .demand-bar-track {
+      height: 14px; border-radius: 7px;
+      background: #f0e8d8; overflow: hidden;
+    }
+    .demand-bar-fill {
+      height: 100%; border-radius: 7px;
+      background: linear-gradient(90deg, #e85d04, #f48c06);
+      transition: width .4s ease;
+    }
+
+    /* ── SUBSCRIPTION PLANS ── */
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 600px) { .plans-grid { grid-template-columns: 1fr; } }
+
+    .plan-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1.4rem 1.2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+      text-align: center;
+      border: 2px solid transparent;
+      position: relative;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .plan-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    .plan-card.featured {
+      border-color: #e85d04;
+    }
+    .plan-card .badge-popular {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: #e85d04; color: #fff;
+      font-size: .72rem; font-weight: 700; letter-spacing: .5px;
+      padding: .25rem .8rem; border-radius: 20px; white-space: nowrap;
+    }
+    .plan-card .plan-emoji { font-size: 2.2rem; margin-bottom: .5rem; }
+    .plan-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: .2rem; }
+    .plan-card .plan-tagline { font-size: .8rem; color: #888; margin-bottom: .9rem; }
+    .plan-card .plan-price {
+      font-size: 2rem; font-weight: 800; color: #e85d04; line-height: 1;
+    }
+    .plan-card .plan-price span { font-size: .95rem; font-weight: 500; color: #888; }
+    .plan-card .per-week { font-size: .8rem; color: #aaa; margin: .25rem 0 .9rem; }
+    .plan-card ul { list-style: none; text-align: left; font-size: .87rem; }
+    .plan-card ul li { padding: .28rem 0; display: flex; align-items: flex-start; gap: .45rem; color: #444; }
+    .plan-card ul li::before { content: '✓'; color: #e85d04; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+    .plan-cta {
+      display: block; margin-top: 1.1rem;
+      background: #e85d04; color: #fff;
+      border: none; border-radius: 8px;
+      padding: .65rem; width: 100%;
+      font-size: .9rem; font-weight: 700;
+      cursor: pointer; transition: background .2s;
+      text-decoration: none;
+    }
+    .plan-cta:hover { background: #c44f03; }
+    .plan-card.featured .plan-cta { background: #e85d04; }
+
+    /* ── LAUNCH CHECKLIST ── */
+    .checklist { list-style: none; }
+    .checklist li {
+      display: flex; align-items: flex-start; gap: 1rem;
+      padding: 1rem 1.2rem;
+      background: #fff;
+      border-radius: 10px;
+      margin-bottom: .75rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06);
+      cursor: pointer;
+      transition: box-shadow .2s;
+    }
+    .checklist li:hover { box-shadow: 0 3px 12px rgba(0,0,0,.1); }
+    .checklist li.done { opacity: .6; }
+    .checklist li.done .check-box { background: #28a745; border-color: #28a745; }
+    .checklist li.done .check-box::after { content: '✓'; color: #fff; font-size: .9rem; font-weight: 700; }
+    .check-box {
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 2px solid #d0c8b8;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, border-color .2s;
+      margin-top: 1px;
+    }
+    .checklist li.done .item-title { text-decoration: line-through; color: #999; }
+    .item-content { flex: 1; }
+    .item-step { font-size: .72rem; text-transform: uppercase; letter-spacing: .6px; color: #e85d04; font-weight: 700; }
+    .item-title { font-size: 1rem; font-weight: 600; margin: .15rem 0; }
+    .item-desc  { font-size: .84rem; color: #666; line-height: 1.45; }
+    .item-tag {
+      display: inline-block; font-size: .72rem; font-weight: 700;
+      padding: .18rem .6rem; border-radius: 20px; margin-top: .5rem;
+    }
+    .tag-free   { background: #d4f5d4; color: #1a7a1a; }
+    .tag-low    { background: #cce5ff; color: #004085; }
+    .tag-legal  { background: #e2d9f3; color: #6f42c1; }
+    .tag-action { background: #fff3cd; color: #856404; }
+
+    .checklist-progress {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06);
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .progress-track {
+      flex: 1; height: 10px; background: #f0e8d8; border-radius: 5px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, #28a745, #5cb85c);
+      border-radius: 5px; transition: width .4s ease;
+    }
+    .progress-text { font-size: .85rem; font-weight: 700; color: #444; white-space: nowrap; }
+
+    /* ── 90-DAY ROADMAP ── */
+    .roadmap-phase { margin-bottom: 1.6rem; }
+    .phase-header {
+      display: flex; align-items: center; gap: .75rem;
+      margin-bottom: .9rem;
+    }
+    .phase-dot {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .phase-dot.p1 { background: #e85d04; }
+    .phase-dot.p2 { background: #f48c06; }
+    .phase-dot.p3 { background: #28a745; }
+    .phase-title { font-size: 1.1rem; font-weight: 700; }
+    .phase-sub   { font-size: .82rem; color: #888; }
+
+    .week-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: .75rem;
+    }
+    .week-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06);
+      border-left: 4px solid #e85d04;
+    }
+    .week-card.p2 { border-left-color: #f48c06; }
+    .week-card.p3 { border-left-color: #28a745; }
+    .week-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .6px; color: #888; margin-bottom: .25rem; font-weight: 700; }
+    .week-card h4 { font-size: .95rem; font-weight: 700; margin-bottom: .4rem; }
+    .week-card p  { font-size: .82rem; color: #666; line-height: 1.45; }
+
+    .milestone-bar {
+      background: #fff8ee;
+      border: 1.5px solid #f4c97e;
+      border-radius: 10px;
+      padding: .9rem 1.2rem;
+      margin-top: 1rem;
+      display: flex; align-items: center; gap: .8rem;
+      font-size: .9rem;
+    }
+    .milestone-bar .m-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .milestone-bar strong { display: block; font-size: .95rem; }
+
+    /* ── Info note ── */
+    .info-note {
+      background: #e8f4fd;
+      border-left: 4px solid #1a88d8;
+      border-radius: 0 8px 8px 0;
+      padding: .85rem 1.1rem;
+      font-size: .87rem;
+      color: #1a4f7a;
+      margin-top: 1rem;
+      line-height: 1.5;
+    }
+    .info-note strong { color: #0c5296; }
+
+    /* ── CUSTOM PLAN CARD ── */
+    .custom-plan-card { border: 2px dashed #e0d8cc; }
+    .custom-plan-controls { margin: .8rem 0; }
+    .custom-control-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: .5rem; margin-bottom: .6rem; flex-wrap: wrap;
+    }
+    .custom-control-row label { font-size: .82rem; color: #555; flex: 1; min-width: 130px; }
+    .stepper-wrap {
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .stepper-btn {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #f0e8d8; border: none; font-size: 1.1rem; font-weight: 700;
+      cursor: pointer; color: #e85d04; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    .stepper-btn:hover { background: #e0d8c8; }
+    #custom-boxes-val, #custom-weeks-val {
+      min-width: 2rem; text-align: center; font-weight: 700; font-size: 1rem;
+    }
+
+    /* ── MODAL CUSTOM INFO ── */
+    .modal-custom-info {
+      background: #fff8f0; border-radius: 8px; padding: .65rem .9rem;
+      font-size: .9rem; color: #444; margin-bottom: .5rem;
+      border: 1px solid #f0e8d8;
+    }
+
+    /* ── EDIT PROFILE ── */
+    .edit-profile-section { margin-top: 1.2rem; }
+    .edit-profile-section h3 { font-size: 1.05rem; font-weight: 700; color: #c45203; margin-bottom: .9rem; }
+    .avatar-upload-wrap {
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;
+    }
+    .avatar-preview {
+      width: 64px; height: 64px; border-radius: 50%;
+      object-fit: cover; border: 3px solid #f0e8d8; flex-shrink: 0;
+    }
+    .avatar-preview-placeholder {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: linear-gradient(135deg, #e85d04, #f48c06);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; color: #fff; font-weight: 700; flex-shrink: 0;
+    }
+    .avatar-upload-btn {
+      background: #f0e8d8; color: #444; border: none; border-radius: 8px;
+      padding: .45rem .9rem; font-size: .87rem; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .avatar-upload-btn:hover { background: #e0d8c8; }
+    #avatar-file-input { display: none; }
+
+    /* ── ADMIN PANEL ── */
+    .admin-section { margin-top: 1.4rem; }
+    .admin-section h3 { font-size: 1.05rem; font-weight: 700; color: #c45203; margin-bottom: .9rem; }
+    .admin-user-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: .75rem; flex-wrap: wrap;
+      background: #fff; border-radius: 8px; padding: .75rem 1rem;
+      box-shadow: 0 1px 5px rgba(0,0,0,.06); margin-bottom: .5rem;
+      font-size: .88rem;
+    }
+    .admin-user-info { flex: 1; min-width: 0; }
+    .admin-user-name { font-weight: 700; }
+    .admin-user-email { color: #888; font-size: .82rem; }
+    .admin-role-badge {
+      font-size: .72rem; font-weight: 700; padding: .18rem .6rem;
+      border-radius: 20px; white-space: nowrap;
+    }
+    .role-admin { background: #e2d9f3; color: #6f42c1; }
+    .role-user  { background: #f0e8d8; color: #777; }
+    .btn-role-toggle {
+      background: #f0e8d8; color: #444; border: none; border-radius: 6px;
+      padding: .3rem .75rem; font-size: .8rem; font-weight: 600;
+      cursor: pointer; transition: background .2s; white-space: nowrap;
+    }
+    .btn-role-toggle:hover { background: #e0d8c8; }
+
+    /* ── Box type selector on plan cards ──────────────────────── */
+    .plan-box-type-selector {
+      display: flex; gap: .4rem; margin: .6rem 0 .4rem;
+    }
+    .box-type-opt { cursor: pointer; flex: 1; }
+    .box-type-opt input[type=radio] { display: none; }
+    .bto-label {
+      display: block; text-align: center;
+      border: 2px solid #e0d8cc; border-radius: 8px;
+      padding: .35rem .4rem; font-size: .8rem; font-weight: 600;
+      color: #666; background: #faf8f4; transition: border-color .15s, background .15s;
+      white-space: nowrap;
+    }
+    .box-type-opt input[type=radio]:checked + .bto-label {
+      border-color: #c45203; background: #fff5ed; color: #c45203;
+    }
+
+    /* ── Admin Order Inventory ─────────────────────────────── */
+    .admin-orders-table-wrap { overflow-x: auto; }
+    .admin-orders-table {
+      width: 100%; border-collapse: collapse; font-size: .82rem;
+    }
+    .admin-orders-table th {
+      background: #f8f3ec; text-align: left; padding: .55rem .7rem;
+      font-weight: 700; border-bottom: 2px solid #e0d8cc; white-space: nowrap;
+    }
+    .admin-orders-table td {
+      padding: .5rem .7rem; border-bottom: 1px solid #f0e8d8; vertical-align: top;
+    }
+    .admin-orders-table tr:last-child td { border-bottom: none; }
+    .admin-orders-table tr:hover td { background: #fffaf4; }
+    .order-status-active   { color: #28a745; font-weight: 700; }
+    .order-status-cancelled { color: #c0392b; font-weight: 700; }
+    .admin-order-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .btn-admin-edit {
+      background: #e2d9f3; color: #6f42c1; border: none; border-radius: 6px;
+      padding: .28rem .65rem; font-size: .78rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+    }
+    .btn-admin-edit:hover { background: #d3c6ed; }
+    .btn-admin-cancel-order {
+      background: #fde8e8; color: #c0392b; border: none; border-radius: 6px;
+      padding: .28rem .65rem; font-size: .78rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+    }
+    .btn-admin-cancel-order:hover { background: #f5c6c6; }
+    /* Edit-order modal */
+    .modal-edit-order-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.45); z-index: 2000;
+      align-items: center; justify-content: center;
+    }
+    .modal-edit-order-backdrop.open { display: flex; }
+    .modal-edit-order-box {
+      background: #fff; border-radius: 14px; padding: 1.8rem;
+      width: min(420px, 92vw); box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    }
+    .modal-edit-order-box h3 { margin: 0 0 1rem; font-size: 1.1rem; color: #c45203; }
+    .modal-edit-field { margin-bottom: 1rem; }
+    .modal-edit-field label { display: block; font-size: .84rem; font-weight: 600; margin-bottom: .3rem; }
+    .modal-edit-field select,
+    .modal-edit-field input { width: 100%; padding: .45rem .7rem; border: 1px solid #ddd; border-radius: 7px; font-size: .9rem; }
+    .modal-edit-actions { display: flex; gap: .7rem; justify-content: flex-end; margin-top: 1.2rem; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: .8rem;
+      color: #aaa;
+      border-top: 1px solid #f0e8d8;
+      margin-top: 1rem;
+    }
+
+    /* ── REVIEWS TAB ── */
+    .review-form-card { margin-bottom: 1.4rem; }
+    .review-form-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; }
+    .form-group { margin-bottom: .9rem; }
+    .form-group label { display: block; font-size: .87rem; font-weight: 600; margin-bottom: .35rem; color: #444; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: .6rem .8rem;
+      border: 1.5px solid #e0d8cc; border-radius: 8px;
+      font-size: .93rem; font-family: inherit;
+      background: #fffdf9; color: #2d2d2d;
+      transition: border-color .2s;
+      outline: none;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: #e85d04;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .star-row { display: flex; gap: .3rem; margin-bottom: .5rem; }
+    .star-btn {
+      font-size: 1.6rem; background: none; border: none; cursor: pointer;
+      color: #ccc; padding: 0; line-height: 1; transition: color .1s;
+    }
+    .star-btn.selected { color: #f4c30f; }
+    .btn-primary {
+      background: #e85d04; color: #fff;
+      border: none; border-radius: 8px; padding: .65rem 1.4rem;
+      font-size: .93rem; font-weight: 700; cursor: pointer; transition: background .2s;
+    }
+    .btn-primary:hover { background: #c44f03; }
+    .btn-secondary {
+      background: #f0e8d8; color: #2d2d2d;
+      border: none; border-radius: 8px; padding: .65rem 1.4rem;
+      font-size: .93rem; font-weight: 700; cursor: pointer; margin-left: .5rem;
+      transition: background .2s;
+    }
+    .btn-secondary:hover { background: #e0d8c8; }
+    .btn-danger {
+      background: #fde8e8; color: #c0392b;
+      border: none; border-radius: 8px; padding: .4rem .9rem;
+      font-size: .82rem; font-weight: 700; cursor: pointer; transition: background .2s;
+    }
+    .btn-danger:hover { background: #fcd0d0; }
+
+    .review-card {
+      background: #fff; border-radius: 12px; padding: 1.2rem 1.4rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07); margin-bottom: .9rem;
+    }
+    .review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .5rem; }
+    .review-stars { color: #f4c30f; font-size: 1rem; margin-bottom: .2rem; }
+    .review-title { font-weight: 700; font-size: 1rem; }
+    .review-meta { font-size: .78rem; color: #999; margin-top: .15rem; }
+    .review-body { font-size: .9rem; color: #555; line-height: 1.55; margin-top: .5rem; }
+    .reviews-empty { text-align: center; padding: 2rem; color: #aaa; font-size: .95rem; }
+
+    .flash-msg {
+      padding: .75rem 1rem; border-radius: 8px; margin-bottom: 1rem;
+      font-size: .9rem; font-weight: 600;
+    }
+    .flash-ok   { background: #d4f5d4; color: #1a7a1a; }
+    .flash-warn { background: #fff3cd; color: #856404; }
+    .flash-err  { background: #fde8e8; color: #c0392b; }
+
+    /* ── ACCOUNT TAB ── */
+    .auth-tabs { display: flex; gap: .5rem; margin-bottom: 1.2rem; }
+    .auth-tab-btn {
+      flex: 1; padding: .6rem; border-radius: 8px; border: 2px solid #e0d8cc;
+      background: #fff; cursor: pointer; font-size: .9rem; font-weight: 600;
+      color: #666; transition: all .2s;
+    }
+    .auth-tab-btn.active { border-color: #e85d04; color: #e85d04; background: #fff8f0; }
+
+    .auth-form-wrap { display: none; }
+    .auth-form-wrap.active { display: block; }
+
+    .profile-card {
+      background: #fff; border-radius: 12px; padding: 1.4rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07); margin-bottom: 1.2rem;
+    }
+    .profile-avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, #e85d04, #f48c06);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; color: #fff; font-weight: 700; margin-bottom: .8rem;
+    }
+    .profile-name { font-size: 1.2rem; font-weight: 700; }
+    .profile-email { font-size: .87rem; color: #888; margin-top: .2rem; }
+    .profile-since { font-size: .8rem; color: #aaa; margin-top: .15rem; }
+
+    .orders-section h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: #c45203; }
+    .order-card {
+      background: #fff; border-radius: 10px; padding: 1rem 1.2rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06); margin-bottom: .75rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .order-info .order-plan { font-weight: 700; font-size: 1rem; }
+    .order-info .order-detail { font-size: .82rem; color: #888; margin-top: .2rem; }
+    .order-status {
+      display: inline-block; padding: .25rem .75rem; border-radius: 20px;
+      font-size: .78rem; font-weight: 700;
+    }
+    .status-active    { background: #d4f5d4; color: #1a7a1a; }
+    .status-cancelled { background: #f0e8d8; color: #777; }
+    .orders-empty { text-align: center; padding: 1.5rem; color: #aaa; font-size: .9rem; }
+
+    #header-auth-bar {
+      background: rgba(255,255,255,0.15);
+      text-align: right;
+      padding: .4rem 1.5rem;
+      font-size: .83rem;
+      color: rgba(255,255,255,0.9);
+    }
+    #header-auth-bar button {
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5);
+      color: #fff; border-radius: 6px; padding: .25rem .75rem;
+      cursor: pointer; font-size: .82rem; font-weight: 600;
+      margin-left: .5rem; transition: background .2s;
+    }
+    #header-auth-bar button:hover { background: rgba(255,255,255,0.35); }
+
+    /* ── SUBSCRIPTION MODAL ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.8rem 1.6rem;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(0,0,0,.2);
+      animation: modalIn .18s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(.96) translateY(8px); }
+      to   { opacity: 1; transform: scale(1)  translateY(0);    }
+    }
+
+    .modal-title {
+      font-size: 1.2rem; font-weight: 700; color: #c45203;
+      margin-bottom: .3rem;
+    }
+    .modal-subtitle {
+      font-size: .88rem; color: #888; margin-bottom: 1.2rem;
+    }
+
+    .fulfillment-toggle {
+      display: flex; gap: .5rem; margin-bottom: 1.2rem;
+    }
+    .fulfillment-toggle label {
+      flex: 1; cursor: pointer;
+    }
+    .fulfillment-toggle input[type=radio] { display: none; }
+    .fulfillment-toggle .ft-btn {
+      display: block; text-align: center;
+      border: 2px solid #e0d8cc; border-radius: 10px;
+      padding: .7rem .5rem; font-size: .9rem; font-weight: 600;
+      color: #777; transition: all .15s; background: #fdf8f0;
+    }
+    .fulfillment-toggle input[type=radio]:checked + .ft-btn {
+      border-color: #e85d04; color: #e85d04; background: #fff8f0;
+    }
+
+    .modal-field { margin-bottom: 1rem; }
+    .modal-field label {
+      display: block; font-size: .87rem; font-weight: 600;
+      margin-bottom: .35rem; color: #444;
+    }
+    .modal-field input, .modal-field select {
+      width: 100%; padding: .6rem .8rem;
+      border: 1.5px solid #e0d8cc; border-radius: 8px;
+      font-size: .93rem; background: #fffdf9; color: #2d2d2d;
+      outline: none; transition: border-color .2s;
+    }
+    .modal-field input:focus, .modal-field select:focus {
+      border-color: #e85d04;
+    }
+
+    .modal-summary {
+      background: #fff8f0; border-radius: 8px;
+      padding: .75rem 1rem; font-size: .88rem;
+      color: #555; margin-bottom: 1.1rem;
+      border-left: 3px solid #e85d04;
+    }
+    .modal-summary strong { color: #c45203; }
+
+    .modal-actions { display: flex; gap: .6rem; justify-content: flex-end; }
+    .modal-actions .btn-primary  { padding: .6rem 1.4rem; }
+    .modal-actions .btn-secondary { padding: .6rem 1.2rem; }
+    #modal-flash { margin-bottom: .7rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="egg-icon" role="img" aria-label="Egg icon">🥚</span>
+  <h1>Sakinah Ridge Farm LLC</h1>
+  <p>Your complete guide to turning your Lincoln flock into recurring revenue</p>
+</header>
+<div id="header-auth-bar">
+  <span id="auth-bar-text">Not signed in</span>
+  <button id="auth-bar-btn" onclick="switchTab(5)">Sign In</button>
+</div>
+
+<!-- Tab Bar -->
+<nav class="tab-bar" role="tablist">
+  <button class="active" role="tab" aria-selected="true"  onclick="switchTab(0)">📊 Revenue Calculator</button>
+  <button role="tab" aria-selected="false" onclick="switchTab(1)">📦 Subscription Plans</button>
+  <button role="tab" aria-selected="false" onclick="switchTab(2)">✅ Launch Checklist</button>
+  <button role="tab" aria-selected="false" onclick="switchTab(3)">🗓️ 90-Day Roadmap</button>
+  <button role="tab" aria-selected="false" onclick="switchTab(4)">⭐ Reviews</button>
+  <button role="tab" aria-selected="false" onclick="switchTab(5)" id="tab-account">👤 Account</button>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     TAB 0 – REVENUE CALCULATOR
+═══════════════════════════════════════════ -->
+<section class="tab-panel active" id="panel-0">
+  <h2 class="section-title">Revenue Calculator</h2>
+  <p class="section-subtitle">Drag the sliders to see if your flock can cover demand — and what you'll earn.</p>
+
+  <div class="card">
+    <div class="calc-grid">
+      <div class="slider-group">
+        <label>
+          🐔 Flock size
+          <span id="flock-val">20 hens</span>
+        </label>
+        <input type="range" id="flock" min="5" max="100" value="20" step="1"
+               oninput="updateCalc()" aria-label="Flock size" />
+      </div>
+      <div class="slider-group">
+        <label>
+          👨‍👩‍👧 Target subscribers
+          <span id="subs-val">10 subscribers</span>
+        </label>
+        <input type="range" id="subs" min="1" max="60" value="10" step="1"
+               oninput="updateCalc()" aria-label="Target subscribers" />
+      </div>
+      <div class="slider-group">
+        <label>
+          🥚 Eggs per hen/week
+          <span id="rate-val">5 eggs</span>
+        </label>
+        <input type="range" id="rate" min="3" max="7" value="5" step="0.5"
+               oninput="updateCalc()" aria-label="Eggs per hen per week" />
+      </div>
+      <div class="slider-group">
+        <label>
+          📦 Average plan tier
+          <span id="tier-val">$19/mo</span>
+        </label>
+        <input type="range" id="tier" min="19" max="28" value="19" step="1"
+               oninput="updateCalc()" aria-label="Average plan price" />
+      </div>
+    </div>
+
+    <div class="result-bar">
+      <div class="row"><strong>🥚 Eggs available / week</strong><span class="val" id="r-eggs-avail">–</span></div>
+      <div class="row"><strong>📦 Eggs needed / week</strong><span class="val" id="r-eggs-needed">–</span></div>
+      <div class="row"><strong>🌾 Surplus / deficit</strong><span class="val" id="r-surplus">–</span></div>
+      <div class="row"><strong>💰 Monthly revenue</strong><span class="val" id="r-revenue">–</span></div>
+      <div class="row"><strong>📅 Annual revenue</strong><span class="val" id="r-annual">–</span></div>
+      <div class="row"><strong>⚖️ Cottage food limit</strong><span class="val">$25,000 / yr</span></div>
+
+      <div id="status-badge-wrap"></div>
+
+      <div class="demand-bar-wrap">
+        <div class="demand-bar-label">
+          <span>Supply vs. Demand</span>
+          <span id="demand-pct-label">0%</span>
+        </div>
+        <div class="demand-bar-track">
+          <div class="demand-bar-fill" id="demand-bar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-note">
+    <strong>Nebraska Cottage Food Law:</strong> You can sell directly to consumers (including CSA subscriptions, farmers markets, and farm-stand pick-up) without a commercial license until you exceed <strong>$25,000/year</strong> in gross sales. Perfect for starting small.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TAB 1 – SUBSCRIPTION PLANS
+═══════════════════════════════════════════ -->
+<section class="tab-panel" id="panel-1">
+  <h2 class="section-title">Subscription Plans</h2>
+  <p class="section-subtitle">Choose a fixed plan or build your own. Pick-up or local delivery. +$2 per weekly delivery.</p>
+
+  <div class="plans-grid">
+
+    <!-- Solo / Couple (flexible, min 1 box) -->
+    <div class="plan-card">
+      <div class="plan-emoji">🐣</div>
+      <h3>Solo / Couple</h3>
+      <p class="plan-tagline">For 1–2 people · choose your box size</p>
+      <div class="plan-price" id="solo-price-display">$20<span>/mo</span></div>
+      <p class="per-week" id="solo-summary-line">1 box · 12 eggs/wk</p>
+
+      <div class="custom-plan-controls">
+        <div class="custom-control-row">
+          <label>🥚 12-egg boxes <small style="color:#aaa;">($5/box)</small></label>
+          <div class="stepper-wrap">
+            <button class="stepper-btn" onclick="adjustSolo('boxes12', -1)" aria-label="Fewer 12-egg boxes">−</button>
+            <span id="solo-boxes12-val">1</span>
+            <button class="stepper-btn" onclick="adjustSolo('boxes12', 1)" aria-label="More 12-egg boxes">+</button>
+          </div>
+        </div>
+        <div class="custom-control-row">
+          <label>🥚 18-egg boxes <small style="color:#aaa;">($7/box)</small></label>
+          <div class="stepper-wrap">
+            <button class="stepper-btn" onclick="adjustSolo('boxes18', -1)" aria-label="Fewer 18-egg boxes">−</button>
+            <span id="solo-boxes18-val">0</span>
+            <button class="stepper-btn" onclick="adjustSolo('boxes18', 1)" aria-label="More 18-egg boxes">+</button>
+          </div>
+        </div>
+      </div>
+
+      <ul>
+        <li>Minimum 1 box (12-egg or 18-egg)</li>
+        <li>12-egg: $5/wk · 18-egg: $7/wk</li>
+        <li>+$2/delivery for local delivery</li>
+        <li>Monthly billing · Cancel anytime</li>
+      </ul>
+      <button class="plan-cta" onclick="openSoloSubscribeModal()">Choose Plan</button>
+    </div>
+
+    <!-- Small Family -->
+    <div class="plan-card featured">
+      <div class="badge-popular">⭐ Most Popular</div>
+      <div class="plan-emoji">👨‍👩‍👦</div>
+      <h3>Small Family</h3>
+      <p class="plan-tagline">For 2–4 people</p>
+
+      <div class="plan-box-type-selector">
+        <label class="box-type-opt">
+          <input type="radio" name="sf-box-type" value="dozen" checked onchange="updateFixedPlanDisplay('Small Family')">
+          <span class="bto-label">🥚 1 Dozen (12)</span>
+        </label>
+        <label class="box-type-opt">
+          <input type="radio" name="sf-box-type" value="18" onchange="updateFixedPlanDisplay('Small Family')">
+          <span class="bto-label">🥚 18 Eggs</span>
+        </label>
+      </div>
+
+      <div class="plan-price" id="sf-price-display">$20<span>/mo</span></div>
+      <p class="per-week" id="sf-per-week">$5.00/week · 12 eggs/wk</p>
+      <ul>
+        <li id="sf-box-desc">1 dozen (12 eggs) per delivery</li>
+        <li>4 deliveries/month</li>
+        <li>Weekly pickup or delivery (+$2/wk)</li>
+        <li>Seasonal produce add-ons</li>
+        <li>Newsletter + farm updates</li>
+        <li>Cancel anytime</li>
+      </ul>
+      <button class="plan-cta" onclick="openSubscribeModal('Small Family')">Choose Plan</button>
+    </div>
+
+    <!-- Family -->
+    <div class="plan-card">
+      <div class="plan-emoji">👨‍👩‍👧‍👦</div>
+      <h3>Family</h3>
+      <p class="plan-tagline">For 4+ people</p>
+
+      <div class="plan-box-type-selector">
+        <label class="box-type-opt">
+          <input type="radio" name="fam-box-type" value="dozen" onchange="updateFixedPlanDisplay('Family')">
+          <span class="bto-label">🥚 1 Dozen (12)</span>
+        </label>
+        <label class="box-type-opt">
+          <input type="radio" name="fam-box-type" value="18" checked onchange="updateFixedPlanDisplay('Family')">
+          <span class="bto-label">🥚 18 Eggs</span>
+        </label>
+      </div>
+
+      <div class="plan-price" id="fam-price-display">$28<span>/mo</span></div>
+      <p class="per-week" id="fam-per-week">$7.00/week · 18 eggs/wk</p>
+      <ul>
+        <li id="fam-box-desc">18-egg box per delivery</li>
+        <li>4 deliveries/month</li>
+        <li>Weekly pickup or delivery (+$2/wk)</li>
+        <li>Priority waitlist access</li>
+        <li>Seasonal produce add-ons</li>
+        <li>Cancel anytime</li>
+      </ul>
+      <button class="plan-cta" onclick="openSubscribeModal('Family')">Choose Plan</button>
+    </div>
+
+    <!-- Custom Plan -->
+    <div class="plan-card custom-plan-card">
+      <div class="plan-emoji">🛠️</div>
+      <h3>Custom Plan</h3>
+      <p class="plan-tagline">Mix box sizes &amp; choose duration</p>
+      <div class="plan-price" id="custom-price-display">$24<span> total</span></div>
+      <p class="per-week" id="custom-summary-line">2 boxes · 2 wks · 24 eggs/wk</p>
+
+      <div class="custom-plan-controls">
+        <div class="custom-control-row">
+          <label>🥚 12-egg boxes <small style="color:#aaa;">($5/box/wk)</small></label>
+          <div class="stepper-wrap">
+            <button class="stepper-btn" onclick="adjustCustom('boxes12', -1)" aria-label="Fewer 12-egg boxes">−</button>
+            <span id="custom-boxes12-val">1</span>
+            <button class="stepper-btn" onclick="adjustCustom('boxes12', 1)" aria-label="More 12-egg boxes">+</button>
+          </div>
+        </div>
+        <div class="custom-control-row">
+          <label>🥚 18-egg boxes <small style="color:#aaa;">($7/box/wk)</small></label>
+          <div class="stepper-wrap">
+            <button class="stepper-btn" onclick="adjustCustom('boxes18', -1)" aria-label="Fewer 18-egg boxes">−</button>
+            <span id="custom-boxes18-val">1</span>
+            <button class="stepper-btn" onclick="adjustCustom('boxes18', 1)" aria-label="More 18-egg boxes">+</button>
+          </div>
+        </div>
+        <div class="custom-control-row">
+          <label>📅 Duration <small style="color:#aaa;">(weeks, min 2)</small></label>
+          <div class="stepper-wrap">
+            <button class="stepper-btn" onclick="adjustCustom('weeks', -1)" aria-label="Fewer weeks">−</button>
+            <span id="custom-weeks-val">2</span>
+            <button class="stepper-btn" onclick="adjustCustom('weeks', 1)" aria-label="More weeks">+</button>
+          </div>
+        </div>
+      </div>
+
+      <ul>
+        <li>12-egg box $5 · 18-egg box $7 / delivery</li>
+        <li>Minimum 2 total boxes &amp; 2 weeks</li>
+        <li>Weekly pickup or delivery (+$2/wk)</li>
+        <li>Newsletter + farm updates</li>
+      </ul>
+      <button class="plan-cta" onclick="openCustomSubscribeModal()">Build My Plan</button>
+    </div>
+
+  </div>
+
+  <div id="plan-selected-msg" style="display:none;" class="info-note" role="status">
+    ✅ <strong id="plan-msg-text"></strong> — Great choice! Use the Revenue Calculator tab to see what this means for your income.
+  </div>
+
+  <div class="info-note" style="margin-top:.8rem;">
+    <strong>Tip:</strong> The <strong>Family plan at $28/month</strong> tends to be the easiest sell in Lincoln — families go through eggs quickly and value the convenience of local delivery. Lead with that tier in your marketing.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TAB 2 – LAUNCH CHECKLIST
+═══════════════════════════════════════════ -->
+<section class="tab-panel" id="panel-2">
+  <h2 class="section-title">Launch Checklist</h2>
+  <p class="section-subtitle">8 concrete steps from zero to first paying customer. Click each step to mark it done.</p>
+
+  <div class="checklist-progress">
+    <div class="progress-track">
+      <div class="progress-fill" id="cl-progress-fill" style="width:0%"></div>
+    </div>
+    <div class="progress-text" id="cl-progress-text">0 / 8 complete</div>
+  </div>
+
+  <ul class="checklist" id="checklist">
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 1</div>
+        <div class="item-title">Review Nebraska Cottage Food Law</div>
+        <div class="item-desc">Confirm you qualify: sell directly to end consumers, no resale. You're exempt from a commercial license up to <strong>$25,000/year</strong>. Keep simple sales records.</div>
+        <span class="item-tag tag-legal">Legal · Free</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 2</div>
+        <div class="item-title">Audit your flock &amp; egg supply</div>
+        <div class="item-desc">Track actual egg production for one week. Calculate weekly supply. Decide how many subscribers you can reliably serve — leave a 15% buffer for slow weeks.</div>
+        <span class="item-tag tag-free">Free · 1 week</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 3</div>
+        <div class="item-title">Set up a simple payment system</div>
+        <div class="item-desc">Use <strong>Venmo, PayPal, or Stripe</strong> to collect monthly payments. A free Square account works great for in-person pickup. Avoid handling cash for recurring subscriptions.</div>
+        <span class="item-tag tag-free">Free to start</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 4</div>
+        <div class="item-title">Create a simple sign-up form</div>
+        <div class="item-desc">Use Google Forms or Jotform (free) to collect: name, email, address, plan choice, and pickup preference. Link to it from all your marketing.</div>
+        <span class="item-tag tag-free">Free</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 5</div>
+        <div class="item-title">Design your egg boxes &amp; label</div>
+        <div class="item-desc">Use recycled egg cartons. Nebraska requires a label with: producer name, address, &quot;Keep Refrigerated&quot;, and pack date. Design a simple sticker on Canva ($0) or print on cardstock.</div>
+        <span class="item-tag tag-low">~$10–20 setup</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 6</div>
+        <div class="item-title">Post in 3 Lincoln neighborhood groups</div>
+        <div class="item-desc">Post in <strong>Lincoln NextDoor, Lincoln Buy/Sell Facebook groups, and r/lincoln</strong>. Include a photo of your chickens, your 3 plan tiers, and the sign-up link. Aim for 5–10 founding members at a discount.</div>
+        <span class="item-tag tag-action">Marketing · Free</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 7</div>
+        <div class="item-title">Confirm your first 5 subscribers</div>
+        <div class="item-desc">Don't wait for 20 — start with 5. Collect payment upfront for the first month. Confirm pickup/delivery schedule. Send a welcome email with pickup address and day/time.</div>
+        <span class="item-tag tag-action">Revenue · Month 1</span>
+      </div>
+    </li>
+
+    <li onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div class="item-content">
+        <div class="item-step">Step 8</div>
+        <div class="item-title">Deliver Week 1 &amp; ask for a referral</div>
+        <div class="item-desc">After the first delivery, send a short thank-you text or email and ask: <em>"Know anyone who'd love fresh local eggs?"</em> — word of mouth is your #1 growth channel at this stage.</div>
+        <span class="item-tag tag-action">Growth · Free</span>
+      </div>
+    </li>
+
+  </ul>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TAB 3 – 90-DAY ROADMAP
+═══════════════════════════════════════════ -->
+<section class="tab-panel" id="panel-3">
+  <h2 class="section-title">90-Day Roadmap</h2>
+  <p class="section-subtitle">A realistic week-by-week plan to reach 15–20 subscribers — your sustainable base.</p>
+
+  <!-- Phase 1 -->
+  <div class="roadmap-phase">
+    <div class="phase-header">
+      <div class="phase-dot p1">1</div>
+      <div>
+        <div class="phase-title">Phase 1 — Foundation (Weeks 1–4)</div>
+        <div class="phase-sub">Setup, legals, first 5 subscribers</div>
+      </div>
+    </div>
+    <div class="week-grid">
+      <div class="week-card">
+        <div class="week-label">Week 1</div>
+        <h4>Audit &amp; Plan</h4>
+        <p>Count eggs for 7 days. Decide max subscriber cap. Read Nebraska cottage food rules. Choose payment platform.</p>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 2</div>
+        <h4>Build Your Assets</h4>
+        <p>Create sign-up form, design carton label, write a 3-sentence "about your farm" pitch. Take photos of hens.</p>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 3</div>
+        <h4>Soft Launch</h4>
+        <p>Share with family, friends, and neighbors. Offer a "founding member" $5/mo discount for the first 3 months. Goal: 5 sign-ups.</p>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 4</div>
+        <h4>First Deliveries</h4>
+        <p>Collect Month 1 payments. Deliver your first boxes. Send a welcome message. Ask for one referral each.</p>
+      </div>
+    </div>
+    <div class="milestone-bar">
+      <span class="m-icon">🏁</span>
+      <div><strong>Month 1 Milestone</strong> 5 paying subscribers, first recurring revenue, systems working smoothly.</div>
+    </div>
+  </div>
+
+  <!-- Phase 2 -->
+  <div class="roadmap-phase">
+    <div class="phase-header">
+      <div class="phase-dot p2">2</div>
+      <div>
+        <div class="phase-title">Phase 2 — Growth (Weeks 5–8)</div>
+        <div class="phase-sub">Community marketing, reach 10–12 subscribers</div>
+      </div>
+    </div>
+    <div class="week-grid">
+      <div class="week-card p2">
+        <div class="week-label">Week 5</div>
+        <h4>Social Proof Post</h4>
+        <p>Share a customer quote (with permission) + photo on Lincoln NextDoor and Facebook. Announce 3 spots open.</p>
+      </div>
+      <div class="week-card p2">
+        <div class="week-label">Week 6</div>
+        <h4>Farmers Market Appearance</h4>
+        <p>Set up a table at Lincoln Haymarket Farmers Market. Bring samples, a sign, and a QR code to the sign-up form.</p>
+      </div>
+      <div class="week-card p2">
+        <div class="week-label">Week 7</div>
+        <h4>Email Newsletter</h4>
+        <p>Send a short farm update (Mailchimp free tier). Share what your hens have been up to. Include a "refer a friend" link.</p>
+      </div>
+      <div class="week-card p2">
+        <div class="week-label">Week 8</div>
+        <h4>Local Business Outreach</h4>
+        <p>Contact 3–5 local coffee shops or restaurants about a wholesale or bulk partnership. Even small accounts add stability.</p>
+      </div>
+    </div>
+    <div class="milestone-bar">
+      <span class="m-icon">📈</span>
+      <div><strong>Month 2 Milestone</strong> 10–12 subscribers. Word-of-mouth starting to work. Revenue covers feed costs.</div>
+    </div>
+  </div>
+
+  <!-- Phase 3 -->
+  <div class="roadmap-phase">
+    <div class="phase-header">
+      <div class="phase-dot p3">3</div>
+      <div>
+        <div class="phase-title">Phase 3 — Scale (Weeks 9–12)</div>
+        <div class="phase-sub">Reach 15–20 subscribers, solidify operations</div>
+      </div>
+    </div>
+    <div class="week-grid">
+      <div class="week-card p3">
+        <div class="week-label">Week 9</div>
+        <h4>Waitlist &amp; Urgency</h4>
+        <p>If at capacity, open a waitlist. "Only 5 spots left" messaging drives conversions. Consider expanding your flock if demand holds.</p>
+      </div>
+      <div class="week-card p3">
+        <div class="week-label">Week 10</div>
+        <h4>Add-On Products</h4>
+        <p>Offer seasonal add-ons: herbs, jam, or extra dozen. Increases average order value without new subscribers.</p>
+      </div>
+      <div class="week-card p3">
+        <div class="week-label">Week 11</div>
+        <h4>Streamline Operations</h4>
+        <p>Batch all labeling on one day. Create a delivery route. Use a shared Google Sheet to track boxes owed per subscriber.</p>
+      </div>
+      <div class="week-card p3">
+        <div class="week-label">Week 12</div>
+        <h4>Review &amp; Plan Ahead</h4>
+        <p>Calculate true profit margin. Decide: stay at 15–20, expand flock, or add a second product line. Celebrate your win! 🎉</p>
+      </div>
+    </div>
+    <div class="milestone-bar">
+      <span class="m-icon">🎯</span>
+      <div><strong>Month 3 Milestone</strong> 15–20 subscribers. Sustainable recurring income. Ready to decide your next growth step.</div>
+    </div>
+  </div>
+
+  <div class="info-note">
+    <strong>Revenue at 20 subscribers (mixed plans ~$19 avg):</strong> ~$380/month or <strong>~$4,560/year</strong> — well within the $25,000 cottage food threshold. You'd need ~119 subscribers at the Family plan to hit the license threshold.
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SUBSCRIPTION MODAL (outside tab panels)
+═══════════════════════════════════════════ -->
+<div class="modal-backdrop" id="subscribe-modal" role="dialog" aria-modal="true" aria-labelledby="modal-plan-title">  <div class="modal-box">
+    <div class="modal-title" id="modal-plan-title">Subscribe to <span id="modal-plan-name">—</span></div>
+    <div class="modal-subtitle" id="modal-plan-subtitle">Monthly · Cancel anytime</div>
+
+    <div id="modal-flash"></div>
+
+    <!-- Pickup vs Delivery toggle -->
+    <div class="fulfillment-toggle" role="group" aria-label="Fulfillment method">
+      <label>
+        <input type="radio" name="fulfillment" id="ft-pickup" value="pickup" checked
+               onchange="updateFulfillmentFields()" />
+        <span class="ft-btn">🏡 Pick-Up</span>
+      </label>
+      <label>
+        <input type="radio" name="fulfillment" id="ft-delivery" value="delivery"
+               onchange="updateFulfillmentFields()" />
+        <span class="ft-btn">🚗 Local Delivery</span>
+      </label>
+    </div>
+
+    <!-- Pickup day (shown when pickup selected) -->
+    <div class="modal-field" id="modal-field-pickup">
+      <label for="modal-pickup-day">Preferred Pick-Up Day</label>
+      <select id="modal-pickup-day">
+        <option value="">— choose a day —</option>
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Friday">Friday</option>
+        <option value="Saturday">Saturday</option>
+      </select>
+    </div>
+
+    <!-- Delivery address (shown when delivery selected) -->
+    <div class="modal-field" id="modal-field-delivery" style="display:none;">
+      <label for="modal-delivery-address">Delivery Address <small style="color:#aaa;">(Lincoln, NE)</small></label>
+      <input type="text" id="modal-delivery-address"
+             placeholder="e.g. 1234 Vine St, Lincoln NE 68508"
+             maxlength="200" autocomplete="street-address" />
+    </div>
+
+    <!-- Flex-plan info (shown for Solo/Couple and Custom plans) -->
+    <div class="modal-field" id="modal-custom-fields" style="display:none;">
+      <div class="modal-custom-info">
+        <div>
+          🥚 <strong><span id="modal-b12-count">1</span> × 12-egg box</strong> ($5) +
+          <strong><span id="modal-b18-count">0</span> × 18-egg box</strong> ($7)
+        </div>
+        <div id="modal-duration-line" style="display:none; margin-top:.3rem;">
+          📅 <strong><span id="modal-custom-weeks">2</span> weeks</strong>
+          <span style="color:#888;font-size:.82rem;"> · one-time billing</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary of what they're signing up for -->
+    <div class="modal-summary" id="modal-summary"></div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeSubscribeModal()">Cancel</button>
+      <button class="btn-primary"   onclick="submitSubscription()">Confirm &amp; Subscribe</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADMIN — EDIT ORDER MODAL
+═══════════════════════════════════════════ -->
+<div class="modal-edit-order-backdrop" id="edit-order-modal" role="dialog" aria-modal="true" aria-label="Edit order">
+  <div class="modal-edit-order-box">
+    <h3>✏️ Edit Order <span id="edit-order-id-label" style="font-weight:400;font-size:.9rem;color:#888;"></span></h3>
+    <div id="edit-order-flash"></div>
+    <div class="modal-edit-field">
+      <label for="edit-order-plan">Plan Name</label>
+      <input type="text" id="edit-order-plan" maxlength="60" />
+    </div>
+    <div class="modal-edit-field">
+      <label for="edit-order-status">Status</label>
+      <select id="edit-order-status">
+        <option value="active">active</option>
+        <option value="cancelled">cancelled</option>
+      </select>
+    </div>
+    <div class="modal-edit-actions">
+      <button class="btn-secondary" onclick="closeEditOrderModal()">Cancel</button>
+      <button class="btn-primary" onclick="submitAdminEditOrder()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 4 – REVIEWS
+═══════════════════════════════════════════ -->
+<section class="tab-panel" id="panel-4">
+  <h2 class="section-title">Customer Reviews</h2>
+  <p class="section-subtitle">Hear from Lincoln families who subscribe — and share your own experience.</p>
+
+  <!-- Write a review (shown only when logged in) -->
+  <div id="review-form-section" style="display:none;">
+    <div class="card review-form-card">
+      <h3>✍️ Share Your Experience</h3>
+      <div id="review-flash"></div>
+      <div class="form-group">
+        <label>Your Rating</label>
+        <div class="star-row" id="star-row" role="group" aria-label="Rating">
+          <button class="star-btn" data-val="1" onclick="setRating(1)" aria-label="1 star">★</button>
+          <button class="star-btn" data-val="2" onclick="setRating(2)" aria-label="2 stars">★</button>
+          <button class="star-btn" data-val="3" onclick="setRating(3)" aria-label="3 stars">★</button>
+          <button class="star-btn" data-val="4" onclick="setRating(4)" aria-label="4 stars">★</button>
+          <button class="star-btn" data-val="5" onclick="setRating(5)" aria-label="5 stars">★</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="review-title">Review Title</label>
+        <input type="text" id="review-title" maxlength="120" placeholder="e.g. Fresh eggs every week!" />
+      </div>
+      <div class="form-group">
+        <label for="review-body">Your Experience</label>
+        <textarea id="review-body" maxlength="1000" rows="4"
+          placeholder="Tell us about your experience with the egg CSA..."></textarea>
+      </div>
+      <button class="btn-primary" onclick="submitReview()">Post Review</button>
+    </div>
+  </div>
+
+  <!-- Prompt to sign in to leave a review -->
+  <div id="review-login-prompt" class="info-note" style="margin-bottom:1.2rem;">
+    <strong>Want to write a review?</strong>
+    <a href="#" onclick="switchTab(5); return false;" style="color:#e85d04; font-weight:700;">Sign in or create an account</a> to share your experience.
+  </div>
+
+  <!-- Reviews list -->
+  <div id="reviews-list">
+    <div class="reviews-empty">Loading reviews…</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     TAB 5 – ACCOUNT
+═══════════════════════════════════════════ -->
+<section class="tab-panel" id="panel-5">
+  <h2 class="section-title" id="account-title">My Account</h2>
+  <p class="section-subtitle" id="account-subtitle">Sign in or create an account to place orders and save your progress.</p>
+
+  <!-- NOT LOGGED IN: login/register forms -->
+  <div id="auth-forms-wrap">
+    <div class="auth-tabs">
+      <button class="auth-tab-btn active" id="tab-login-btn"    onclick="showAuthForm('login')">Sign In</button>
+      <button class="auth-tab-btn"        id="tab-register-btn" onclick="showAuthForm('register')">Create Account</button>
+    </div>
+
+    <!-- Login form -->
+    <div class="auth-form-wrap active card" id="login-form-wrap">
+      <div id="login-flash"></div>
+      <div class="form-group">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="Your password" autocomplete="current-password" />
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Sign In</button>
+      <button class="btn-secondary" onclick="showAuthForm('register')">Create Account</button>
+    </div>
+
+    <!-- Register form -->
+    <div class="auth-form-wrap card" id="register-form-wrap">
+      <div id="register-flash"></div>
+      <div class="form-group">
+        <label for="reg-name">Full Name</label>
+        <input type="text" id="reg-name" placeholder="Jane Smith" autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="reg-email">Email</label>
+        <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="reg-password">Password <small style="color:#aaa;">(min. 6 characters)</small></label>
+        <input type="password" id="reg-password" placeholder="Create a password" autocomplete="new-password" />
+      </div>
+      <button class="btn-primary" id="register-submit-btn" onclick="doRegister()">Create Account</button>
+      <button class="btn-secondary" onclick="showAuthForm('login')">Already have an account?</button>
+    </div>
+  </div>
+
+  <!-- LOGGED IN: profile + orders -->
+  <div id="account-logged-in" style="display:none;">
+    <div class="profile-card">
+      <div id="profile-avatar-wrap">
+        <div class="profile-avatar" id="profile-avatar">?</div>
+      </div>
+      <div class="profile-name"  id="profile-name">–</div>
+      <div class="profile-email" id="profile-email">–</div>
+      <div class="profile-since" id="profile-since">–</div>
+      <br/>
+      <button class="btn-secondary" onclick="doLogout()">Sign Out</button>
+    </div>
+
+    <!-- Edit Profile -->
+    <div class="edit-profile-section card">
+      <h3>✏️ Edit Profile</h3>
+      <div id="edit-profile-flash"></div>
+
+      <!-- Avatar upload -->
+      <div class="avatar-upload-wrap">
+        <div id="avatar-edit-preview-wrap">
+          <div class="avatar-preview-placeholder" id="avatar-edit-placeholder">?</div>
+        </div>
+        <div>
+          <button class="avatar-upload-btn" onclick="document.getElementById('avatar-file-input').click()">
+            📷 Change Photo
+          </button>
+          <button class="avatar-upload-btn" style="margin-top:.4rem;" onclick="removeAvatar()">
+            Remove Photo
+          </button>
+          <input type="file" id="avatar-file-input" accept="image/jpeg,image/png,image/gif,image/webp"
+                 onchange="handleAvatarFile(event)" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="edit-name">Full Name</label>
+        <input type="text" id="edit-name" placeholder="Your name" maxlength="120" />
+      </div>
+      <div class="form-group">
+        <label for="edit-email">Email</label>
+        <input type="email" id="edit-email" placeholder="you@example.com" />
+      </div>
+      <hr style="border:none;border-top:1px solid #f0e8d8;margin:.9rem 0;" />
+      <p style="font-size:.82rem;color:#888;margin-bottom:.7rem;">Leave password fields blank to keep your current password.</p>
+      <div class="form-group">
+        <label for="edit-current-password">Current Password</label>
+        <input type="password" id="edit-current-password" placeholder="Required to change password" />
+      </div>
+      <div class="form-group">
+        <label for="edit-new-password">New Password <small style="color:#aaa;">(min. 6 characters)</small></label>
+        <input type="password" id="edit-new-password" placeholder="Leave blank to keep current" />
+      </div>
+      <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+    </div>
+
+    <div class="orders-section">
+      <h3>🛒 My Subscriptions</h3>
+      <div id="orders-list">
+        <div class="orders-empty">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Admin Panel (only visible to admins) -->
+    <div class="admin-section" id="admin-panel" style="display:none;">
+      <div class="card">
+        <h3>🔑 Admin Panel — Users</h3>
+        <div id="admin-flash"></div>
+        <div id="admin-users-list">Loading…</div>
+      </div>
+
+      <!-- Order Inventory -->
+      <div class="card" style="margin-top:1.2rem;">
+        <h3>📋 Order Inventory</h3>
+        <div id="admin-orders-flash"></div>
+        <p style="font-size:.84rem;color:#888;margin:0 0 .8rem;">All subscriber orders — edit plan/status or cancel.</p>
+        <div id="admin-orders-list">Loading…</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Sakinah Ridge Farm LLC · Lincoln, Nebraska · Nebraska Cottage Food Law applies · Not legal or financial advice
+</footer>
+
+<script>
+  /* ═══════════════════════════════════════════════════════
+     STATE
+  ═══════════════════════════════════════════════════════ */
+  let currentUser   = null;
+  let selectedRating = 0;
+
+  /* ═══════════════════════════════════════════════════════
+     TAB SWITCHING
+  ═══════════════════════════════════════════════════════ */
+  const panels = document.querySelectorAll('.tab-panel');
+  const tabs   = document.querySelectorAll('.tab-bar button');
+
+  function switchTab(idx) {
+    panels.forEach((p, i) => p.classList.toggle('active', i === idx));
+    tabs.forEach((t, i) => {
+      t.classList.toggle('active', i === idx);
+      t.setAttribute('aria-selected', i === idx);
+    });
+    if (idx === 4) loadReviews();
+    if (idx === 5) renderAccountTab();
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     REVENUE CALCULATOR
+  ═══════════════════════════════════════════════════════ */
+  const TIER_SNAPS = [19, 28];
+  const tierEggs = { 19: 12, 28: 18 };
+  // Minimum value to avoid division by zero when flock slider is at minimum
+  const MIN_EGGS_AVAILABLE = 1;
+
+  function formatCurrency(n) {
+    return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  }
+
+  function updateCalc() {
+    const flock = +document.getElementById('flock').value;
+    const subs  = +document.getElementById('subs').value;
+    const rate  = +document.getElementById('rate').value;
+    const rawTier = +document.getElementById('tier').value;
+    // Snap to nearest plan price
+    const tier = TIER_SNAPS.reduce((a, b) => Math.abs(b - rawTier) < Math.abs(a - rawTier) ? b : a);
+
+    document.getElementById('flock-val').textContent = flock + ' hens';
+    document.getElementById('subs-val').textContent  = subs  + ' subscribers';
+    document.getElementById('rate-val').textContent  = rate  + ' eggs';
+    document.getElementById('tier-val').textContent  = formatCurrency(tier) + '/mo';
+
+    const eggsAvail  = Math.floor(flock * rate);
+    const eggsNeeded = subs * tierEggs[tier];
+    const surplus    = eggsAvail - eggsNeeded;
+    const monthly    = subs * tier;
+    const annual     = monthly * 12;
+    const pct = Math.min(100, Math.round((eggsNeeded / Math.max(eggsAvail, MIN_EGGS_AVAILABLE)) * 100));
+
+    document.getElementById('r-eggs-avail').textContent  = eggsAvail.toLocaleString()  + ' eggs';
+    document.getElementById('r-eggs-needed').textContent = eggsNeeded.toLocaleString() + ' eggs';
+    document.getElementById('r-surplus').textContent     = (surplus >= 0 ? '+' : '') + surplus.toLocaleString() + ' eggs';
+    document.getElementById('r-surplus').style.color     = surplus >= 0 ? '#28a745' : '#c0392b';
+    document.getElementById('r-revenue').textContent     = formatCurrency(monthly) + ' / mo';
+    document.getElementById('r-annual').textContent      = formatCurrency(annual)  + ' / yr';
+
+    document.getElementById('demand-bar').style.width        = pct + '%';
+    document.getElementById('demand-pct-label').textContent  = pct + '% of supply used';
+
+    const badge = document.getElementById('status-badge-wrap');
+    if (surplus >= 0 && annual < 25000) {
+      badge.innerHTML = '<span class="status-badge status-ok">✓ Supply covers demand · Under cottage food limit</span>';
+    } else if (surplus >= 0 && annual >= 25000) {
+      badge.innerHTML = '<span class="status-badge status-warn">⚠ Good supply — but over $25k/yr: commercial license needed</span>';
+    } else {
+      badge.innerHTML = '<span class="status-badge status-err">✗ Not enough eggs — reduce subscribers or grow flock</span>';
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     SUBSCRIPTION PLANS — modal order flow
+  ═══════════════════════════════════════════════════════ */
+  let _pendingPlanName  = null;
+  let _pendingPlanPrice = null;
+  let _pendingBoxType   = null;   // 'dozen' or '18' for Small Family / Family
+
+  // Pricing constants (mirror server)
+  const PRICE_PER_12_BOX      = 5;
+  const PRICE_PER_18_BOX      = 7;
+  const DELIVERY_FEE_PER_WEEK = 2;
+  const MONTHLY_WEEKS         = 4;
+
+  // Fixed plan box-type pricing helpers
+  function fixedPlanPrice(boxType)   { return (boxType === 'dozen' ? PRICE_PER_12_BOX : PRICE_PER_18_BOX) * MONTHLY_WEEKS; }
+  function fixedPlanEggs(boxType)    { return boxType === 'dozen' ? 12 : 18; }
+  function fixedPlanPerWeek(boxType) { return boxType === 'dozen' ? '$5.00/week · 12 eggs/wk' : '$7.00/week · 18 eggs/wk'; }
+  function fixedPlanBoxDesc(boxType) { return boxType === 'dozen' ? '1 dozen (12 eggs) per delivery' : '18-egg box per delivery'; }
+
+  // ── Fixed plan card display update ────────────────────────────────────────────
+  function updateFixedPlanDisplay(planName) {
+    const prefix    = planName === 'Small Family' ? 'sf' : 'fam';
+    const radioName = prefix + '-box-type';
+    const boxType   = document.querySelector(`input[name="${radioName}"]:checked`).value;
+    const price     = fixedPlanPrice(boxType);
+
+    document.getElementById(`${prefix}-price-display`).innerHTML = `$${price}<span>/mo</span>`;
+    document.getElementById(`${prefix}-per-week`).textContent    = fixedPlanPerWeek(boxType);
+    document.getElementById(`${prefix}-box-desc`).textContent    = fixedPlanBoxDesc(boxType);
+  }
+
+  // Solo / Couple plan state (min 1 box total, monthly billing)
+  let _soloBoxes12   = 1;
+  let _soloBoxes18   = 0;
+  const SOLO_MIN_BOXES = 1;
+
+  // Custom plan state (min 2 total boxes, min 2 weeks)
+  let _customBoxes12 = 1;
+  let _customBoxes18 = 1;
+  let _customWeeks   = 2;
+  const CUSTOM_MIN_BOXES = 2;
+  const MIN_WEEKS        = 2;
+  const MAX_BOXES        = 20;
+  const MAX_WEEKS        = 52;
+
+  // ── Solo / Couple plan controls ─────────────────────────────────────────────
+  function adjustSolo(type, delta) {
+    if (type === 'boxes12') {
+      _soloBoxes12 = Math.min(MAX_BOXES, Math.max(0, _soloBoxes12 + delta));
+    } else {
+      _soloBoxes18 = Math.min(MAX_BOXES, Math.max(0, _soloBoxes18 + delta));
+    }
+    updateSoloPlanDisplay();
+  }
+
+  function updateSoloPlanDisplay() {
+    const total     = _soloBoxes12 + _soloBoxes18;
+    const basePrice = (_soloBoxes12 * PRICE_PER_12_BOX + _soloBoxes18 * PRICE_PER_18_BOX) * MONTHLY_WEEKS;
+    const totalEggs = _soloBoxes12 * 12 + _soloBoxes18 * 18;
+
+    document.getElementById('solo-boxes12-val').textContent = _soloBoxes12;
+    document.getElementById('solo-boxes18-val').textContent = _soloBoxes18;
+    document.getElementById('solo-price-display').innerHTML =
+      total === 0 ? '—' : `$${basePrice}<span>/mo</span>`;
+    document.getElementById('solo-summary-line').textContent =
+      total === 0
+        ? 'Select at least 1 box'
+        : `${total} box${total > 1 ? 'es' : ''} · ${totalEggs} eggs/wk`;
+  }
+
+  // ── Custom plan controls ─────────────────────────────────────────────────────
+  function adjustCustom(type, delta) {
+    if (type === 'boxes12') {
+      _customBoxes12 = Math.min(MAX_BOXES, Math.max(0, _customBoxes12 + delta));
+    } else if (type === 'boxes18') {
+      _customBoxes18 = Math.min(MAX_BOXES, Math.max(0, _customBoxes18 + delta));
+    } else {
+      _customWeeks = Math.min(MAX_WEEKS, Math.max(MIN_WEEKS, _customWeeks + delta));
+    }
+    updateCustomPlanDisplay();
+  }
+
+  function updateCustomPlanDisplay() {
+    const total     = _customBoxes12 + _customBoxes18;
+    const base      = (_customBoxes12 * PRICE_PER_12_BOX + _customBoxes18 * PRICE_PER_18_BOX) * _customWeeks;
+    const totalEggs = _customBoxes12 * 12 + _customBoxes18 * 18;
+
+    document.getElementById('custom-boxes12-val').textContent = _customBoxes12;
+    document.getElementById('custom-boxes18-val').textContent = _customBoxes18;
+    document.getElementById('custom-weeks-val').textContent   = _customWeeks;
+    document.getElementById('custom-price-display').innerHTML = `$${base}<span> total</span>`;
+    document.getElementById('custom-summary-line').textContent =
+      `${total} box${total !== 1 ? 'es' : ''} · ${_customWeeks} wk · ${totalEggs} eggs/wk`;
+  }
+
+  function openSoloSubscribeModal() {
+    if (!currentUser) {
+      switchTab(5);
+      showFlash('login-flash', 'Please sign in or create an account to subscribe.', 'warn');
+      return;
+    }
+    const total = _soloBoxes12 + _soloBoxes18;
+    if (total < SOLO_MIN_BOXES) {
+      alert('Please select at least 1 box before subscribing.');
+      return;
+    }
+
+    _pendingPlanName  = 'Solo / Couple';
+    const basePrice   = (_soloBoxes12 * PRICE_PER_12_BOX + _soloBoxes18 * PRICE_PER_18_BOX) * MONTHLY_WEEKS;
+    _pendingPlanPrice = basePrice;
+
+    document.getElementById('modal-plan-name').textContent = 'Solo / Couple';
+    document.getElementById('modal-plan-subtitle').textContent =
+      `$${basePrice}/month base · ${_soloBoxes12 * 12 + _soloBoxes18 * 18} eggs/week · Monthly`;
+
+    // Populate and show flex-plan info
+    document.getElementById('modal-custom-fields').style.display = 'block';
+    document.getElementById('modal-b12-count').textContent  = _soloBoxes12;
+    document.getElementById('modal-b18-count').textContent  = _soloBoxes18;
+    document.getElementById('modal-duration-line').style.display = 'none';
+
+    _resetModalForm();
+  }
+
+  function openCustomSubscribeModal() {
+    if (!currentUser) {
+      switchTab(5);
+      showFlash('login-flash', 'Please sign in or create an account to subscribe.', 'warn');
+      return;
+    }
+    const total = _customBoxes12 + _customBoxes18;
+    if (total < CUSTOM_MIN_BOXES) {
+      alert(`Custom Plan requires at least ${CUSTOM_MIN_BOXES} boxes total.`);
+      return;
+    }
+
+    _pendingPlanName  = 'Custom';
+    const base        = (_customBoxes12 * PRICE_PER_12_BOX + _customBoxes18 * PRICE_PER_18_BOX) * _customWeeks;
+    _pendingPlanPrice = base;
+
+    document.getElementById('modal-plan-name').textContent = 'Custom Plan';
+    document.getElementById('modal-plan-subtitle').textContent =
+      `$${base} total base · ${_customBoxes12 * 12 + _customBoxes18 * 18} eggs/week · ${_customWeeks} weeks`;
+
+    // Populate and show flex-plan info
+    document.getElementById('modal-custom-fields').style.display = 'block';
+    document.getElementById('modal-b12-count').textContent  = _customBoxes12;
+    document.getElementById('modal-b18-count').textContent  = _customBoxes18;
+    document.getElementById('modal-duration-line').style.display = 'block';
+    document.getElementById('modal-custom-weeks').textContent    = _customWeeks;
+
+    _resetModalForm();
+  }
+
+  function _resetModalForm() {
+    document.getElementById('ft-pickup').checked            = true;
+    document.getElementById('modal-pickup-day').value       = '';
+    document.getElementById('modal-delivery-address').value = '';
+    document.getElementById('modal-flash').style.display    = 'none';
+    updateFulfillmentFields();
+    document.getElementById('subscribe-modal').classList.add('open');
+    document.getElementById('modal-pickup-day').focus();
+  }
+
+  function openSubscribeModal(name) {
+    if (!currentUser) {
+      switchTab(5);
+      showFlash('login-flash', 'Please sign in or create an account to subscribe.', 'warn');
+      return;
+    }
+    _pendingPlanName = name;
+
+    // Read selected box type from plan card radio buttons
+    const prefix    = name === 'Small Family' ? 'sf' : 'fam';
+    const radioEl   = document.querySelector(`input[name="${prefix}-box-type"]:checked`);
+    _pendingBoxType = radioEl ? radioEl.value : (name === 'Small Family' ? 'dozen' : '18');
+    _pendingPlanPrice = fixedPlanPrice(_pendingBoxType);
+
+    const eggs = fixedPlanEggs(_pendingBoxType);
+    document.getElementById('modal-plan-name').textContent = name;
+    document.getElementById('modal-plan-subtitle').textContent =
+      formatCurrency(_pendingPlanPrice) + '/month · ' + eggs + ' eggs/week · Cancel anytime';
+
+    // Hide flex-plan fields for fixed plans
+    document.getElementById('modal-custom-fields').style.display = 'none';
+
+    // Reset form
+    document.getElementById('ft-pickup').checked = true;
+    document.getElementById('modal-pickup-day').value      = '';
+    document.getElementById('modal-delivery-address').value = '';
+    document.getElementById('modal-flash').style.display   = 'none';
+    updateFulfillmentFields();
+
+    document.getElementById('subscribe-modal').classList.add('open');
+    document.getElementById('modal-pickup-day').focus();
+  }
+
+  function closeSubscribeModal() {
+    document.getElementById('subscribe-modal').classList.remove('open');
+    _pendingPlanName  = null;
+    _pendingPlanPrice = null;
+  }
+
+  function updateFulfillmentFields() {
+    const method     = document.querySelector('input[name="fulfillment"]:checked').value;
+    const isDelivery = method === 'delivery';
+    document.getElementById('modal-field-pickup').style.display   = isDelivery ? 'none'  : 'block';
+    document.getElementById('modal-field-delivery').style.display = isDelivery ? 'block' : 'none';
+    updateModalSummary();
+  }
+
+  function updateModalSummary() {
+    const method     = document.querySelector('input[name="fulfillment"]:checked').value;
+    const isDelivery = method === 'delivery';
+    const icon       = isDelivery ? '🚗 Local delivery' : '🏡 Farm pick-up';
+
+    if (_pendingPlanName === 'Custom') {
+      const b12        = _customBoxes12;
+      const b18        = _customBoxes18;
+      const boxDesc    = [b12 > 0 ? `${b12}×12-egg` : '', b18 > 0 ? `${b18}×18-egg` : ''].filter(Boolean).join(' + ');
+      const base       = (b12 * PRICE_PER_12_BOX + b18 * PRICE_PER_18_BOX) * _customWeeks;
+      const dlvFee     = isDelivery ? DELIVERY_FEE_PER_WEEK * _customWeeks : 0;
+      const total      = base + dlvFee;
+      const eggs       = b12 * 12 + b18 * 18;
+      const dlvNote    = isDelivery ? ` <small style="color:#e85d04;">+$${dlvFee} delivery fee</small>` : '';
+      document.getElementById('modal-summary').innerHTML =
+        `<strong>Custom Plan</strong> — ${boxDesc} boxes/delivery · ${eggs} eggs/wk<br>` +
+        `${icon} · ${_customWeeks} weeks · <strong>$${total} total</strong>${dlvNote}`;
+
+    } else if (_pendingPlanName === 'Solo / Couple') {
+      const b12        = _soloBoxes12;
+      const b18        = _soloBoxes18;
+      const boxDesc    = [b12 > 0 ? `${b12}×12-egg` : '', b18 > 0 ? `${b18}×18-egg` : ''].filter(Boolean).join(' + ');
+      const base       = (b12 * PRICE_PER_12_BOX + b18 * PRICE_PER_18_BOX) * MONTHLY_WEEKS;
+      const dlvFee     = isDelivery ? DELIVERY_FEE_PER_WEEK * MONTHLY_WEEKS : 0;
+      const total      = base + dlvFee;
+      const eggs       = b12 * 12 + b18 * 18;
+      const dlvNote    = isDelivery ? ` <small style="color:#e85d04;">+$${dlvFee} delivery fee</small>` : '';
+      document.getElementById('modal-summary').innerHTML =
+        `<strong>Solo / Couple</strong> — ${boxDesc || '—'} box/delivery · ${eggs} eggs/wk<br>` +
+        `${icon} · Monthly · <strong>$${total}/month</strong>${dlvNote}`;
+
+    } else {
+      const boxType    = _pendingBoxType || '18';
+      const eggs       = fixedPlanEggs(boxType);
+      const base       = fixedPlanPrice(boxType);
+      const dlvFee     = isDelivery ? DELIVERY_FEE_PER_WEEK * MONTHLY_WEEKS : 0;
+      const total      = base + dlvFee;
+      const boxLabel   = boxType === 'dozen' ? '1 dozen (12 eggs)' : '18 eggs';
+      const dlvNote    = isDelivery ? ` <small style="color:#e85d04;">+$${dlvFee} delivery fee</small>` : '';
+      document.getElementById('modal-summary').innerHTML =
+        `<strong>${escHtml(_pendingPlanName || '')}</strong> — ${boxLabel} box/delivery · ${eggs} eggs/week<br>` +
+        `${icon} · Monthly · <strong>${formatCurrency(total)}/month</strong>${dlvNote}`;
+    }
+  }
+
+  async function submitSubscription() {
+    const method          = document.querySelector('input[name="fulfillment"]:checked').value;
+    const deliveryAddress = document.getElementById('modal-delivery-address').value.trim();
+    const pickupDay       = document.getElementById('modal-pickup-day').value;
+
+    if (method === 'delivery' && !deliveryAddress) {
+      showFlash('modal-flash', 'Please enter your delivery address.', 'warn');
+      return;
+    }
+    if (method === 'pickup' && !pickupDay) {
+      showFlash('modal-flash', 'Please choose your preferred pick-up day.', 'warn');
+      return;
+    }
+
+    const btn = document.querySelector('#subscribe-modal .btn-primary');
+    btn.disabled    = true;
+    btn.textContent = 'Subscribing…';
+
+    try {
+      const body = {
+        planName:          _pendingPlanName,
+        fulfillmentMethod: method,
+        deliveryAddress:   method === 'delivery' ? deliveryAddress : undefined,
+        pickupDay:         method === 'pickup'   ? pickupDay       : undefined
+      };
+      // Include box parameters for flexible plans or box type for fixed plans
+      if (_pendingPlanName === 'Custom') {
+        body.boxes12       = _customBoxes12;
+        body.boxes18       = _customBoxes18;
+        body.durationWeeks = _customWeeks;
+      } else if (_pendingPlanName === 'Solo / Couple') {
+        body.boxes12 = _soloBoxes12;
+        body.boxes18 = _soloBoxes18;
+      } else {
+        // Fixed plans: pass the selected box type
+        body.boxType = _pendingBoxType;
+      }
+
+      const data = await apiPost('/api/orders', body);
+
+      if (data.error) {
+        showFlash('modal-flash', data.error, 'err');
+        return;
+      }
+
+      closeSubscribeModal();
+
+      const msg = document.getElementById('plan-selected-msg');
+      const fulfillLabel = method === 'delivery' ? 'local delivery' : `pick-up (${pickupDay}s)`;
+      const flexPlanNames = ['Custom', 'Solo / Couple'];
+      if (flexPlanNames.includes(_pendingPlanName)) {
+        const b12     = data.order.boxes12_per_delivery || 0;
+        const b18     = data.order.boxes18_per_delivery || 0;
+        const boxDesc = [b12 > 0 ? `${b12}×12-egg` : '', b18 > 0 ? `${b18}×18-egg` : ''].filter(Boolean).join(' + ');
+        const durNote = _pendingPlanName === 'Custom'
+          ? ` · ${data.order.duration_weeks} weeks` : '';
+        document.getElementById('plan-msg-text').textContent =
+          `${_pendingPlanName} confirmed — $${data.order.price}` +
+          (_pendingPlanName === 'Custom' ? ' total' : '/month') +
+          ` · ${boxDesc} boxes/delivery${durNote} via ${fulfillLabel}. View your subscription in My Account!`;
+      } else {
+        const boxLabel = _pendingBoxType === 'dozen' ? '1 dozen (12 eggs)' : '18 eggs';
+        document.getElementById('plan-msg-text').textContent =
+          _pendingPlanName + ' plan confirmed — ' +
+          formatCurrency(data.order.price) + '/month · ' + boxLabel + '/delivery via ' + fulfillLabel +
+          '. View your subscription in My Account!';
+      }
+      msg.style.display = 'block';
+      msg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch (e) {
+      showFlash('modal-flash', 'Failed to subscribe. Please try again.', 'err');
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'Confirm & Subscribe';
+    }
+  }
+
+  // Close modal when clicking the backdrop
+  document.getElementById('subscribe-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeSubscribeModal();
+  });
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeSubscribeModal();
+  });
+
+  /* ═══════════════════════════════════════════════════════
+     LAUNCH CHECKLIST (with DB persistence when logged in)
+  ═══════════════════════════════════════════════════════ */
+  function toggleCheck(li) {
+    li.classList.toggle('done');
+    updateProgress();
+    saveChecklist();
+  }
+
+  function updateProgress() {
+    const items = document.querySelectorAll('#checklist li');
+    const done  = document.querySelectorAll('#checklist li.done').length;
+    const pct   = Math.round((done / items.length) * 100);
+    document.getElementById('cl-progress-fill').style.width = pct + '%';
+    document.getElementById('cl-progress-text').textContent = done + ' / ' + items.length + ' complete';
+  }
+
+  function getCompletedSteps() {
+    const items = document.querySelectorAll('#checklist li');
+    const done  = [];
+    items.forEach((li, idx) => { if (li.classList.contains('done')) done.push(idx); });
+    return done;
+  }
+
+  async function saveChecklist() {
+    if (!currentUser) return;
+    try {
+      await apiPut('/api/checklist', { completedSteps: getCompletedSteps() });
+    } catch (_) { /* silent */ }
+  }
+
+  async function loadChecklist() {
+    if (!currentUser) return;
+    try {
+      const data = await apiFetch('/api/checklist');
+      if (!data.completedSteps) return;
+      const items = document.querySelectorAll('#checklist li');
+      items.forEach((li, idx) => {
+        li.classList.toggle('done', data.completedSteps.includes(idx));
+      });
+      updateProgress();
+    } catch (_) { /* silent */ }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     REVIEWS TAB
+  ═══════════════════════════════════════════════════════ */
+  function setRating(val) {
+    selectedRating = val;
+    document.querySelectorAll('#star-row .star-btn').forEach((btn, i) => {
+      btn.classList.toggle('selected', i < val);
+    });
+  }
+
+  async function loadReviews() {
+    try {
+      const data = await apiFetch('/api/reviews');
+      const container = document.getElementById('reviews-list');
+      if (!data.reviews || data.reviews.length === 0) {
+        container.innerHTML = '<div class="reviews-empty">No reviews yet — be the first to share your experience!</div>';
+        return;
+      }
+      container.innerHTML = data.reviews.map(r => reviewCard(r)).join('');
+    } catch (e) {
+      document.getElementById('reviews-list').innerHTML =
+        '<div class="reviews-empty">Could not load reviews.</div>';
+    }
+  }
+
+  function reviewCard(r) {
+    const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+    const date  = new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `<div class="review-card">
+      <div class="review-header">
+        <div>
+          <div class="review-stars">${escHtml(stars)}</div>
+          <div class="review-title">${escHtml(r.title)}</div>
+          <div class="review-meta">${escHtml(r.user_name)} · ${date}</div>
+        </div>
+      </div>
+      <div class="review-body">${escHtml(r.body)}</div>
+    </div>`;
+  }
+
+  async function submitReview() {
+    const title = document.getElementById('review-title').value.trim();
+    const body  = document.getElementById('review-body').value.trim();
+    if (selectedRating === 0) { showFlash('review-flash', 'Please select a star rating.', 'warn'); return; }
+    if (!title) { showFlash('review-flash', 'Please enter a review title.', 'warn'); return; }
+    if (!body)  { showFlash('review-flash', 'Please write your experience.', 'warn'); return; }
+
+    try {
+      const data = await apiPost('/api/reviews', { rating: selectedRating, title, body });
+      if (data.error) { showFlash('review-flash', data.error, 'err'); return; }
+      showFlash('review-flash', 'Review posted! Thank you.', 'ok');
+      document.getElementById('review-title').value = '';
+      document.getElementById('review-body').value  = '';
+      setRating(0);
+      loadReviews();
+    } catch (e) {
+      showFlash('review-flash', 'Failed to post review. Please try again.', 'err');
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     ACCOUNT TAB
+  ═══════════════════════════════════════════════════════ */
+  function showAuthForm(which) {
+    document.getElementById('login-form-wrap').classList.toggle('active', which === 'login');
+    document.getElementById('register-form-wrap').classList.toggle('active', which === 'register');
+    document.getElementById('tab-login-btn').classList.toggle('active', which === 'login');
+    document.getElementById('tab-register-btn').classList.toggle('active', which === 'register');
+  }
+
+  async function doLogin() {
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) { showFlash('login-flash', 'Email and password are required.', 'warn'); return; }
+    try {
+      const data = await apiPost('/api/auth/login', { email, password });
+      if (data.error) { showFlash('login-flash', data.error, 'err'); return; }
+      currentUser = data.user;
+      document.getElementById('login-password').value = '';
+      renderAccountTab();
+      updateAuthBar();
+      loadChecklist();
+    } catch (e) {
+      showFlash('login-flash', 'Login failed. Please try again.', 'err');
+    }
+  }
+
+  async function doRegister() {
+    const name     = document.getElementById('reg-name').value.trim();
+    const email    = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    if (!name || !email || !password) { showFlash('register-flash', 'All fields are required.', 'warn'); return; }
+    try {
+      const data = await apiPost('/api/auth/register', { name, email, password });
+      if (data.error) { showFlash('register-flash', data.error, 'err'); return; }
+      currentUser = data.user;
+      document.getElementById('reg-password').value = '';
+      renderAccountTab();
+      updateAuthBar();
+      loadChecklist();
+    } catch (e) {
+      showFlash('register-flash', 'Registration failed. Please try again.', 'err');
+    }
+  }
+
+  async function doLogout() {
+    try {
+      await apiPost('/api/auth/logout', {});
+    } catch (_) { /* ignore */ }
+    // Session was regenerated on the server; clear cached CSRF token so it is refetched
+    _csrfToken = null;
+    currentUser = null;
+    updateAuthBar();
+    renderAccountTab();
+    // Clear checklist done states if not logged in (can't persist)
+    document.querySelectorAll('#checklist li').forEach(li => li.classList.remove('done'));
+    updateProgress();
+  }
+
+  function renderAccountTab() {
+    const formsWrap   = document.getElementById('auth-forms-wrap');
+    const loggedInWrap = document.getElementById('account-logged-in');
+    if (currentUser) {
+      formsWrap.style.display    = 'none';
+      loggedInWrap.style.display = 'block';
+
+      // Profile header
+      renderAvatar('profile-avatar-wrap', currentUser.avatar_url, currentUser.name, 'profile-avatar');
+      document.getElementById('profile-name').textContent   = currentUser.name;
+      document.getElementById('profile-email').textContent  = currentUser.email;
+      const since = new Date(currentUser.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      document.getElementById('profile-since').textContent  = 'Member since ' + since;
+
+      // Pre-fill edit form
+      document.getElementById('edit-name').value  = currentUser.name;
+      document.getElementById('edit-email').value = currentUser.email;
+      document.getElementById('edit-current-password').value = '';
+      document.getElementById('edit-new-password').value     = '';
+      renderEditAvatar();
+
+      // Admin panel
+      const adminPanel = document.getElementById('admin-panel');
+      if (currentUser.role === 'admin') {
+        adminPanel.style.display = 'block';
+        loadAdminUsers();
+        loadAdminOrders();
+      } else {
+        adminPanel.style.display = 'none';
+      }
+
+      loadOrders();
+    } else {
+      formsWrap.style.display    = 'block';
+      loggedInWrap.style.display = 'none';
+    }
+  }
+
+  function renderAvatar(wrapId, avatarUrl, name, existingElId) {
+    const wrap = document.getElementById(wrapId);
+    if (!wrap) return;
+    if (avatarUrl) {
+      let img = wrap.querySelector('img.profile-avatar-img');
+      if (!img) {
+        wrap.innerHTML = '';
+        img = document.createElement('img');
+        img.className = 'profile-avatar';
+        img.style.cssText = 'width:56px;height:56px;border-radius:50%;object-fit:cover;';
+        wrap.appendChild(img);
+      }
+      img.src = avatarUrl;
+      img.alt = name;
+    } else {
+      const initial = (name || '?').charAt(0).toUpperCase();
+      wrap.innerHTML = `<div class="profile-avatar" id="${existingElId || ''}">${initial}</div>`;
+    }
+  }
+
+  function renderEditAvatar() {
+    const wrap = document.getElementById('avatar-edit-preview-wrap');
+    if (!wrap) return;
+    if (currentUser && currentUser.avatar_url) {
+      wrap.innerHTML = `<img class="avatar-preview" src="${escHtml(currentUser.avatar_url)}" alt="Avatar" />`;
+    } else {
+      const initial = currentUser ? currentUser.name.charAt(0).toUpperCase() : '?';
+      wrap.innerHTML = `<div class="avatar-preview-placeholder" id="avatar-edit-placeholder">${initial}</div>`;
+    }
+  }
+
+  async function saveProfile() {
+    const name            = document.getElementById('edit-name').value.trim();
+    const email           = document.getElementById('edit-email').value.trim();
+    const currentPassword = document.getElementById('edit-current-password').value;
+    const newPassword     = document.getElementById('edit-new-password').value;
+
+    if (!name) { showFlash('edit-profile-flash', 'Name cannot be empty.', 'warn'); return; }
+    if (!email) { showFlash('edit-profile-flash', 'Email cannot be empty.', 'warn'); return; }
+
+    try {
+      const body = { name, email };
+      if (newPassword) { body.currentPassword = currentPassword; body.newPassword = newPassword; }
+      const data = await apiPut('/api/auth/me', body);
+      if (data.error) { showFlash('edit-profile-flash', data.error, 'err'); return; }
+      currentUser = data.user;
+      renderAccountTab();
+      updateAuthBar();
+      showFlash('edit-profile-flash', 'Profile updated successfully!', 'ok');
+      document.getElementById('edit-current-password').value = '';
+      document.getElementById('edit-new-password').value = '';
+    } catch (e) {
+      showFlash('edit-profile-flash', 'Failed to save profile. Please try again.', 'err');
+    }
+  }
+
+  function handleAvatarFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      showFlash('edit-profile-flash', 'Image must be under 2 MB.', 'warn');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      const dataUrl = e.target.result;
+      // Preview immediately
+      document.getElementById('avatar-edit-preview-wrap').innerHTML =
+        `<img class="avatar-preview" src="${escHtml(dataUrl)}" alt="Avatar preview" />`;
+      try {
+        const data = await apiPut('/api/auth/avatar', { avatarUrl: dataUrl });
+        if (data.error) { showFlash('edit-profile-flash', data.error, 'err'); return; }
+        currentUser.avatar_url = dataUrl;
+        renderAvatar('profile-avatar-wrap', dataUrl, currentUser.name, 'profile-avatar');
+        showFlash('edit-profile-flash', 'Photo updated!', 'ok');
+      } catch (_) {
+        showFlash('edit-profile-flash', 'Failed to upload photo. Please try again.', 'err');
+      }
+    };
+    reader.readAsDataURL(file);
+    // Reset input so the same file can be re-selected
+    event.target.value = '';
+  }
+
+  async function removeAvatar() {
+    try {
+      const data = await apiPut('/api/auth/avatar', { avatarUrl: null });
+      if (data.error) { showFlash('edit-profile-flash', data.error, 'err'); return; }
+      currentUser.avatar_url = null;
+      renderEditAvatar();
+      renderAvatar('profile-avatar-wrap', null, currentUser.name, 'profile-avatar');
+      showFlash('edit-profile-flash', 'Photo removed.', 'ok');
+    } catch (_) {
+      showFlash('edit-profile-flash', 'Failed to remove photo. Please try again.', 'err');
+    }
+  }
+
+  async function loadAdminUsers() {
+    const container = document.getElementById('admin-users-list');
+    try {
+      const data = await apiFetch('/api/admin/users');
+      if (data.error) { container.innerHTML = `<p style="color:#c0392b;">${escHtml(data.error)}</p>`; return; }
+      if (!data.users || data.users.length === 0) {
+        container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">No users found.</p>';
+        return;
+      }
+      container.innerHTML = data.users.map(u => `
+        <div class="admin-user-row">
+          <div class="admin-user-info">
+            <div class="admin-user-name">${escHtml(u.name)}</div>
+            <div class="admin-user-email">${escHtml(u.email)}</div>
+          </div>
+          <span class="admin-role-badge ${u.role === 'admin' ? 'role-admin' : 'role-user'}">${escHtml(u.role)}</span>
+          ${u.id !== currentUser.id
+            ? `<button class="btn-role-toggle" onclick="toggleUserRole(${u.id}, '${u.role === 'admin' ? 'user' : 'admin'}')"
+                >${u.role === 'admin' ? 'Remove Admin' : 'Make Admin'}</button>`
+            : '<span style="font-size:.78rem;color:#aaa;">(you)</span>'}
+        </div>
+      `).join('');
+    } catch (_) {
+      container.innerHTML = '<p style="color:#c0392b;font-size:.9rem;">Could not load users.</p>';
+    }
+  }
+
+  async function toggleUserRole(userId, newRole) {
+    try {
+      const data = await apiPut(`/api/admin/users/${userId}/role`, { role: newRole });
+      if (data.error) { showFlash('admin-flash', data.error, 'err'); return; }
+      loadAdminUsers();
+    } catch (_) {
+      showFlash('admin-flash', 'Failed to update role. Please try again.', 'err');
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     ADMIN — ORDER INVENTORY
+  ═══════════════════════════════════════════════════════ */
+  let _editingOrderId = null;
+
+  async function loadAdminOrders() {
+    const container = document.getElementById('admin-orders-list');
+    try {
+      const data = await apiFetch('/api/admin/orders');
+      if (data.error) {
+        container.innerHTML = `<p style="color:#c0392b;">${escHtml(data.error)}</p>`;
+        return;
+      }
+      if (!data.orders || data.orders.length === 0) {
+        container.innerHTML = '<p style="color:#aaa;font-size:.9rem;">No orders yet.</p>';
+        return;
+      }
+      container.innerHTML = `
+        <div class="admin-orders-table-wrap">
+          <table class="admin-orders-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Subscriber</th>
+                <th>Plan</th>
+                <th>Price</th>
+                <th>Fulfillment</th>
+                <th>Boxes</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.orders.map(o => adminOrderRow(o)).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    } catch (_) {
+      container.innerHTML = '<p style="color:#c0392b;font-size:.9rem;">Could not load orders.</p>';
+    }
+  }
+
+  function adminOrderRow(o) {
+    const date        = new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const statusCls   = o.status === 'active' ? 'order-status-active' : 'order-status-cancelled';
+    const fulfillIcon = o.fulfillment_method === 'delivery' ? '🚗' : '🏡';
+    const fulfillInfo = o.fulfillment_method === 'delivery'
+      ? `${fulfillIcon} ${escHtml(o.delivery_address || '—')}`
+      : `${fulfillIcon} ${escHtml(o.pickup_day || '—')}s`;
+
+    const b12 = o.boxes12_per_delivery || 0;
+    const b18 = o.boxes18_per_delivery || 0;
+    const boxInfo = (b12 || b18)
+      ? [b12 > 0 ? `${b12}×12` : '', b18 > 0 ? `${b18}×18` : ''].filter(Boolean).join(', ')
+      : (o.boxes_per_delivery ? `${o.boxes_per_delivery} boxes` : '—');
+
+    const cancelBtn = o.status === 'active'
+      ? `<button class="btn-admin-cancel-order" data-order-id="${o.id}" onclick="adminCancelOrder(this)">Cancel</button>`
+      : '';
+
+    return `<tr>
+      <td>${o.id}</td>
+      <td>
+        <div style="font-weight:700;">${escHtml(o.user_name || '—')}</div>
+        <div style="color:#888;font-size:.78rem;">${escHtml(o.user_email || '—')}</div>
+      </td>
+      <td>${escHtml(o.plan_name)}</td>
+      <td>$${o.price}${o.duration_weeks ? ' total' : '/mo'}</td>
+      <td style="font-size:.8rem;">${fulfillInfo}</td>
+      <td style="font-size:.8rem;">${escHtml(boxInfo)}</td>
+      <td><span class="${statusCls}">${escHtml(o.status)}</span></td>
+      <td style="font-size:.78rem;white-space:nowrap;">${date}</td>
+      <td>
+        <div class="admin-order-actions">
+          <button class="btn-admin-edit"
+            data-order-id="${o.id}"
+            data-plan-name="${escHtml(o.plan_name)}"
+            data-status="${escHtml(o.status)}"
+            onclick="openAdminEditOrder(this)">Edit</button>
+          ${cancelBtn}
+        </div>
+      </td>
+    </tr>`;
+  }
+
+  function openAdminEditOrder(btn) {
+    const orderId  = Number(btn.dataset.orderId);
+    const planName = btn.dataset.planName;
+    const status   = btn.dataset.status;
+    _editingOrderId = orderId;
+    document.getElementById('edit-order-id-label').textContent = `(#${orderId})`;
+    document.getElementById('edit-order-plan').value   = planName;
+    document.getElementById('edit-order-status').value = status;
+    document.getElementById('edit-order-flash').style.display = 'none';
+    document.getElementById('edit-order-modal').classList.add('open');
+    document.getElementById('edit-order-plan').focus();
+  }
+
+  function closeEditOrderModal() {
+    document.getElementById('edit-order-modal').classList.remove('open');
+    _editingOrderId = null;
+  }
+
+  async function submitAdminEditOrder() {
+    if (!_editingOrderId) return;
+    const planName = document.getElementById('edit-order-plan').value.trim();
+    const status   = document.getElementById('edit-order-status').value;
+    if (!planName) {
+      showFlash('edit-order-flash', 'Plan name cannot be empty.', 'warn');
+      return;
+    }
+    const btn = document.querySelector('#edit-order-modal .btn-primary');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const data = await apiPut(`/api/admin/orders/${_editingOrderId}`, { plan_name: planName, status });
+      if (data.error) { showFlash('edit-order-flash', data.error, 'err'); return; }
+      closeEditOrderModal();
+      showFlash('admin-orders-flash', `Order #${_editingOrderId} updated.`, 'ok');
+      loadAdminOrders();
+    } catch (_) {
+      showFlash('edit-order-flash', 'Failed to save. Please try again.', 'err');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Save Changes';
+    }
+  }
+
+  async function adminCancelOrder(btn) {
+    const orderId = Number(btn.dataset.orderId);
+    if (!confirm(`Cancel order #${orderId}?`)) return;
+    try {
+      const data = await apiDelete(`/api/admin/orders/${orderId}`);
+      if (data.error) { showFlash('admin-orders-flash', data.error, 'err'); return; }
+      showFlash('admin-orders-flash', `Order #${orderId} cancelled.`, 'ok');
+      loadAdminOrders();
+    } catch (_) {
+      showFlash('admin-orders-flash', 'Failed to cancel order. Please try again.', 'err');
+    }
+  }
+
+  // Close edit-order modal on backdrop click or Escape
+  document.getElementById('edit-order-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditOrderModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeEditOrderModal();
+  });
+
+  async function loadOrders() {
+    const container = document.getElementById('orders-list');
+    try {
+      const data = await apiFetch('/api/orders');
+      if (!data.orders || data.orders.length === 0) {
+        container.innerHTML = '<div class="orders-empty">No subscriptions yet. <a href="#" onclick="switchTab(1);return false;" style="color:#e85d04;">Browse plans →</a></div>';
+        return;
+      }
+      container.innerHTML = data.orders.map(o => orderCard(o)).join('');
+    } catch (e) {
+      container.innerHTML = '<div class="orders-empty">Could not load orders.</div>';
+    }
+  }
+
+  function orderCard(o) {
+    const date       = new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const statusCls  = o.status === 'active' ? 'status-active' : 'status-cancelled';
+    const cancelBtn  = o.status === 'active'
+      ? `<button class="btn-danger" onclick="cancelOrder(${o.id})">Cancel</button>`
+      : '';
+
+    // Fulfillment line
+    let fulfillLine = '';
+    if (o.fulfillment_method === 'delivery') {
+      fulfillLine = `🚗 Delivery → ${escHtml(o.delivery_address || '—')}`;
+    } else if (o.fulfillment_method === 'pickup') {
+      fulfillLine = `🏡 Pick-up · ${escHtml(o.pickup_day || '—')}s`;
+    }
+
+    // Price / detail line — flex plans show box breakdown + duration
+    let priceDetail;
+    const isFlexPlan = (o.plan_name === 'Custom' || o.plan_name === 'Solo / Couple');
+    if (isFlexPlan) {
+      const b12     = o.boxes12_per_delivery || 0;
+      const b18     = o.boxes18_per_delivery || 0;
+      const boxDesc = [b12 > 0 ? `${b12}×12-egg` : '', b18 > 0 ? `${b18}×18-egg` : ''].filter(Boolean).join(' + ') || '—';
+      if (o.plan_name === 'Custom') {
+        priceDetail = `$${o.price} total · ${boxDesc} boxes/wk · ${o.eggs_per_week} eggs/wk · ${o.duration_weeks} weeks · Started ${date}`;
+      } else {
+        priceDetail = `$${o.price}/mo · ${boxDesc} boxes/wk · ${o.eggs_per_week} eggs/wk · Started ${date}`;
+      }
+    } else {
+      // Fixed plans: show box type if stored, otherwise show eggs/week
+      const b12 = o.boxes12_per_delivery || 0;
+      const b18 = o.boxes18_per_delivery || 0;
+      const boxLabel = b12 > 0 ? '1 dozen (12 eggs)' : b18 > 0 ? '18-egg box' : `${o.eggs_per_week} eggs`;
+      priceDetail = `$${o.price}/mo · ${boxLabel}/delivery · Started ${date}`;
+    }
+
+    // Next billing line (only for ongoing monthly plans)
+    let billingLine = '';
+    if (o.plan_name !== 'Custom' && o.next_billing_date && o.status === 'active' && /^\d{4}-\d{2}-\d{2}$/.test(o.next_billing_date)) {
+      const bd = new Date(o.next_billing_date + 'T00:00:00');
+      if (!isNaN(bd.getTime())) {
+        billingLine = `💳 Next billing: ${bd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      }
+    }
+
+    const extraLines = [fulfillLine, billingLine].filter(Boolean)
+      .map(l => `<div>${l}</div>`).join('');
+
+    return `<div class="order-card">
+      <div class="order-info">
+        <div class="order-plan">${escHtml(o.plan_name)}</div>
+        <div class="order-detail">${priceDetail}</div>
+        ${extraLines ? `<div class="order-detail" style="margin-top:.3rem;">${extraLines}</div>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:.6rem;">
+        <span class="order-status ${statusCls}">${escHtml(o.status)}</span>
+        ${cancelBtn}
+      </div>
+    </div>`;
+  }
+
+  async function cancelOrder(id) {
+    if (!confirm('Cancel this subscription?')) return;
+    try {
+      const data = await apiDelete('/api/orders/' + id);
+      if (data.error) { alert('Error: ' + data.error); return; }
+      loadOrders();
+    } catch (e) {
+      alert('Failed to cancel. Please try again.');
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     AUTH BAR (top of page)
+  ═══════════════════════════════════════════════════════ */
+  function updateAuthBar() {
+    const text = document.getElementById('auth-bar-text');
+    const btn  = document.getElementById('auth-bar-btn');
+    // Update reviews form visibility
+    document.getElementById('review-form-section').style.display  = currentUser ? 'block' : 'none';
+    document.getElementById('review-login-prompt').style.display  = currentUser ? 'none'  : 'block';
+    if (currentUser) {
+      text.textContent    = 'Hi, ' + currentUser.name;
+      btn.textContent     = 'Sign Out';
+      btn.onclick         = doLogout;
+    } else {
+      text.textContent    = 'Not signed in';
+      btn.textContent     = 'Sign In';
+      btn.onclick         = () => switchTab(5);
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     FLASH MESSAGES
+  ═══════════════════════════════════════════════════════ */
+  function showFlash(elId, msg, type) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.className = 'flash-msg flash-' + type;
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     API HELPERS  (CSRF token is fetched once and cached)
+  ═══════════════════════════════════════════════════════ */
+  let _csrfToken = null;
+
+  async function getCsrfToken() {
+    if (_csrfToken) return _csrfToken;
+    const res = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+    const data = await res.json();
+    _csrfToken = data.csrfToken;
+    return _csrfToken;
+  }
+
+  async function apiFetch(url) {
+    const res = await fetch(url, { credentials: 'same-origin' });
+    return res.json();
+  }
+
+  async function apiPost(url, body) {
+    const token = await getCsrfToken();
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+      body: JSON.stringify(body)
+    });
+    return res.json();
+  }
+
+  async function apiPut(url, body) {
+    const token = await getCsrfToken();
+    const res = await fetch(url, {
+      method: 'PUT',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+      body: JSON.stringify(body)
+    });
+    return res.json();
+  }
+
+  async function apiDelete(url) {
+    const token = await getCsrfToken();
+    const res = await fetch(url, {
+      method: 'DELETE',
+      credentials: 'same-origin',
+      headers: { 'X-CSRF-Token': token }
+    });
+    return res.json();
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     XSS HELPER
+  ═══════════════════════════════════════════════════════ */
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g,  '&amp;')
+      .replace(/</g,  '&lt;')
+      .replace(/>/g,  '&gt;')
+      .replace(/"/g,  '&quot;')
+      .replace(/'/g,  '&#39;');
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     INIT
+  ═══════════════════════════════════════════════════════ */
+  async function init() {
+    // Fetch CSRF token first (initializes session cookie)
+    await getCsrfToken();
+    // Check if already logged in (existing session)
+    try {
+      const data = await apiFetch('/api/auth/me');
+      currentUser = data.user || null;
+    } catch (_) {
+      currentUser = null;
+    }
+    updateAuthBar();
+    updateCalc();
+    updateSoloPlanDisplay();
+    updateCustomPlanDisplay();
+    if (currentUser) loadChecklist();
+  }
+
+  init();
+</script>
+
+</body>
+</html>

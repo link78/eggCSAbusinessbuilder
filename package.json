@@ -1,7 +1,7 @@
 {
-  "name": "egg-csa-business-builder",
+  "name": "sakinah-ridge-farm",
   "version": "1.0.0",
-  "description": "Full-stack Egg CSA Business Builder for Lincoln, NE",
+  "description": "Sakinah Ridge Farm LLC – Egg CSA subscription platform for Lincoln, NE",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

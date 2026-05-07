@@ -22,12 +22,15 @@ describe('GET /api/orders/plans', () => {
     expect(names).toContain('Family');
   });
 
-  it('each plan has name, price, and eggsPerWeek', async () => {
+  it('each plan has name, boxes, price12, price18, eggsPerWeek12, eggsPerWeek18', async () => {
     const res = await agent.get('/api/orders/plans');
     for (const plan of res.body.plans) {
       expect(plan).toHaveProperty('name');
-      expect(plan).toHaveProperty('price');
-      expect(plan).toHaveProperty('eggsPerWeek');
+      expect(plan).toHaveProperty('boxes');
+      expect(plan).toHaveProperty('price12');
+      expect(plan).toHaveProperty('price18');
+      expect(plan).toHaveProperty('eggsPerWeek12');
+      expect(plan).toHaveProperty('eggsPerWeek18');
     }
   });
 
@@ -144,7 +147,7 @@ describe('POST /api/orders', () => {
 
   // ── Fixed plans (Small Family / Family) ──────────────────────────────────────
 
-  it('places a fixed plan pickup order', async () => {
+  it('places a fixed plan pickup order with default box type (Small Family → dozen)', async () => {
     const res = await agent.post('/api/orders', {
       planName: 'Small Family',
       fulfillmentMethod: 'pickup',
@@ -152,10 +155,77 @@ describe('POST /api/orders', () => {
     });
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
-      plan_name:  'Small Family',
-      price:      19,   // base price, no delivery fee
-      eggs_per_week: 12,
-      status:     'active'
+      plan_name:            'Small Family',
+      price:                20,   // 1×$5 × 4 weeks (dozen default)
+      eggs_per_week:        12,
+      boxes12_per_delivery: 1,
+      boxes18_per_delivery: 0,
+      boxes_per_delivery:   1,
+      status:               'active'
+    });
+  });
+
+  it('places Small Family order with explicit dozen box type', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Small Family',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Tuesday',
+      boxType: 'dozen'
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.order).toMatchObject({
+      price:                20,
+      eggs_per_week:        12,
+      boxes12_per_delivery: 1,
+      boxes18_per_delivery: 0
+    });
+  });
+
+  it('places Small Family order with 18-egg box type', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Small Family',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Wednesday',
+      boxType: '18'
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.order).toMatchObject({
+      price:                28,   // 1×$7 × 4 weeks
+      eggs_per_week:        18,
+      boxes12_per_delivery: 0,
+      boxes18_per_delivery: 1
+    });
+  });
+
+  it('places Family order with default box type (Family → 18-egg)', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Family',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Thursday'
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.order).toMatchObject({
+      plan_name:            'Family',
+      price:                28,   // 1×$7 × 4 weeks (18-egg default)
+      eggs_per_week:        18,
+      boxes12_per_delivery: 0,
+      boxes18_per_delivery: 1
+    });
+  });
+
+  it('places Family order with dozen box type', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Family',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Monday',
+      boxType: 'dozen'
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.order).toMatchObject({
+      price:                20,   // 1×$5 × 4 weeks
+      eggs_per_week:        12,
+      boxes12_per_delivery: 1,
+      boxes18_per_delivery: 0
     });
   });
 
@@ -164,14 +234,27 @@ describe('POST /api/orders', () => {
       planName: 'Family',
       fulfillmentMethod: 'delivery',
       deliveryAddress: '123 Main St, Lincoln, NE'
+      // defaults to 18-egg → $28 base + $8 delivery = $36
     });
     expect(res.status).toBe(200);
     expect(res.body.order).toMatchObject({
       plan_name:        'Family',
-      price:            36,   // $28 base + $2×4 delivery fee = $36
+      price:            36,   // $28 base + $2×4 delivery fee
       fulfillment_method: 'delivery',
       delivery_address: '123 Main St, Lincoln, NE'
     });
+  });
+
+  it('applies $2/delivery fee to fixed plan delivery order with dozen box type', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Small Family',
+      fulfillmentMethod: 'delivery',
+      deliveryAddress: '99 Oak Ave, Lincoln NE',
+      boxType: 'dozen'
+    });
+    expect(res.status).toBe(200);
+    // base = 1×$5 × 4 = $20, delivery fee = $2×4 = $8, total = $28
+    expect(res.body.order.price).toBe(28);
   });
 
   // ── Custom plan (fully flexible) ─────────────────────────────────────────────
