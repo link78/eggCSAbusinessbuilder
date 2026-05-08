@@ -1,9 +1,7 @@
 const { Pool } = require('pg');
 
 const connectionString = process.env.DATABASE_URL;
-const useSsl = process.env.NODE_ENV === 'test' || /localhost|127\.0\.0\.1/.test(connectionString || '')
-  ? false
-  : true;
+const useSsl = process.env.NODE_ENV !== 'test' && !/localhost|127\.0\.0\.1/.test(connectionString || '');
 
 // Requires DATABASE_URL env var pointing at your Neon PostgreSQL host.
 // Neon uses a CA-signed certificate, so standard TLS verification applies.

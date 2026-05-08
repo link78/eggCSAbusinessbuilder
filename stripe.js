@@ -19,12 +19,18 @@ function getBaseUrl(req) {
 }
 
 function planKeyFromName(planName) {
-  return String(planName || '')
-    .trim()
-    .toLowerCase()
-    .replace(/\s*\/\s*/g, '_')
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
+  let key = '';
+  let previousWasSeparator = true;
+  for (const char of String(planName || '').trim().toLowerCase()) {
+    if ((char >= 'a' && char <= 'z') || (char >= '0' && char <= '9')) {
+      key += char;
+      previousWasSeparator = false;
+    } else if (!previousWasSeparator) {
+      key += '_';
+      previousWasSeparator = true;
+    }
+  }
+  return key.endsWith('_') ? key.slice(0, -1) : key;
 }
 
 function priceEnvName(planKey) {
@@ -37,7 +43,7 @@ function getConfiguredPriceId(planId, planName) {
 }
 
 async function ensureStripeCustomerForUser(user) {
-  if (!stripe || !user) return user && user.stripe_customer_id ? user.stripe_customer_id : null;
+  if (!stripe || !user) return null;
   if (user.stripe_customer_id) return user.stripe_customer_id;
 
   const customer = await stripe.customers.create({

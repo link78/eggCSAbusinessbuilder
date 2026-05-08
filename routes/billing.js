@@ -218,17 +218,17 @@ function subscriptionInfoFromEvent(event) {
   const object = event.data.object;
   if (event.type === 'invoice.payment_succeeded' || event.type === 'invoice.payment_failed') {
     return {
-      customerId: typeof object.customer === 'string' ? object.customer : object.customer && object.customer.id,
-      subscriptionId: typeof object.subscription === 'string' ? object.subscription : object.subscription && object.subscription.id,
-      priceId: object.lines && object.lines.data && object.lines.data[0] && object.lines.data[0].price && object.lines.data[0].price.id,
+      customerId: object.customer && typeof object.customer === 'object' ? object.customer.id : object.customer,
+      subscriptionId: object.subscription && typeof object.subscription === 'object' ? object.subscription.id : object.subscription,
+      priceId: object.lines?.data?.[0]?.price?.id,
       status: event.type === 'invoice.payment_succeeded' ? 'active' : 'past_due'
     };
   }
-  const price = object.items && object.items.data && object.items.data[0] && object.items.data[0].price;
+  const price = object.items?.data?.[0]?.price;
   return {
-    customerId: typeof object.customer === 'string' ? object.customer : object.customer && object.customer.id,
+    customerId: object.customer && typeof object.customer === 'object' ? object.customer.id : object.customer,
     subscriptionId: object.id,
-    priceId: price && price.id,
+    priceId: price?.id,
     status: event.type === 'customer.subscription.deleted' ? 'cancelled' : object.status
   };
 }
@@ -245,7 +245,7 @@ async function webhookHandler(req, res) {
       event = JSON.parse(Buffer.isBuffer(req.body) ? req.body.toString('utf8') : JSON.stringify(req.body));
     }
   } catch (err) {
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(400).send('Webhook Error');
   }
 
   if ([
