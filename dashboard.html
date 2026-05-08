@@ -4302,8 +4302,8 @@ async function cancelOrder(id) {
       list.innerHTML = updates.map(u => {
         const imgs = Array.isArray(u.image_urls) ? u.image_urls : [];
         const imgsHtml = imgs.length
-          ? `<div class="update-images-strip" style="display:flex;gap:.5rem;overflow-x:auto;margin:.4rem 0;">
-               ${imgs.map(src => `<img class="update-item-photo" src="${escHtml(src)}" alt="Farm update photo" loading="lazy" style="height:120px;width:auto;border-radius:6px;flex:0 0 auto;" onerror="this.style.display='none'">`).join('')}
+          ? `<div class="update-images-container update-images-strip" style="display:flex;gap:.5rem;overflow-x:auto;margin:.6rem 0 .4rem 0;padding-bottom:.3rem;">
+               ${imgs.map(src => `<img class="update-item-photo" src="${escHtml(src)}" alt="Farm update photo" loading="lazy" style="height:240px;width:auto;border-radius:8px;flex:0 0 auto;" onerror="this.style.display='none'">`).join('')}
              </div>`
           : '';
         const editKeptUrls = imgs.map(s => escHtml(s)).join(',');

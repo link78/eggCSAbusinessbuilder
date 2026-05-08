@@ -1578,10 +1578,12 @@
         const imgs = Array.isArray(u.image_urls) ? u.image_urls : [];
         let imagesHtml = '';
         if (imgs.length === 1) {
-          imagesHtml = `<img src="${escHtmlFU(imgs[0])}" alt="${escHtmlFU(u.photo_caption || 'Farm photo')}" style="max-width:100%;border-radius:8px;margin-bottom:.6rem;display:block;" loading="lazy" onerror="this.style.display='none'">`;
+          imagesHtml = `<div class="update-images-container" style="margin-top:.8rem;">
+            <img src="${escHtmlFU(imgs[0])}" alt="${escHtmlFU(u.photo_caption || 'Farm photo')}" style="max-width:100%;width:100%;max-height:560px;object-fit:cover;border-radius:10px;display:block;" loading="lazy" onerror="this.style.display='none'">
+          </div>`;
         } else if (imgs.length > 1) {
-          imagesHtml = `<div class="update-images-strip" style="display:flex;gap:.5rem;overflow-x:auto;margin-bottom:.6rem;padding-bottom:.3rem;scroll-snap-type:x mandatory;">
-            ${imgs.map(src => `<img src="${escHtmlFU(src)}" alt="${escHtmlFU(u.photo_caption || 'Farm photo')}" style="height:200px;width:auto;border-radius:8px;flex:0 0 auto;scroll-snap-align:start;" loading="lazy" onerror="this.style.display='none'">`).join('')}
+          imagesHtml = `<div class="update-images-container update-images-strip" style="display:flex;gap:.6rem;overflow-x:auto;margin-top:.8rem;padding-bottom:.4rem;scroll-snap-type:x mandatory;">
+            ${imgs.map(src => `<img src="${escHtmlFU(src)}" alt="${escHtmlFU(u.photo_caption || 'Farm photo')}" style="height:380px;width:auto;border-radius:10px;flex:0 0 auto;scroll-snap-align:start;" loading="lazy" onerror="this.style.display='none'">`).join('')}
           </div>`;
         }
         return `
@@ -1592,8 +1594,8 @@
               <span class="update-author">${escHtmlFU(u.author)}</span>
               <span class="update-date">${escHtmlFU(u.date_label)}</span>
             </div>
-            ${imagesHtml}
             <p class="update-text">${renderBoldText(u.body)}</p>
+            ${imagesHtml}
             ${u.photo_url ? `<img src="${escHtmlFU(u.photo_url)}" alt="${escHtmlFU(u.photo_caption || 'Farm photo')}" style="max-width:100%;border-radius:8px;margin-top:.6rem;display:block;" loading="lazy" onerror="this.style.display='none'">` : ''}
             ${u.photo_caption ? `<div class="update-photo">📸 ${escHtmlFU(u.photo_caption)}</div>` : ''}
           </div>
