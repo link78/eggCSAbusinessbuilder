@@ -302,6 +302,34 @@
     .update-author { font-weight: 700; font-size: .9rem; color: var(--green-dark); }
     .update-date   { font-size: .78rem; color: var(--muted); }
     .update-text   { font-size: .9rem; color: var(--text); line-height: 1.6; }
+    .update-actions {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-top: .7rem;
+    }
+    .btn-like {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      border-radius: 999px;
+      padding: .35rem .8rem;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .btn-like:hover { background: #f3f7f0; border-color: var(--green); }
+    .btn-like.liked {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+    .btn-like[disabled] { cursor: not-allowed; opacity: .6; }
+    .btn-like .like-count { font-variant-numeric: tabular-nums; }
     .update-photo  {
       margin-top: .7rem;
       border-radius: 10px;
@@ -1598,11 +1626,61 @@
             ${imagesHtml}
             ${u.photo_url ? `<img src="${escHtmlFU(u.photo_url)}" alt="${escHtmlFU(u.photo_caption || 'Farm photo')}" style="max-width:100%;border-radius:8px;margin-top:.6rem;display:block;" loading="lazy" onerror="this.style.display='none'">` : ''}
             ${u.photo_caption ? `<div class="update-photo">📸 ${escHtmlFU(u.photo_caption)}</div>` : ''}
+            <div class="update-actions">
+              <button type="button"
+                      class="btn-like${u.liked ? ' liked' : ''}"
+                      id="like-btn-${u.id}"
+                      data-update-id="${u.id}"
+                      aria-pressed="${u.liked ? 'true' : 'false'}"
+                      aria-label="${u.liked ? 'Unlike this update' : 'Like this update'}"
+                      onclick="toggleFarmUpdateLike(${u.id})">
+                <span aria-hidden="true">👍</span>
+                <span class="like-label">${u.liked ? 'Liked' : 'Like'}</span>
+                <span class="like-count">${Number(u.likes_count) || 0}</span>
+              </button>
+            </div>
           </div>
         </div>`;
       }).join('');
     } catch (_) {
       if (feed) feed.innerHTML = '<div class="update-card" style="color:var(--muted);font-size:.9rem;padding:1rem 0;">Unable to load updates right now.</div>';
+    }
+  }
+
+  async function toggleFarmUpdateLike(id) {
+    if (!_user) {
+      // Send the visitor to the login screen on the dashboard.
+      window.location.href = '/dashboard#account';
+      return;
+    }
+    const btn = document.getElementById(`like-btn-${id}`);
+    if (!btn || btn.disabled) return;
+    btn.disabled = true;
+    try {
+      const token = await getCsrf();
+      const r = await fetch(`/api/farm-updates/${id}/like`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        if (r.status === 401) window.location.href = '/dashboard#account';
+        return;
+      }
+      const liked = !!data.liked;
+      const count = Number(data.likes_count) || 0;
+      btn.classList.toggle('liked', liked);
+      btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+      btn.setAttribute('aria-label', liked ? 'Unlike this update' : 'Like this update');
+      const lbl = btn.querySelector('.like-label');
+      const cnt = btn.querySelector('.like-count');
+      if (lbl) lbl.textContent = liked ? 'Liked' : 'Like';
+      if (cnt) cnt.textContent = String(count);
+    } catch (_) {
+      /* ignore network error */
+    } finally {
+      btn.disabled = false;
     }
   }
 </script>

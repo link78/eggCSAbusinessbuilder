@@ -94,8 +94,65 @@ app.use('/api/plan-config', apiLimiter,   planConfigRoutes);
 
 // GET /api/farm-updates — list all farm updates, newest first
 app.get('/api/farm-updates', apiLimiter, async (req, res) => {
-  const rows = (await db.query('SELECT * FROM farm_updates ORDER BY created_at DESC')).rows;
+  const userId = req.session.userId || null;
+  const rows = (await db.query(`
+    SELECT fu.*,
+           COALESCE(l.likes_count, 0)::int AS likes_count,
+           CASE WHEN $1::int IS NOT NULL AND ml.user_id IS NOT NULL THEN true ELSE false END AS liked
+    FROM farm_updates fu
+    LEFT JOIN (
+      SELECT update_id, COUNT(*) AS likes_count
+      FROM farm_update_likes
+      GROUP BY update_id
+    ) l ON l.update_id = fu.id
+    LEFT JOIN farm_update_likes ml
+      ON ml.update_id = fu.id AND ml.user_id = $1
+    ORDER BY fu.created_at DESC
+  `, [userId])).rows;
   res.json({ updates: rows });
+});
+
+// POST /api/farm-updates/:id/like — toggle a thumbs-up on an update
+app.post('/api/farm-updates/:id/like', apiLimiter, async (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'You must be logged in to like an update.' });
+  }
+  const updateId = parseInt(req.params.id, 10);
+  if (!Number.isInteger(updateId) || updateId <= 0) {
+    return res.status(400).json({ error: 'Invalid update id.' });
+  }
+
+  const exists = (await db.query('SELECT id FROM farm_updates WHERE id = $1', [updateId])).rows[0];
+  if (!exists) return res.status(404).json({ error: 'Update not found.' });
+
+  const existing = (await db.query(
+    'SELECT 1 FROM farm_update_likes WHERE update_id = $1 AND user_id = $2',
+    [updateId, req.session.userId]
+  )).rows[0];
+
+  let liked;
+  if (existing) {
+    await db.query(
+      'DELETE FROM farm_update_likes WHERE update_id = $1 AND user_id = $2',
+      [updateId, req.session.userId]
+    );
+    liked = false;
+  } else {
+    await db.query(
+      `INSERT INTO farm_update_likes (update_id, user_id)
+       VALUES ($1, $2)
+       ON CONFLICT DO NOTHING`,
+      [updateId, req.session.userId]
+    );
+    liked = true;
+  }
+
+  const countRow = (await db.query(
+    'SELECT COUNT(*)::int AS likes_count FROM farm_update_likes WHERE update_id = $1',
+    [updateId]
+  )).rows[0];
+
+  res.json({ liked, likes_count: countRow.likes_count });
 });
 
 // GET /api/about-content — list all about-page sections

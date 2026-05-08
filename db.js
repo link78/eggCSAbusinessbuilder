@@ -104,6 +104,17 @@ async function init() {
   // Add image_urls (array) column to farm_updates for multi-image support (idempotent)
   await query(`ALTER TABLE farm_updates ADD COLUMN IF NOT EXISTS image_urls TEXT[] NOT NULL DEFAULT '{}'`);
 
+  // Likes (thumbs-up) on farm updates. Composite PK enforces one like per
+  // user per update; ON DELETE CASCADE cleans up automatically.
+  await query(`
+    CREATE TABLE IF NOT EXISTS farm_update_likes (
+      update_id  INTEGER NOT NULL REFERENCES farm_updates(id) ON DELETE CASCADE,
+      user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      PRIMARY KEY (update_id, user_id)
+    )
+  `);
+
   // Editable about-page content sections
   await query(`
     CREATE TABLE IF NOT EXISTS about_content (
@@ -206,7 +217,7 @@ async function seedAboutContent() {
  */
 async function reset() {
   await query(
-    'TRUNCATE users, orders, reviews, checklist_progress, plan_config, farm_updates, about_content RESTART IDENTITY CASCADE'
+    'TRUNCATE users, orders, reviews, checklist_progress, plan_config, farm_updates, farm_update_likes, about_content RESTART IDENTITY CASCADE'
   );
   // Re-seed plan configurations so tests always start with a known state.
   await seedPlanConfig();
