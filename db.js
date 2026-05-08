@@ -101,6 +101,9 @@ async function init() {
   // Add photo_url column to farm_updates if it doesn't exist yet (idempotent)
   await query(`ALTER TABLE farm_updates ADD COLUMN IF NOT EXISTS photo_url TEXT`);
 
+  // Add image_urls (array) column to farm_updates for multi-image support (idempotent)
+  await query(`ALTER TABLE farm_updates ADD COLUMN IF NOT EXISTS image_urls TEXT[] NOT NULL DEFAULT '{}'`);
+
   // Editable about-page content sections
   await query(`
     CREATE TABLE IF NOT EXISTS about_content (

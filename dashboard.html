@@ -1496,8 +1496,12 @@
       <input id="fu-date" type="text" placeholder="e.g. May 5, 2026">
     </div>
     <div class="content-field">
-      <label for="fu-photo-url">Photo URL (optional)</label>
+      <label for="fu-photo-url">Photo URL (optional, external)</label>
       <input id="fu-photo-url" type="url" placeholder="https://example.com/photo.jpg">
+    </div>
+    <div class="content-field">
+      <label for="fu-images">Upload images (optional, up to 10, 5 MB each)</label>
+      <input id="fu-images" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
     </div>
     <div class="content-field">
       <label for="fu-caption">Photo caption (optional)</label>
@@ -4295,11 +4299,20 @@ async function cancelOrder(id) {
         list.innerHTML = '<div style="color:#aaa;font-size:.9rem;">No updates posted yet.</div>';
         return;
       }
-      list.innerHTML = updates.map(u => `
+      list.innerHTML = updates.map(u => {
+        const imgs = Array.isArray(u.image_urls) ? u.image_urls : [];
+        const imgsHtml = imgs.length
+          ? `<div class="update-images-strip" style="display:flex;gap:.5rem;overflow-x:auto;margin:.4rem 0;">
+               ${imgs.map(src => `<img class="update-item-photo" src="${escHtml(src)}" alt="Farm update photo" loading="lazy" style="height:120px;width:auto;border-radius:6px;flex:0 0 auto;" onerror="this.style.display='none'">`).join('')}
+             </div>`
+          : '';
+        const editKeptUrls = imgs.map(s => escHtml(s)).join(',');
+        return `
         <div class="update-item-row" id="fu-row-${u.id}">
           <div class="update-item-body">
             <div class="update-item-meta">${escHtml(u.author)} · ${escHtml(u.date_label)}</div>
             <div class="update-item-text">${escHtml(u.body)}</div>
+            ${imgsHtml}
             ${u.photo_url ? `<img class="update-item-photo" src="${escHtml(u.photo_url)}" alt="Farm update photo" loading="lazy" onerror="this.style.display='none'">` : ''}
             ${u.photo_caption ? `<div class="update-item-caption">📸 ${escHtml(u.photo_caption)}</div>` : ''}
             <div class="update-edit-form" id="fu-edit-${u.id}" style="display:none;">
@@ -4313,8 +4326,20 @@ async function cancelOrder(id) {
                 <input id="fu-edit-date-${u.id}" type="text" value="${escHtml(u.date_label)}">
               </div>
               <div class="content-field">
-                <label>Photo URL</label>
+                <label>Photo URL (external)</label>
                 <input id="fu-edit-photo-${u.id}" type="url" value="${escHtml(u.photo_url || '')}">
+              </div>
+              <div class="content-field">
+                <label>Add more uploaded images (optional)</label>
+                <input id="fu-edit-images-${u.id}" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
+                <input type="hidden" id="fu-edit-kept-${u.id}" value="${editKeptUrls}">
+                ${imgs.length ? `<div style="font-size:.8rem;color:#666;margin-top:.3rem;">${imgs.length} existing image(s). Use the buttons below to remove.</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem;" id="fu-edit-existing-${u.id}">
+                    ${imgs.map((src, i) => `<div data-img-url="${escHtml(src)}" style="position:relative;border:1px solid #ddd;border-radius:6px;padding:2px;">
+                      <img src="${escHtml(src)}" style="height:60px;width:auto;display:block;" loading="lazy">
+                      <button type="button" onclick="removeFarmUpdateImage(${u.id}, ${i})" style="position:absolute;top:-6px;right:-6px;background:#c0392b;color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:.7rem;">×</button>
+                    </div>`).join('')}
+                  </div>` : ''}
               </div>
               <div class="content-field">
                 <label>Photo caption</label>
@@ -4330,7 +4355,8 @@ async function cancelOrder(id) {
             <button class="btn-content-edit" onclick="toggleEditFarmUpdate(${u.id})">✏️ Edit</button>
             <button class="btn-content-delete" onclick="adminDeleteFarmUpdate(${u.id})">🗑 Delete</button>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     } catch (_) {
       list.innerHTML = '<div style="color:#c0392b;font-size:.9rem;">Failed to load updates.</div>';
     }
@@ -4342,19 +4368,39 @@ async function cancelOrder(id) {
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
   }
 
+  function removeFarmUpdateImage(id, idx) {
+    const wrap = document.getElementById(`fu-edit-existing-${id}`);
+    const hidden = document.getElementById(`fu-edit-kept-${id}`);
+    if (!wrap || !hidden) return;
+    const items = Array.from(wrap.querySelectorAll('[data-img-url]'));
+    const target = items[idx];
+    if (!target) return;
+    target.remove();
+    const remaining = Array.from(wrap.querySelectorAll('[data-img-url]')).map(el => el.getAttribute('data-img-url'));
+    hidden.value = remaining.join(',');
+  }
+
   async function adminPostFarmUpdate() {
     const body     = (document.getElementById('fu-body')?.value || '').trim();
     const date     = (document.getElementById('fu-date')?.value || '').trim();
     const photoUrl = (document.getElementById('fu-photo-url')?.value || '').trim();
     const caption  = (document.getElementById('fu-caption')?.value || '').trim();
+    const filesEl  = document.getElementById('fu-images');
+    const files    = filesEl?.files ? Array.from(filesEl.files) : [];
     if (!body) { showContentFlash('farm-updates-flash', 'Message is required.', 'err'); return; }
 
     try {
       const token = await getCsrfToken();
+      const fd = new FormData();
+      fd.append('body', body);
+      if (date)     fd.append('date_label', date);
+      if (photoUrl) fd.append('photo_url', photoUrl);
+      if (caption)  fd.append('photo_caption', caption);
+      files.forEach(f => fd.append('images', f));
       const res = await fetch('/api/admin/farm-updates', {
         method: 'POST', credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
-        body: JSON.stringify({ body, date_label: date || undefined, photo_url: photoUrl || undefined, photo_caption: caption || undefined })
+        headers: { 'X-CSRF-Token': token },
+        body: fd
       });
       const data = await res.json();
       if (!res.ok) { showContentFlash('farm-updates-flash', data.error || 'Error posting update.', 'err'); return; }
@@ -4363,6 +4409,7 @@ async function cancelOrder(id) {
       document.getElementById('fu-date').value      = '';
       document.getElementById('fu-photo-url').value = '';
       document.getElementById('fu-caption').value   = '';
+      if (filesEl) filesEl.value = '';
       loadAdminFarmUpdates();
     } catch (_) {
       showContentFlash('farm-updates-flash', 'Network error. Please try again.', 'err');
@@ -4374,13 +4421,24 @@ async function cancelOrder(id) {
     const date     = (document.getElementById(`fu-edit-date-${id}`)?.value || '').trim();
     const photoUrl = (document.getElementById(`fu-edit-photo-${id}`)?.value || '').trim();
     const caption  = (document.getElementById(`fu-edit-caption-${id}`)?.value || '').trim();
+    const filesEl  = document.getElementById(`fu-edit-images-${id}`);
+    const files    = filesEl?.files ? Array.from(filesEl.files) : [];
+    const keptStr  = document.getElementById(`fu-edit-kept-${id}`)?.value || '';
+    const keptUrls = keptStr ? keptStr.split(',').filter(Boolean) : [];
     if (!body) { showContentFlash('farm-updates-flash', 'Message cannot be empty.', 'err'); return; }
     try {
       const token = await getCsrfToken();
+      const fd = new FormData();
+      fd.append('body', body);
+      fd.append('date_label', date || '');
+      fd.append('photo_url', photoUrl || '');
+      fd.append('photo_caption', caption || '');
+      fd.append('image_urls', JSON.stringify(keptUrls));
+      files.forEach(f => fd.append('images', f));
       const res = await fetch(`/api/admin/farm-updates/${id}`, {
         method: 'PUT', credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
-        body: JSON.stringify({ body, date_label: date || undefined, photo_url: photoUrl || '', photo_caption: caption || '' })
+        headers: { 'X-CSRF-Token': token },
+        body: fd
       });
       const data = await res.json();
       if (!res.ok) { showContentFlash('farm-updates-flash', data.error || 'Error saving update.', 'err'); return; }

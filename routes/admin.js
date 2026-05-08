@@ -1,7 +1,62 @@
 const express = require('express');
+const path    = require('path');
+const fs      = require('fs');
+const crypto  = require('crypto');
+const multer  = require('multer');
 const db      = require('../db');
 
 const router = express.Router();
+
+// ── Image upload (farm updates) ──────────────────────────────────────────────
+// Files are stored under /uploads/updates and exposed via the /uploads static
+// route configured in app.js. Random filenames prevent path traversal and
+// guessable URLs.
+const UPLOAD_DIR = path.join(__dirname, '..', 'uploads', 'updates');
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+const ALLOWED_IMAGE_MIME = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp'
+]);
+const EXT_BY_MIME = {
+  'image/jpeg': '.jpg',
+  'image/png':  '.png',
+  'image/gif':  '.gif',
+  'image/webp': '.webp'
+};
+
+const updateImageStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
+  filename:    (req, file, cb) => {
+    const ext = EXT_BY_MIME[file.mimetype] || '.bin';
+    const name = crypto.randomBytes(16).toString('hex') + ext;
+    cb(null, name);
+  }
+});
+const uploadUpdateImages = multer({
+  storage: updateImageStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024,  // 5 MB per file
+    files: 10                    // up to 10 images per update
+  },
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_IMAGE_MIME.has(file.mimetype)) return cb(null, true);
+    cb(new Error('Only JPEG, PNG, GIF, or WEBP images are allowed.'));
+  }
+}).array('images', 10);
+
+// Wrap multer so its errors come back as JSON 400s instead of HTML 500s.
+function handleUpdateImageUpload(req, res, next) {
+  uploadUpdateImages(req, res, (err) => {
+    if (!err) return next();
+    const message = (err instanceof multer.MulterError)
+      ? `Upload error: ${err.message}`
+      : (err.message || 'Upload error.');
+    return res.status(400).json({ error: message });
+  });
+}
 
 async function requireAdmin(req, res, next) {
   if (!req.session.userId) {
@@ -160,10 +215,52 @@ router.put('/plan-config/:id', requireAdmin, async (req, res) => {
 
 // ── Farm Updates ──────────────────────────────────────────────────────────────
 
-// POST /api/admin/farm-updates — add a new farm update
-router.post('/farm-updates', requireAdmin, async (req, res) => {
+// Helpers --------------------------------------------------------------------
+
+function uploadedImageUrls(req) {
+  if (!Array.isArray(req.files)) return [];
+  return req.files.map(f => `/uploads/updates/${path.basename(f.filename)}`);
+}
+
+// Only delete files that live inside our uploads/updates directory and that
+// match the random-filename pattern we generate. This prevents an attacker
+// from supplying a crafted image_urls value to delete arbitrary files.
+const SAFE_UPDATE_IMG_RE = /^\/uploads\/updates\/[a-f0-9]{32}\.(?:jpg|png|gif|webp)$/i;
+function deleteUpdateImageFile(urlPath) {
+  if (typeof urlPath !== 'string' || !SAFE_UPDATE_IMG_RE.test(urlPath)) return;
+  const filename = path.basename(urlPath);
+  const full = path.join(UPLOAD_DIR, filename);
+  // Confirm the resolved path is still inside UPLOAD_DIR.
+  if (path.dirname(full) !== UPLOAD_DIR) return;
+  fs.unlink(full, () => { /* best-effort */ });
+}
+
+// Accept either a single string or array of strings for image_urls in the body
+// (used by the PUT endpoint to allow removing existing images).
+function parseImageUrlsField(value) {
+  if (value === undefined) return undefined;
+  if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean);
+  if (typeof value === 'string') {
+    const s = value.trim();
+    if (!s) return [];
+    // Allow JSON-encoded array (multipart form fields are strings).
+    if (s.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(s);
+        if (Array.isArray(parsed)) return parsed.map(v => String(v).trim()).filter(Boolean);
+      } catch (_) { /* fall through */ }
+    }
+    return [s];
+  }
+  return undefined;
+}
+
+// POST /api/admin/farm-updates — add a new farm update (supports image upload)
+router.post('/farm-updates', requireAdmin, handleUpdateImageUpload, async (req, res) => {
   const { body, date_label, author, photo_caption, photo_url } = req.body || {};
   if (!body || !String(body).trim()) {
+    // Clean up any uploaded files since we are rejecting the request.
+    uploadedImageUrls(req).forEach(deleteUpdateImageFile);
     return res.status(400).json({ error: 'body is required.' });
   }
   const now = new Date();
@@ -173,20 +270,25 @@ router.post('/farm-updates', requireAdmin, async (req, res) => {
   const authorStr = author ? String(author).trim() : 'Sakinah Ridge Farm';
   const caption   = photo_caption ? String(photo_caption).trim() : null;
   const imgUrl    = photo_url    ? String(photo_url).trim()    : null;
+  const imageUrls = uploadedImageUrls(req);
 
   const row = (await db.query(
-    'INSERT INTO farm_updates (author, date_label, body, photo_caption, photo_url) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-    [authorStr, label, String(body).trim(), caption, imgUrl]
+    `INSERT INTO farm_updates (author, date_label, body, photo_caption, photo_url, image_urls)
+     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+    [authorStr, label, String(body).trim(), caption, imgUrl, imageUrls]
   )).rows[0];
   res.status(201).json({ update: row });
 });
 
 // PUT /api/admin/farm-updates/:id — edit an existing farm update
-router.put('/farm-updates/:id', requireAdmin, async (req, res) => {
+router.put('/farm-updates/:id', requireAdmin, handleUpdateImageUpload, async (req, res) => {
   const existing = (await db.query('SELECT * FROM farm_updates WHERE id = $1', [req.params.id])).rows[0];
-  if (!existing) return res.status(404).json({ error: 'Update not found.' });
+  if (!existing) {
+    uploadedImageUrls(req).forEach(deleteUpdateImageFile);
+    return res.status(404).json({ error: 'Update not found.' });
+  }
 
-  const { body, date_label, author, photo_caption, photo_url } = req.body || {};
+  const { body, date_label, author, photo_caption, photo_url, image_urls } = req.body || {};
 
   const newBody    = body          !== undefined ? String(body).trim()          : existing.body;
   const newLabel   = date_label    !== undefined ? String(date_label).trim()    : existing.date_label;
@@ -194,20 +296,50 @@ router.put('/farm-updates/:id', requireAdmin, async (req, res) => {
   const newCaption = photo_caption !== undefined ? (String(photo_caption).trim() || null) : existing.photo_caption;
   const newImgUrl  = photo_url     !== undefined ? (String(photo_url).trim()    || null) : existing.photo_url;
 
-  if (!newBody) return res.status(400).json({ error: 'body cannot be empty.' });
+  if (!newBody) {
+    uploadedImageUrls(req).forEach(deleteUpdateImageFile);
+    return res.status(400).json({ error: 'body cannot be empty.' });
+  }
+
+  // Determine the new image_urls value.
+  // - If the client supplied `image_urls` we treat that as the kept set,
+  //   then append any newly uploaded files.
+  // - If not supplied, we keep all existing urls and append new uploads.
+  const existingUrls = Array.isArray(existing.image_urls) ? existing.image_urls : [];
+  const keptUrls     = parseImageUrlsField(image_urls);
+  const newUploads   = uploadedImageUrls(req);
+
+  let finalUrls;
+  if (keptUrls !== undefined) {
+    // Only keep urls that were originally on this row (prevents injecting
+    // arbitrary paths through the form).
+    const allowed = new Set(existingUrls);
+    finalUrls = keptUrls.filter(u => allowed.has(u)).concat(newUploads);
+    // Delete files that were removed.
+    const keepSet = new Set(finalUrls);
+    existingUrls.filter(u => !keepSet.has(u)).forEach(deleteUpdateImageFile);
+  } else {
+    finalUrls = existingUrls.concat(newUploads);
+  }
 
   const row = (await db.query(
-    'UPDATE farm_updates SET body = $1, date_label = $2, author = $3, photo_caption = $4, photo_url = $5 WHERE id = $6 RETURNING *',
-    [newBody, newLabel, newAuthor || 'Sakinah Ridge Farm', newCaption, newImgUrl, req.params.id]
+    `UPDATE farm_updates
+     SET body = $1, date_label = $2, author = $3, photo_caption = $4, photo_url = $5, image_urls = $6
+     WHERE id = $7 RETURNING *`,
+    [newBody, newLabel, newAuthor || 'Sakinah Ridge Farm', newCaption, newImgUrl, finalUrls, req.params.id]
   )).rows[0];
   res.json({ update: row });
 });
 
 // DELETE /api/admin/farm-updates/:id — remove a farm update
 router.delete('/farm-updates/:id', requireAdmin, async (req, res) => {
-  const row = (await db.query('SELECT id FROM farm_updates WHERE id = $1', [req.params.id])).rows[0];
+  const row = (await db.query('SELECT id, image_urls FROM farm_updates WHERE id = $1', [req.params.id])).rows[0];
   if (!row) return res.status(404).json({ error: 'Update not found.' });
   await db.query('DELETE FROM farm_updates WHERE id = $1', [req.params.id]);
+  // Best-effort cleanup of associated image files.
+  if (Array.isArray(row.image_urls)) {
+    row.image_urls.forEach(deleteUpdateImageFile);
+  }
   res.json({ ok: true });
 });
 
