@@ -635,6 +635,47 @@
       padding: .3rem .8rem; font-size: .82rem; font-weight: 600; cursor: pointer; margin-top: .3rem;
     }
 
+    /* Image upload controls for About page */
+    .ap-image-row {
+      display: flex; align-items: center; gap: .7rem; flex-wrap: wrap;
+      margin-top: .4rem;
+    }
+    .ap-image-thumb {
+      width: 64px; height: 64px; border-radius: 8px; border: 1px solid #e0d8c8;
+      object-fit: cover; background: #f6f0e2; display: block; flex-shrink: 0;
+    }
+    .ap-image-thumb-empty {
+      width: 64px; height: 64px; border-radius: 8px; border: 1px dashed #cdbfa3;
+      background: #f6f0e2; display: grid; place-items: center; font-size: 1.4rem;
+      color: #b39e75; flex-shrink: 0;
+    }
+    .ap-upload-btn {
+      background: #fff; border: 1.5px solid #e85d04; color: #e85d04;
+      border-radius: 6px; padding: .35rem .8rem; font-size: .82rem;
+      font-weight: 600; cursor: pointer;
+    }
+    .ap-upload-btn:hover { background: #fff7ee; }
+    .ap-upload-btn[disabled] { opacity: .55; cursor: wait; }
+    .ap-clear-image-btn {
+      background: transparent; border: none; color: #c0392b; font-size: .8rem;
+      cursor: pointer; padding: .2rem .4rem;
+    }
+    .ap-story-images-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: .55rem; margin: .5rem 0;
+    }
+    .ap-story-image-tile {
+      position: relative; border-radius: 8px; overflow: hidden;
+      border: 1px solid #e0d8c8; aspect-ratio: 4 / 3; background: #f6f0e2;
+    }
+    .ap-story-image-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ap-story-image-tile .ap-story-remove {
+      position: absolute; top: 4px; right: 4px;
+      background: rgba(0,0,0,.65); color: #fff; border: none;
+      width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+      font-size: .9rem; line-height: 1; display: grid; place-items: center;
+    }
+
     /* ═══════════════════════════════════════════════════════
        APP LAYOUT
     ═══════════════════════════════════════════════════════ */
@@ -1529,15 +1570,22 @@
   <div class="content-form-card">
     <h3>Our Story</h3>
     <div class="content-field">
-      <label for="ap-story-text">Story text</label>
+      <label for="ap-story-text">Story text <span style="font-weight:400;color:#888;">(separate paragraphs with a blank line)</span></label>
       <div class="rich-toolbar">
         <button type="button" class="btn-rich-bold" onclick="applyBold('ap-story-text')" title="Bold selected text"><b>B</b></button>
       </div>
-      <textarea id="ap-story-text" rows="5" maxlength="5000"></textarea>
+      <textarea id="ap-story-text" rows="6" maxlength="5000"></textarea>
     </div>
     <div class="content-field">
-      <label for="ap-story-photo-url">Story photo URL (optional)</label>
-      <input id="ap-story-photo-url" type="url" placeholder="https://example.com/farm-photo.jpg">
+      <label>Hero photo</label>
+      <div class="ap-image-row" id="ap-story-photo-row"></div>
+      <input type="file" id="ap-story-photo-file" accept="image/jpeg,image/png,image/gif,image/webp" hidden onchange="onStoryHeroPhotoSelected(this)">
+    </div>
+    <div class="content-field">
+      <label>Story images <span style="font-weight:400;color:#888;">(rendered between paragraphs on the About page)</span></label>
+      <div class="ap-story-images-grid" id="ap-story-images-grid"></div>
+      <button type="button" class="ap-upload-btn" id="ap-story-images-add-btn" onclick="document.getElementById('ap-story-images-file').click()">+ Add images</button>
+      <input type="file" id="ap-story-images-file" accept="image/jpeg,image/png,image/gif,image/webp" multiple hidden onchange="onStoryInlineImagesSelected(this)">
     </div>
     <button class="btn-content-save" onclick="adminSaveAboutSection('our_story')">Save</button>
   </div>
@@ -4486,8 +4534,107 @@ async function cancelOrder(id) {
   function renderAboutOurStory() {
     const el = document.getElementById('ap-story-text');
     if (el) el.value = (_aboutSections.our_story || {}).text || '';
-    const photoEl = document.getElementById('ap-story-photo-url');
-    if (photoEl) photoEl.value = (_aboutSections.our_story || {}).photo_url || '';
+    renderStoryHeroPhoto();
+    renderStoryInlineImages();
+  }
+
+  // Hero photo (single image) for the Our Story section.
+  function renderStoryHeroPhoto() {
+    const row = document.getElementById('ap-story-photo-row');
+    if (!row) return;
+    const url = (_aboutSections.our_story || {}).photo_url || '';
+    const thumb = url
+      ? `<img src="${escHtml(url)}" alt="Story hero photo" class="ap-image-thumb">`
+      : `<div class="ap-image-thumb-empty">📷</div>`;
+    const clearBtn = url
+      ? `<button type="button" class="ap-clear-image-btn" onclick="clearStoryHeroPhoto()">Remove</button>`
+      : '';
+    row.innerHTML = `
+      ${thumb}
+      <button type="button" class="ap-upload-btn" onclick="document.getElementById('ap-story-photo-file').click()">
+        ${url ? 'Replace photo' : 'Upload photo'}
+      </button>
+      ${clearBtn}
+    `;
+  }
+
+  function clearStoryHeroPhoto() {
+    if (!_aboutSections.our_story) _aboutSections.our_story = {};
+    _aboutSections.our_story.photo_url = '';
+    renderStoryHeroPhoto();
+  }
+
+  async function onStoryHeroPhotoSelected(input) {
+    const file = input.files && input.files[0];
+    input.value = '';
+    if (!file) return;
+    const urls = await uploadAboutImages('story', [file], 'about-page-flash');
+    if (!urls || !urls.length) return;
+    if (!_aboutSections.our_story) _aboutSections.our_story = {};
+    _aboutSections.our_story.photo_url = urls[0];
+    renderStoryHeroPhoto();
+  }
+
+  // Inline story images (multiple).
+  function renderStoryInlineImages() {
+    const grid = document.getElementById('ap-story-images-grid');
+    if (!grid) return;
+    const images = (((_aboutSections.our_story || {}).images) || []).filter(Boolean);
+    if (!images.length) {
+      grid.innerHTML = `<div style="font-size:.85rem;color:#888;">No images yet. Use “+ Add images” to upload.</div>`;
+      return;
+    }
+    grid.innerHTML = images.map((src, i) => `
+      <div class="ap-story-image-tile">
+        <img src="${escHtml(src)}" alt="Story image ${i + 1}">
+        <button type="button" class="ap-story-remove" title="Remove" onclick="removeStoryInlineImage(${i})">✕</button>
+      </div>
+    `).join('');
+  }
+
+  function removeStoryInlineImage(idx) {
+    const images = (((_aboutSections.our_story || {}).images) || []).slice();
+    images.splice(idx, 1);
+    if (!_aboutSections.our_story) _aboutSections.our_story = {};
+    _aboutSections.our_story.images = images;
+    renderStoryInlineImages();
+  }
+
+  async function onStoryInlineImagesSelected(input) {
+    const files = Array.from(input.files || []);
+    input.value = '';
+    if (!files.length) return;
+    const urls = await uploadAboutImages('story', files, 'about-page-flash');
+    if (!urls || !urls.length) return;
+    if (!_aboutSections.our_story) _aboutSections.our_story = {};
+    const existing = Array.isArray(_aboutSections.our_story.images) ? _aboutSections.our_story.images : [];
+    _aboutSections.our_story.images = existing.concat(urls);
+    renderStoryInlineImages();
+  }
+
+  // Shared multipart upload helper for About-page images.
+  // kind: "flock" or "story". Returns an array of saved URLs (or [] on error).
+  async function uploadAboutImages(kind, files, flashId) {
+    if (!files || !files.length) return [];
+    const fd = new FormData();
+    files.forEach(f => fd.append('images', f));
+    try {
+      const token = await getCsrfToken();
+      const res = await fetch(`/api/admin/about-images/${encodeURIComponent(kind)}`, {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'X-CSRF-Token': token },
+        body: fd
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        showContentFlash(flashId || 'about-page-flash', data.error || 'Upload failed.', 'err');
+        return [];
+      }
+      return Array.isArray(data.urls) ? data.urls : [];
+    } catch (_) {
+      showContentFlash(flashId || 'about-page-flash', 'Network error during upload.', 'err');
+      return [];
+    }
   }
 
   function renderAboutHensCards() {
@@ -4549,18 +4696,53 @@ async function cancelOrder(id) {
     const container = document.getElementById('ap-flock-members');
     if (!container) return;
     const members = ((_aboutSections.flock || {}).members) || [];
-    container.innerHTML = members.map((m, i) => `
-      <div class="about-inline-group" style="flex-wrap:wrap;gap:.4rem .6rem;margin-bottom:.8rem;">
-        <input data-flock-icon="${i}" value="${escHtml(m.icon || '🐔')}" style="flex:0 0 60px;" placeholder="Icon">
-        <input data-flock-name="${i}" value="${escHtml(m.name || '')}" placeholder="Name" style="flex:1;min-width:100px;">
-        <input data-flock-photo="${i}" value="${escHtml(m.photo_url || '')}" placeholder="Photo URL (optional)" style="flex:2;min-width:180px;">
-        <button class="btn-about-remove-row" onclick="removeFlockMember(${i})">✕</button>
-      </div>`).join('');
+    if (!members.length) {
+      container.innerHTML = `<div style="font-size:.85rem;color:#888;margin-bottom:.6rem;">No flock members yet. Use “+ Add member” below.</div>`;
+      return;
+    }
+    container.innerHTML = members.map((m, i) => {
+      const photo = m.photo_url
+        ? `<img src="${escHtml(m.photo_url)}" alt="${escHtml(m.name || 'Hen')}" class="ap-image-thumb">`
+        : `<div class="ap-image-thumb-empty">${escHtml(m.icon || '🐔')}</div>`;
+      const clearBtn = m.photo_url
+        ? `<button type="button" class="ap-clear-image-btn" onclick="clearFlockMemberPhoto(${i})">Remove photo</button>`
+        : '';
+      return `
+        <div class="about-section-block" id="flock-member-${i}">
+          <h4>Member ${i + 1}</h4>
+          <div class="ap-image-row" style="margin-bottom:.7rem;">
+            ${photo}
+            <button type="button" class="ap-upload-btn" onclick="document.getElementById('ap-flock-photo-file-${i}').click()">
+              ${m.photo_url ? 'Replace photo' : 'Upload photo'}
+            </button>
+            ${clearBtn}
+            <input type="file" id="ap-flock-photo-file-${i}" accept="image/jpeg,image/png,image/gif,image/webp"
+                   hidden onchange="onFlockPhotoSelected(this, ${i})">
+          </div>
+          <div class="content-field">
+            <label>Name</label>
+            <input data-flock-name="${i}" value="${escHtml(m.name || '')}" placeholder="e.g. Ruby">
+          </div>
+          <div class="content-field">
+            <label>Breed</label>
+            <input data-flock-breed="${i}" value="${escHtml(m.breed || '')}" placeholder="e.g. Rhode Island Red">
+          </div>
+          <div class="content-field">
+            <label>Description</label>
+            <textarea data-flock-desc="${i}" rows="2" placeholder="A short note about this hen…">${escHtml(m.description || '')}</textarea>
+          </div>
+          <div class="content-field">
+            <label>Icon (used as a fallback when no photo is uploaded)</label>
+            <input data-flock-icon="${i}" value="${escHtml(m.icon || '🐔')}" style="max-width:80px;">
+          </div>
+          <button class="btn-about-remove-row" onclick="removeFlockMember(${i})">Remove member</button>
+        </div>`;
+    }).join('');
   }
 
   function addFlockMember() {
     const members = ((_aboutSections.flock || {}).members) || [];
-    members.push({ icon: '🐔', name: '', photo_url: '' });
+    members.push({ icon: '🐔', name: '', breed: '', description: '', photo_url: '' });
     if (!_aboutSections.flock) _aboutSections.flock = {};
     _aboutSections.flock.members = members;
     renderAboutFlockMembers();
@@ -4568,17 +4750,61 @@ async function cancelOrder(id) {
 
   function removeFlockMember(idx) {
     const members = ((_aboutSections.flock || {}).members) || [];
-    members.splice(idx, 1);
-    if (_aboutSections.flock) _aboutSections.flock.members = members;
+    // Persist the latest field values before splicing so user edits aren't lost.
+    captureFlockMemberInputs();
+    const fresh = ((_aboutSections.flock || {}).members) || [];
+    fresh.splice(idx, 1);
+    if (_aboutSections.flock) _aboutSections.flock.members = fresh;
     renderAboutFlockMembers();
+  }
+
+  function clearFlockMemberPhoto(idx) {
+    captureFlockMemberInputs();
+    const members = ((_aboutSections.flock || {}).members) || [];
+    if (members[idx]) members[idx].photo_url = '';
+    renderAboutFlockMembers();
+  }
+
+  async function onFlockPhotoSelected(input, idx) {
+    const file = input.files && input.files[0];
+    input.value = '';
+    if (!file) return;
+    captureFlockMemberInputs();
+    const urls = await uploadAboutImages('flock', [file], 'about-page-flash');
+    if (!urls || !urls.length) return;
+    const members = ((_aboutSections.flock || {}).members) || [];
+    if (members[idx]) {
+      members[idx].photo_url = urls[0];
+      if (!_aboutSections.flock) _aboutSections.flock = {};
+      _aboutSections.flock.members = members;
+      renderAboutFlockMembers();
+    }
+  }
+
+  // Read all editable inputs in the flock form back into _aboutSections so that
+  // subsequent re-renders (e.g. after upload/remove) preserve unsaved edits.
+  function captureFlockMemberInputs() {
+    const members = ((_aboutSections.flock || {}).members) || [];
+    document.querySelectorAll('[data-flock-name]').forEach(el => {
+      const i = +el.dataset.flockName;
+      if (!members[i]) members[i] = {};
+      members[i].name        = (el.value || '').trim();
+      members[i].breed       = (document.querySelector(`[data-flock-breed="${i}"]`)?.value || '').trim();
+      members[i].description = (document.querySelector(`[data-flock-desc="${i}"]`)?.value || '').trim();
+      members[i].icon        = (document.querySelector(`[data-flock-icon="${i}"]`)?.value || '🐔').trim() || '🐔';
+    });
+    if (!_aboutSections.flock) _aboutSections.flock = {};
+    _aboutSections.flock.members = members;
   }
 
   async function adminSaveAboutSection(key) {
     let content = {};
     if (key === 'our_story') {
+      const existing = _aboutSections.our_story || {};
       content = {
         text:      (document.getElementById('ap-story-text')?.value || '').trim(),
-        photo_url: (document.getElementById('ap-story-photo-url')?.value || '').trim() || undefined
+        photo_url: existing.photo_url || undefined,
+        images:    Array.isArray(existing.images) ? existing.images.filter(Boolean) : []
       };
     } else if (key === 'hens_care') {
       const cards = [];
@@ -4599,15 +4825,16 @@ async function cancelOrder(id) {
       });
       content = { heading: 'What Makes Our Eggs Different', items };
     } else if (key === 'flock') {
-      const members = [];
-      document.querySelectorAll('[data-flock-name]').forEach(el => {
-        const i = el.dataset.flockName;
-        members.push({
-          icon:      (document.querySelector(`[data-flock-icon="${i}"]`)?.value || '🐔').trim(),
-          name:      el.value.trim(),
-          photo_url: (document.querySelector(`[data-flock-photo="${i}"]`)?.value || '').trim() || undefined
-        });
-      });
+      // Pull current inputs back into state, then serialize.
+      captureFlockMemberInputs();
+      const stateMembers = ((_aboutSections.flock || {}).members) || [];
+      const members = stateMembers.map(m => ({
+        icon:        (m.icon || '🐔').trim() || '🐔',
+        name:        (m.name || '').trim(),
+        breed:       (m.breed || '').trim() || undefined,
+        description: (m.description || '').trim() || undefined,
+        photo_url:   (m.photo_url || '').trim() || undefined
+      }));
       content = { heading: 'Meet the Flock', members };
     }
 
