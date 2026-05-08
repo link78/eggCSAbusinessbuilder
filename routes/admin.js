@@ -343,6 +343,69 @@ router.delete('/farm-updates/:id', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ── About-page image uploads ──────────────────────────────────────────────────
+// Admins upload images for the public About page (flock chickens + story).
+// Files are saved under /uploads/flock/ or /uploads/story/ and the resolved
+// public URLs are returned so the caller can persist them inside the
+// `about_content` JSON for the relevant section.
+
+const ABOUT_IMAGE_KINDS = {
+  flock: path.join(__dirname, '..', 'uploads', 'flock'),
+  story: path.join(__dirname, '..', 'uploads', 'story'),
+};
+for (const dir of Object.values(ABOUT_IMAGE_KINDS)) {
+  fs.mkdirSync(dir, { recursive: true });
+}
+
+const aboutImageStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = ABOUT_IMAGE_KINDS[req.params.kind];
+    if (!dir) return cb(new Error('Invalid image kind.'));
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = EXT_BY_MIME[file.mimetype] || '.bin';
+    cb(null, crypto.randomBytes(16).toString('hex') + ext);
+  }
+});
+const uploadAboutImages = multer({
+  storage: aboutImageStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024,  // 5 MB per file
+    files: 10                    // up to 10 images per request
+  },
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_IMAGE_MIME.has(file.mimetype)) return cb(null, true);
+    cb(new Error('Only JPEG, PNG, GIF, or WEBP images are allowed.'));
+  }
+}).array('images', 10);
+
+function handleAboutImageUpload(req, res, next) {
+  if (!ABOUT_IMAGE_KINDS[req.params.kind]) {
+    return res.status(400).json({ error: 'kind must be "flock" or "story".' });
+  }
+  uploadAboutImages(req, res, (err) => {
+    if (!err) return next();
+    const message = (err instanceof multer.MulterError)
+      ? `Upload error: ${err.message}`
+      : (err.message || 'Upload error.');
+    return res.status(400).json({ error: message });
+  });
+}
+
+// POST /api/admin/about-images/:kind — upload one or more images for the
+// About page. `kind` must be "flock" or "story". Files are sent as the
+// multipart field `images`. Returns { urls: ["/uploads/<kind>/<file>", ...] }.
+router.post('/about-images/:kind', requireAdmin, handleAboutImageUpload, (req, res) => {
+  const kind = req.params.kind;
+  const files = Array.isArray(req.files) ? req.files : [];
+  if (files.length === 0) {
+    return res.status(400).json({ error: 'No images uploaded.' });
+  }
+  const urls = files.map(f => `/uploads/${kind}/${path.basename(f.filename)}`);
+  res.status(201).json({ urls });
+});
+
 // ── About Content ─────────────────────────────────────────────────────────────
 
 // PUT /api/admin/about-content/:section_key — save a section's content JSON

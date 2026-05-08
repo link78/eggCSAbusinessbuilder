@@ -8,3 +8,7 @@ uploads/**
 !uploads/
 !uploads/updates/
 !uploads/updates/.gitkeep
+!uploads/flock/
+!uploads/flock/.gitkeep
+!uploads/story/
+!uploads/story/.gitkeep
