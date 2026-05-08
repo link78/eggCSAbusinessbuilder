@@ -187,7 +187,7 @@ router.put('/plan-config/:id', requireAdmin, async (req, res) => {
   const plan = (await db.query('SELECT * FROM plan_config WHERE id = $1', [req.params.id])).rows[0];
   if (!plan) return res.status(404).json({ error: 'Plan not found.' });
 
-  const { display_name, price_monthly, eggs_per_week, delivery_fee_enabled } = req.body || {};
+  const { display_name, price_monthly, eggs_per_week, delivery_fee_enabled, delivery_frequency } = req.body || {};
 
   if (display_name !== undefined && (!display_name || !String(display_name).trim())) {
     return res.status(400).json({ error: 'display_name cannot be empty.' });
@@ -198,15 +198,26 @@ router.put('/plan-config/:id', requireAdmin, async (req, res) => {
   if (eggs_per_week !== undefined && (isNaN(Number(eggs_per_week)) || Number(eggs_per_week) < 0)) {
     return res.status(400).json({ error: 'eggs_per_week must be a non-negative number.' });
   }
+  const VALID_FREQUENCIES = new Set(['biweekly', 'weekly']);
+  if (delivery_frequency !== undefined && !VALID_FREQUENCIES.has(String(delivery_frequency))) {
+    return res.status(400).json({ error: 'delivery_frequency must be "biweekly" or "weekly".' });
+  }
 
   const newName     = display_name          !== undefined ? String(display_name).trim()  : plan.display_name;
   const newPrice    = price_monthly         !== undefined ? Number(price_monthly)         : plan.price_monthly;
   const newEggs     = eggs_per_week         !== undefined ? Number(eggs_per_week)         : plan.eggs_per_week;
   const newDelivery = delivery_fee_enabled  !== undefined ? Boolean(delivery_fee_enabled) : plan.delivery_fee_enabled;
+  const newFreq     = delivery_frequency    !== undefined ? String(delivery_frequency)    : (plan.delivery_frequency || 'biweekly');
+  // Bi-weekly plans deliver every 2 weeks; weekly plans every 1 week.
+  const weeksPer    = newFreq === 'weekly' ? 1 : 2;
+  const newEggsDel  = newEggs * weeksPer;
 
   await db.query(
-    'UPDATE plan_config SET display_name = $1, price_monthly = $2, eggs_per_week = $3, delivery_fee_enabled = $4 WHERE id = $5',
-    [newName, newPrice, newEggs, newDelivery, plan.id]
+    `UPDATE plan_config
+     SET display_name = $1, price_monthly = $2, eggs_per_week = $3, delivery_fee_enabled = $4,
+         delivery_frequency = $5, eggs_per_delivery = $6
+     WHERE id = $7`,
+    [newName, newPrice, newEggs, newDelivery, newFreq, newEggsDel, plan.id]
   );
 
   const updated = (await db.query('SELECT * FROM plan_config WHERE id = $1', [plan.id])).rows[0];

@@ -74,13 +74,24 @@ async function init() {
       display_name         TEXT NOT NULL,
       price_monthly        INTEGER NOT NULL,
       eggs_per_week        INTEGER NOT NULL,
-      delivery_fee_enabled BOOLEAN NOT NULL DEFAULT true
+      delivery_fee_enabled BOOLEAN NOT NULL DEFAULT true,
+      delivery_frequency   TEXT NOT NULL DEFAULT 'biweekly',
+      eggs_per_delivery    INTEGER NOT NULL DEFAULT 0
     );
   `);
+
+  // ── Schema migrations (run before seeding so seeds can reference new cols) ──
+  // Existing databases that pre-date the bi-weekly columns get them added here.
+  await query(`ALTER TABLE plan_config ADD COLUMN IF NOT EXISTS delivery_frequency TEXT NOT NULL DEFAULT 'biweekly'`);
+  await query(`ALTER TABLE plan_config ADD COLUMN IF NOT EXISTS eggs_per_delivery INTEGER NOT NULL DEFAULT 0`);
 
   // ── Seed plan configurations ─────────────────────────────────────────────────
   // Insert default plan config rows; skip if they already exist (idempotent).
   await seedPlanConfig();
+
+  // Keep eggs_per_delivery aligned with eggs_per_week on existing rows
+  // (handles pre-migration data and any manual edits).
+  await query(`UPDATE plan_config SET eggs_per_delivery = eggs_per_week * 2 WHERE eggs_per_delivery <> eggs_per_week * 2`);
 
   // ── Schema migrations ────────────────────────────────────────────────────────
   // Add notes column to users if it doesn't exist yet (idempotent)
@@ -103,6 +114,17 @@ async function init() {
 
   // Add image_urls (array) column to farm_updates for multi-image support (idempotent)
   await query(`ALTER TABLE farm_updates ADD COLUMN IF NOT EXISTS image_urls TEXT[] NOT NULL DEFAULT '{}'`);
+
+  // ── Bi-weekly delivery support ──────────────────────────────────────────────
+  // Subscription deliveries occur every 2 weeks. We persist:
+  //   - delivery_frequency: e.g. 'biweekly' (string for forward-compatibility)
+  //   - eggs_per_delivery:  total eggs handed off in a single delivery
+  //                         (= eggs_per_week * 2 for biweekly plans)
+  // Both are added idempotently so existing databases migrate cleanly.
+  await query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_frequency TEXT NOT NULL DEFAULT 'biweekly'`);
+  await query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS eggs_per_delivery INTEGER`);
+  // Backfill eggs_per_delivery for existing orders that predate the column.
+  await query(`UPDATE orders SET eggs_per_delivery = eggs_per_week * 2 WHERE eggs_per_delivery IS NULL`);
 
   // Likes (thumbs-up) on farm updates. Composite PK enforces one like per
   // user per update; ON DELETE CASCADE cleans up automatically.
@@ -144,13 +166,15 @@ async function init() {
  * Uses INSERT ... ON CONFLICT DO NOTHING so it is safe to call multiple times.
  */
 async function seedPlanConfig() {
+  // Plans deliver every 2 weeks; eggs_per_delivery is auto-derived as
+  // eggs_per_week * 2 to keep the schema and bookkeeping in sync.
   await query(`
-    INSERT INTO plan_config (plan_key, display_name, price_monthly, eggs_per_week, delivery_fee_enabled)
+    INSERT INTO plan_config (plan_key, display_name, price_monthly, eggs_per_week, delivery_fee_enabled, delivery_frequency, eggs_per_delivery)
     VALUES
-      ('small_family', 'Small Family',  20, 12, true),
-      ('family',       'Family',        28, 18, true),
-      ('solo_couple',  'Solo / Couple', 10, 12, true),
-      ('custom',       'Custom Plan',    0, 24, true)
+      ('small_family', 'Small Family',  20, 12, true, 'biweekly', 24),
+      ('family',       'Family',        28, 18, true, 'biweekly', 36),
+      ('solo_couple',  'Solo / Couple', 10, 12, true, 'biweekly', 24),
+      ('custom',       'Custom Plan',    0, 24, true, 'biweekly', 48)
     ON CONFLICT (plan_key) DO NOTHING
   `);
 }

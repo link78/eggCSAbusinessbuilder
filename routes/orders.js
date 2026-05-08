@@ -9,6 +9,11 @@ const PRICE_PER_18_BOX      = 7;  // $7 per box of 18 eggs
 const DELIVERY_FEE_PER_WEEK = 2;  // $2 per weekly delivery when method = delivery
 const MONTHLY_WEEKS         = 2;  // Bi-weekly plans: 2 deliveries per month
 
+// Subscription delivery rules
+const DELIVERY_FREQUENCY    = 'biweekly';  // Deliveries occur every 2 weeks
+const WEEKS_PER_DELIVERY    = 2;           // → eggs_per_delivery = eggs_per_week * 2
+const MIN_EGGS_PER_WEEK     = 12;          // At least one 12-egg box per week
+
 // Fixed plans — one box per weekly delivery; price depends on box type chosen by subscriber
 const FIXED_PLANS = {
   'Small Family': { boxes: 1 },
@@ -52,6 +57,9 @@ router.get('/plans', (req, res) => {
   res.json({
     plans,
     deliveryFeePerWeek: DELIVERY_FEE_PER_WEEK,
+    deliveryFrequency:  DELIVERY_FREQUENCY,
+    weeksPerDelivery:   WEEKS_PER_DELIVERY,
+    minEggsPerWeek:     MIN_EGGS_PER_WEEK,
     soloCoupleConstraints: {
       minBoxes:      SOLO_MIN_BOXES,
       monthlyWeeks:  MONTHLY_WEEKS,
@@ -177,6 +185,17 @@ router.post('/', requireAuth, async (req, res) => {
     price        = (b12 * PRICE_PER_12_BOX + b18 * PRICE_PER_18_BOX) * MONTHLY_WEEKS + dlvFee;
   }
 
+  // Enforce the global weekly-egg minimum (at least one 12-egg box per week).
+  // For biweekly plans this also implies at least 24 eggs per delivery.
+  if (eggsPerWeek < MIN_EGGS_PER_WEEK) {
+    return res.status(400).json({
+      error: `Each subscription must include at least ${MIN_EGGS_PER_WEEK} eggs per week (one 12-egg or 18-egg box).`
+    });
+  }
+
+  // Bi-weekly delivery cadence: total eggs per delivery is always 2 weeks worth.
+  const eggsPerDelivery = eggsPerWeek * WEEKS_PER_DELIVERY;
+
   // Cancel any existing active order before creating a new one
   await db.query(
     "UPDATE orders SET status = 'cancelled' WHERE user_id = $1 AND status = 'active'",
@@ -187,13 +206,15 @@ router.post('/', requireAuth, async (req, res) => {
     INSERT INTO orders
       (user_id, plan_name, price, eggs_per_week,
        fulfillment_method, delivery_address, pickup_day, next_billing_date,
-       boxes_per_delivery, duration_weeks, boxes12_per_delivery, boxes18_per_delivery)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+       boxes_per_delivery, duration_weeks, boxes12_per_delivery, boxes18_per_delivery,
+       delivery_frequency, eggs_per_delivery)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
     RETURNING id
   `, [
     req.session.userId, planName, price, eggsPerWeek,
     method, cleanAddress, cleanDay, nextBillingDate(),
-    totalBoxes, weeks, b12, b18
+    totalBoxes, weeks, b12, b18,
+    DELIVERY_FREQUENCY, eggsPerDelivery
   ]);
 
   const orderId = insertResult.rows[0].id;

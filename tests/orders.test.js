@@ -464,3 +464,83 @@ describe('DELETE /api/orders/:id', () => {
   });
 });
 
+// ── Bi-weekly delivery rules ──────────────────────────────────────────────────
+
+describe('Bi-weekly delivery subscription rules', () => {
+  it('GET /api/orders/plans exposes biweekly cadence and minimum eggs/week', async () => {
+    const res = await agent.get('/api/orders/plans');
+    expect(res.status).toBe(200);
+    expect(res.body.deliveryFrequency).toBe('biweekly');
+    expect(res.body.weeksPerDelivery).toBe(2);
+    expect(res.body.minEggsPerWeek).toBe(12);
+  });
+
+  it('persists delivery_frequency and eggs_per_delivery on a Solo/Couple order', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Solo / Couple',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Wednesday',
+      boxes12: 1,
+      boxes18: 0
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.order).toMatchObject({
+      eggs_per_week:      12,
+      eggs_per_delivery:  24,        // 12 × 2 weeks
+      delivery_frequency: 'biweekly'
+    });
+  });
+
+  it('persists eggs_per_delivery=36 for an 18-egg Solo/Couple order', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Solo / Couple',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Monday',
+      boxes12: 0,
+      boxes18: 1
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.order.eggs_per_delivery).toBe(36); // 18 × 2
+    expect(res.body.order.delivery_frequency).toBe('biweekly');
+  });
+
+  it('persists eggs_per_delivery for Custom plans with mixed box sizes', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Custom',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Friday',
+      boxes12: 1,
+      boxes18: 1,
+      durationWeeks: 4
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.order.eggs_per_week).toBe(30);
+    expect(res.body.order.eggs_per_delivery).toBe(60); // 30 × 2
+  });
+
+  it('persists eggs_per_delivery for fixed plans', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Family',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Thursday'
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.order.eggs_per_delivery).toBe(36); // 18 × 2
+    expect(res.body.order.delivery_frequency).toBe('biweekly');
+  });
+});
+
+// ── Plan-config exposes biweekly metadata ─────────────────────────────────────
+
+describe('GET /api/plan-config bi-weekly fields', () => {
+  it('every default plan has delivery_frequency=biweekly and eggs_per_delivery = eggs_per_week × 2', async () => {
+    const res = await agent.get('/api/plan-config');
+    expect(res.status).toBe(200);
+    expect(res.body.plans.length).toBeGreaterThan(0);
+    for (const plan of res.body.plans) {
+      expect(plan.delivery_frequency).toBe('biweekly');
+      expect(plan.eggs_per_delivery).toBe(plan.eggs_per_week * 2);
+    }
+  });
+});
+
