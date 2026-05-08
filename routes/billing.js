@@ -42,6 +42,12 @@ function nextBillingDate() {
 }
 
 function normalizePlanName(body) {
+  if (body.planName && body.plan_id) {
+    const mappedName = PLAN_ID_TO_NAME[String(body.plan_id).trim()];
+    if (mappedName && mappedName !== String(body.planName)) {
+      throw Object.assign(new Error('plan_id does not match planName.'), { status: 400 });
+    }
+  }
   if (body.planName) return String(body.planName);
   return PLAN_ID_TO_NAME[String(body.plan_id || '').trim()] || '';
 }
@@ -209,8 +215,9 @@ router.get('/billing-portal', requireAuth, async (req, res) => {
       return_url: `${baseUrl}/dashboard`
     });
     res.redirect(session.url);
-  } catch (_) {
-    res.status(500).send('Could not open billing portal.');
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'test') console.error('Billing portal error:', err);
+    res.status(500).send('Unable to access billing portal. Please try again or contact support.');
   }
 });
 
@@ -241,6 +248,8 @@ async function webhookHandler(req, res) {
   try {
     if (client && webhookSecret) {
       event = client.webhooks.constructEvent(req.body, req.headers['stripe-signature'], webhookSecret);
+    } else if (process.env.NODE_ENV === 'production') {
+      return res.status(500).send('Webhook secret is not configured.');
     } else {
       event = JSON.parse(Buffer.isBuffer(req.body) ? req.body.toString('utf8') : JSON.stringify(req.body));
     }
