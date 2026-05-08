@@ -129,7 +129,7 @@ router.post('/', requireAuth, async (req, res) => {
       });
     }
 
-    weeks        = MONTHLY_WEEKS;
+    weeks        = null;  // recurring monthly plan — no fixed duration
     eggsPerWeek  = b12 * 12 + b18 * 18;
     const base   = (b12 * PRICE_PER_12_BOX + b18 * PRICE_PER_18_BOX) * MONTHLY_WEEKS;
     const dlvFee = method === 'delivery' ? DELIVERY_FEE_PER_WEEK * MONTHLY_WEEKS : 0;
