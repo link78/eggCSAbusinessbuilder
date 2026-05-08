@@ -2193,7 +2193,7 @@
 
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeSubscribeModal()">Cancel</button>
-      <button class="btn-primary"   onclick="submitSubscription()">Confirm &amp; Subscribe</button>
+      <button class="btn-primary"   onclick="submitSubscription()">Proceed to Checkout</button>
     </div>
   </div>
 </div>
@@ -3500,7 +3500,7 @@
 
     const btn = document.querySelector('#subscribe-modal .btn-primary');
     btn.disabled    = true;
-    btn.textContent = 'Subscribing…';
+    btn.textContent = 'Opening checkout…';
 
     try {
       const body = {
@@ -3517,38 +3517,27 @@
         body.boxType = _pendingBoxType;
       }
 
-      const data = await apiPost('/api/orders', body);
+      body.plan_id = stripeServicePlanId(_pendingPlanName);
+      body.user_id = currentUser && currentUser.id;
+
+      const data = await apiPost('/create-checkout-session', body);
       if (data.error) { showFlash('modal-flash', data.error, 'err'); return; }
-
-      closeSubscribeModal();
-
-      const msg = document.getElementById('plan-selected-msg');
-      const fulfillLabel = method === 'delivery' ? 'local delivery' : `pick-up (${pickupDay}s)`;
-      const flexPlanNames = ['Custom', 'Solo / Couple'];
-      if (flexPlanNames.includes(_pendingPlanName)) {
-        const b12     = data.order.boxes12_per_delivery || 0;
-        const b18     = data.order.boxes18_per_delivery || 0;
-        const boxDesc = [b12 > 0 ? `${b12}×12-egg` : '', b18 > 0 ? `${b18}×18-egg` : ''].filter(Boolean).join(' + ');
-        const durNote = _pendingPlanName === 'Custom' ? ` · ${data.order.duration_weeks} weeks` : '';
-        document.getElementById('plan-msg-text').textContent =
-          `${_pendingPlanName} confirmed — $${data.order.price}` +
-          (_pendingPlanName === 'Custom' ? ' total' : '/month') +
-          ` · ${boxDesc} boxes/delivery${durNote} via ${fulfillLabel}. View your subscription in Settings!`;
-      } else {
-        const boxLabel = _pendingBoxType === 'dozen' ? '1 dozen (12 eggs)' : '18 eggs';
-        document.getElementById('plan-msg-text').textContent =
-          _pendingPlanName + ' plan confirmed — ' +
-          formatCurrency(data.order.price) + '/month · ' + boxLabel + '/delivery via ' + fulfillLabel +
-          '. View your subscription in Settings!';
-      }
-      msg.style.display = 'block';
-      msg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      if (!data.url) { showFlash('modal-flash', 'Checkout did not return a redirect URL.', 'err'); return; }
+      window.location.href = data.url;
     } catch (e) {
-      showFlash('modal-flash', 'Failed to subscribe. Please try again.', 'err');
+      showFlash('modal-flash', 'Failed to start checkout. Please try again.', 'err');
     } finally {
       btn.disabled    = false;
-      btn.textContent = 'Confirm & Subscribe';
+      btn.textContent = 'Proceed to Checkout';
     }
+  }
+
+  function stripeServicePlanId(planName) {
+    if (planName === 'Small Family') return 'small_family';
+    if (planName === 'Family') return 'family';
+    if (planName === 'Solo / Couple') return 'solo_couple';
+    if (planName === 'Custom') return 'custom';
+    return '';
   }
 
   document.getElementById('subscribe-modal').addEventListener('click', function(e) {
@@ -4105,12 +4094,22 @@ async function cancelOrder(id) {
 
   function renderPortalBilling() {
     const container = document.getElementById('portal-billing-list');
+    const billingActions = `<div class="portal-billing-row" style="align-items:center;">
+      <div>
+        <span class="portal-billing-month">Stripe Billing</span>
+        <div style="font-size:.82rem;color:#777;margin-top:.2rem;">Update payment methods, view invoices, or manage your subscription securely in Stripe.</div>
+      </div>
+      <span style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end;">
+        <button class="btn-secondary" onclick="openBillingPortal()" style="margin-left:0;">Add Payment Method</button>
+        <button class="btn-primary" onclick="openBillingPortal()">Manage Billing</button>
+      </span>
+    </div>`;
     if (!_portalOrders || _portalOrders.length === 0) {
-      container.innerHTML = '<div class="portal-no-sub">No billing history found.</div>';
+      container.innerHTML = billingActions + '<div class="portal-no-sub">No billing history found.</div>';
       return;
     }
     const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    container.innerHTML = _portalOrders.map(o => {
+    container.innerHTML = billingActions + _portalOrders.map(o => {
       const d = new Date(o.created_at);
       const monthLabel = MONTHS[d.getMonth()] + ' ' + d.getFullYear();
       const statusCls  = o.status === 'active' ? 'status-active' : 'status-cancelled';
@@ -4123,6 +4122,10 @@ async function cancelOrder(id) {
         <span class="portal-billing-amount">$${o.price}${o.duration_weeks ? ' total' : '/mo'}</span>
       </div>`;
     }).join('');
+  }
+
+  function openBillingPortal() {
+    window.location.href = '/billing-portal';
   }
 
   function renderPortalCancel() {
