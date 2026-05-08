@@ -1049,7 +1049,7 @@
 
       <!-- Price preview -->
       <div class="price-preview">
-        💵 Estimated total: <strong id="m-price">$—</strong><span id="m-price-note"></span><span id="m-price-boxes"></span>
+        💵 Estimated total: <strong id="m-price">$—</strong><span id="m-price-note"></span><span id="m-price-boxes"></span><span id="m-price-delivery"></span>
       </div>
 
       <!-- Account -->
@@ -1332,10 +1332,12 @@
       boxes = b12 + b18;
     }
 
-    const boxLabel = boxes > 0 ? ` · ${boxes} box${boxes !== 1 ? 'es' : ''}/delivery` : '';
-    document.getElementById('m-price').textContent       = isNaN(price) || price <= 0 ? '—' : `$${price}`;
-    document.getElementById('m-price-note').textContent  = isNaN(price) || price <= 0 ? ''  : note;
-    document.getElementById('m-price-boxes').textContent = isNaN(price) || price <= 0 ? ''  : boxLabel;
+    const boxLabel      = boxes > 0 ? ` · ${boxes} box${boxes !== 1 ? 'es' : ''}/delivery` : '';
+    const deliveryLabel = isDelivery ? ' · +$2/bi-weekly delivery' : '';
+    document.getElementById('m-price').textContent        = isNaN(price) || price <= 0 ? '—' : `$${price}`;
+    document.getElementById('m-price-note').textContent   = isNaN(price) || price <= 0 ? ''  : note;
+    document.getElementById('m-price-boxes').textContent  = isNaN(price) || price <= 0 ? ''  : boxLabel;
+    document.getElementById('m-price-delivery').textContent = isNaN(price) || price <= 0 ? '' : deliveryLabel;
   }
 
   /* ── Flash ──────────────────────────────────────────────── */
