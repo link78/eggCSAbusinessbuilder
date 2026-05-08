@@ -1,12 +1,17 @@
 const { Pool } = require('pg');
 
+const connectionString = process.env.DATABASE_URL;
+const useSsl = process.env.NODE_ENV === 'test' || /localhost|127\.0\.0\.1/.test(connectionString || '')
+  ? false
+  : true;
+
 // Requires DATABASE_URL env var pointing at your Neon PostgreSQL host.
 // Neon uses a CA-signed certificate, so standard TLS verification applies.
 // The connection string should include sslmode=require (Neon provides this
 // by default in its connection strings).
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: true,
+  connectionString,
+  ssl: useSsl,
   family: 4,          // force IPv4; prevents ENETUNREACH on IPv6-only hosts
   max: 10,
   idleTimeoutMillis: 30000,
