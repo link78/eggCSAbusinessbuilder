@@ -111,6 +111,12 @@ app.get('/api/about-content', apiLimiter, async (req, res) => {
 
 // ── Static Files ─────────────────────────────────────────────────────────────
 
+// Serve uploaded user files (e.g. farm-update images) from /uploads/*
+app.use('/uploads', apiLimiter, express.static(path.join(__dirname, 'uploads'), {
+  index: false,
+  dotfiles: 'ignore'
+}));
+
 app.use(apiLimiter, express.static(path.join(__dirname)));
 
 // Farm dashboard — served to all; client-side auth gate handles login/access control

@@ -1574,7 +1574,17 @@
         feed.innerHTML = '<div class="update-card" style="color:var(--muted);font-size:.9rem;padding:1rem 0;">No updates yet — check back soon!</div>';
         return;
       }
-      feed.innerHTML = updates.map(u => `
+      feed.innerHTML = updates.map(u => {
+        const imgs = Array.isArray(u.image_urls) ? u.image_urls : [];
+        let imagesHtml = '';
+        if (imgs.length === 1) {
+          imagesHtml = `<img src="${escHtmlFU(imgs[0])}" alt="${escHtmlFU(u.photo_caption || 'Farm photo')}" style="max-width:100%;border-radius:8px;margin-bottom:.6rem;display:block;" loading="lazy" onerror="this.style.display='none'">`;
+        } else if (imgs.length > 1) {
+          imagesHtml = `<div class="update-images-strip" style="display:flex;gap:.5rem;overflow-x:auto;margin-bottom:.6rem;padding-bottom:.3rem;scroll-snap-type:x mandatory;">
+            ${imgs.map(src => `<img src="${escHtmlFU(src)}" alt="${escHtmlFU(u.photo_caption || 'Farm photo')}" style="height:200px;width:auto;border-radius:8px;flex:0 0 auto;scroll-snap-align:start;" loading="lazy" onerror="this.style.display='none'">`).join('')}
+          </div>`;
+        }
+        return `
         <div class="update-card">
           <div class="update-avatar">🌿</div>
           <div class="update-body">
@@ -1582,11 +1592,13 @@
               <span class="update-author">${escHtmlFU(u.author)}</span>
               <span class="update-date">${escHtmlFU(u.date_label)}</span>
             </div>
+            ${imagesHtml}
             <p class="update-text">${renderBoldText(u.body)}</p>
             ${u.photo_url ? `<img src="${escHtmlFU(u.photo_url)}" alt="${escHtmlFU(u.photo_caption || 'Farm photo')}" style="max-width:100%;border-radius:8px;margin-top:.6rem;display:block;" loading="lazy" onerror="this.style.display='none'">` : ''}
             ${u.photo_caption ? `<div class="update-photo">📸 ${escHtmlFU(u.photo_caption)}</div>` : ''}
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     } catch (_) {
       if (feed) feed.innerHTML = '<div class="update-card" style="color:var(--muted);font-size:.9rem;padding:1rem 0;">Unable to load updates right now.</div>';
     }
