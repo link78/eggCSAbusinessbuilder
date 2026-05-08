@@ -184,4 +184,31 @@ describe('PUT /api/admin/plan-config/:id', () => {
     expect(plan).toBeTruthy();
     expect(plan.display_name).toBe('Small Family');
   });
+
+  it('updates delivery_frequency and recomputes eggs_per_delivery', async () => {
+    // Set eggs_per_week to 14 with biweekly frequency → eggs_per_delivery = 28
+    let res = await adminAgent.put(`/api/admin/plan-config/${planId}`, {
+      eggs_per_week: 14,
+      delivery_frequency: 'biweekly'
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.plan.delivery_frequency).toBe('biweekly');
+    expect(res.body.plan.eggs_per_delivery).toBe(28);
+
+    // Switch to weekly → eggs_per_delivery should now equal eggs_per_week
+    res = await adminAgent.put(`/api/admin/plan-config/${planId}`, {
+      delivery_frequency: 'weekly'
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.plan.delivery_frequency).toBe('weekly');
+    expect(res.body.plan.eggs_per_delivery).toBe(14);
+  });
+
+  it('rejects an invalid delivery_frequency value', async () => {
+    const res = await adminAgent.put(`/api/admin/plan-config/${planId}`, {
+      delivery_frequency: 'monthly'
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/delivery_frequency/);
+  });
 });
