@@ -605,6 +605,23 @@
     .update-item-meta { font-size: .78rem; color: #888; margin-bottom: .3rem; }
     .update-item-text { font-size: .92rem; color: #2d2d2d; word-break: break-word; }
     .update-item-caption { font-size: .8rem; color: #888; margin-top: .2rem; font-style: italic; }
+    .update-item-photo { max-width: 100%; border-radius: 8px; margin-top: .5rem; display: block; }
+    .update-item-actions { display: flex; gap: .4rem; flex-shrink: 0; }
+    .btn-content-edit {
+      background: #e8f0fe; color: #1a56db; border: none; border-radius: 6px;
+      padding: .35rem .65rem; font-size: .8rem; cursor: pointer;
+    }
+    .btn-content-edit:hover { background: #c7d7fa; }
+    .update-edit-form { margin-top: .8rem; padding-top: .8rem; border-top: 1px solid #f0e8d8; }
+    .update-edit-form .content-field { margin-bottom: .6rem; }
+    .update-edit-form .content-field label { font-size: .8rem; }
+    .update-edit-form-actions { display: flex; gap: .5rem; }
+    .rich-toolbar { display: flex; gap: .3rem; margin-bottom: .35rem; }
+    .btn-rich-bold {
+      background: #f0e8d8; border: 1px solid #d0c8b8; border-radius: 5px;
+      padding: .2rem .55rem; font-size: .9rem; cursor: pointer; line-height: 1.4;
+    }
+    .btn-rich-bold:hover { background: #e0d0b8; }
     .about-section-block { border: 1.5px solid #e0d8c8; border-radius: 10px; padding: 1.1rem 1.2rem; margin-bottom: 1rem; }
     .about-section-block h4 { font-size: .92rem; font-weight: 700; color: #c45203; margin-bottom: .7rem; }
     .about-inline-group { display: flex; gap: .6rem; align-items: center; margin-bottom: .5rem; }
@@ -1469,11 +1486,18 @@
     <div id="farm-updates-flash" class="content-flash"></div>
     <div class="content-field">
       <label for="fu-body">Message *</label>
-      <textarea id="fu-body" rows="4" placeholder="Share what's happening at the farm…" maxlength="2000"></textarea>
+      <div class="rich-toolbar">
+        <button type="button" class="btn-rich-bold" onclick="applyBold('fu-body')" title="Bold selected text"><b>B</b></button>
+      </div>
+      <textarea id="fu-body" rows="5" placeholder="Share what's happening at the farm…" maxlength="5000"></textarea>
     </div>
     <div class="content-field">
       <label for="fu-date">Date label (leave blank for today)</label>
       <input id="fu-date" type="text" placeholder="e.g. May 5, 2026">
+    </div>
+    <div class="content-field">
+      <label for="fu-photo-url">Photo URL (optional)</label>
+      <input id="fu-photo-url" type="url" placeholder="https://example.com/photo.jpg">
     </div>
     <div class="content-field">
       <label for="fu-caption">Photo caption (optional)</label>
@@ -1502,7 +1526,14 @@
     <h3>Our Story</h3>
     <div class="content-field">
       <label for="ap-story-text">Story text</label>
-      <textarea id="ap-story-text" rows="5" maxlength="2000"></textarea>
+      <div class="rich-toolbar">
+        <button type="button" class="btn-rich-bold" onclick="applyBold('ap-story-text')" title="Bold selected text"><b>B</b></button>
+      </div>
+      <textarea id="ap-story-text" rows="5" maxlength="5000"></textarea>
+    </div>
+    <div class="content-field">
+      <label for="ap-story-photo-url">Story photo URL (optional)</label>
+      <input id="ap-story-photo-url" type="url" placeholder="https://example.com/farm-photo.jpg">
     </div>
     <button class="btn-content-save" onclick="adminSaveAboutSection('our_story')">Save</button>
   </div>
@@ -4237,6 +4268,22 @@ async function cancelOrder(id) {
     if (type === 'ok') setTimeout(() => { el.className = 'content-flash'; el.textContent = ''; }, 4000);
   }
 
+  // Wraps the selected text in a textarea with **bold** markers
+  function applyBold(textareaId) {
+    const ta = document.getElementById(textareaId);
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end   = ta.selectionEnd;
+    if (start === end) return; // nothing selected
+    const selected = ta.value.slice(start, end);
+    const before   = ta.value.slice(0, start);
+    const after    = ta.value.slice(end);
+    ta.value = before + '**' + selected + '**' + after;
+    ta.selectionStart = start;
+    ta.selectionEnd   = end + 4;
+    ta.focus();
+  }
+
   async function loadAdminFarmUpdates() {
     const list = document.getElementById('fu-list');
     if (!list) return;
@@ -4253,19 +4300,53 @@ async function cancelOrder(id) {
           <div class="update-item-body">
             <div class="update-item-meta">${escHtml(u.author)} · ${escHtml(u.date_label)}</div>
             <div class="update-item-text">${escHtml(u.body)}</div>
+            ${u.photo_url ? `<img class="update-item-photo" src="${escHtml(u.photo_url)}" alt="Farm update photo" loading="lazy" onerror="this.style.display='none'">` : ''}
             ${u.photo_caption ? `<div class="update-item-caption">📸 ${escHtml(u.photo_caption)}</div>` : ''}
+            <div class="update-edit-form" id="fu-edit-${u.id}" style="display:none;">
+              <div class="content-field">
+                <label>Message</label>
+                <div class="rich-toolbar"><button type="button" class="btn-rich-bold" onclick="applyBold('fu-edit-body-${u.id}')" title="Bold"><b>B</b></button></div>
+                <textarea id="fu-edit-body-${u.id}" rows="4" maxlength="5000">${escHtml(u.body)}</textarea>
+              </div>
+              <div class="content-field">
+                <label>Date label</label>
+                <input id="fu-edit-date-${u.id}" type="text" value="${escHtml(u.date_label)}">
+              </div>
+              <div class="content-field">
+                <label>Photo URL</label>
+                <input id="fu-edit-photo-${u.id}" type="url" value="${escHtml(u.photo_url || '')}">
+              </div>
+              <div class="content-field">
+                <label>Photo caption</label>
+                <input id="fu-edit-caption-${u.id}" type="text" value="${escHtml(u.photo_caption || '')}" maxlength="200">
+              </div>
+              <div class="update-edit-form-actions">
+                <button class="btn-content-save" onclick="adminSaveFarmUpdate(${u.id})">💾 Save</button>
+                <button class="btn-content-delete" onclick="toggleEditFarmUpdate(${u.id})">Cancel</button>
+              </div>
+            </div>
           </div>
-          <button class="btn-content-delete" onclick="adminDeleteFarmUpdate(${u.id})">🗑 Delete</button>
+          <div class="update-item-actions">
+            <button class="btn-content-edit" onclick="toggleEditFarmUpdate(${u.id})">✏️ Edit</button>
+            <button class="btn-content-delete" onclick="adminDeleteFarmUpdate(${u.id})">🗑 Delete</button>
+          </div>
         </div>`).join('');
     } catch (_) {
       list.innerHTML = '<div style="color:#c0392b;font-size:.9rem;">Failed to load updates.</div>';
     }
   }
 
+  function toggleEditFarmUpdate(id) {
+    const form = document.getElementById(`fu-edit-${id}`);
+    if (!form) return;
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  }
+
   async function adminPostFarmUpdate() {
-    const body    = (document.getElementById('fu-body')?.value || '').trim();
-    const date    = (document.getElementById('fu-date')?.value || '').trim();
-    const caption = (document.getElementById('fu-caption')?.value || '').trim();
+    const body     = (document.getElementById('fu-body')?.value || '').trim();
+    const date     = (document.getElementById('fu-date')?.value || '').trim();
+    const photoUrl = (document.getElementById('fu-photo-url')?.value || '').trim();
+    const caption  = (document.getElementById('fu-caption')?.value || '').trim();
     if (!body) { showContentFlash('farm-updates-flash', 'Message is required.', 'err'); return; }
 
     try {
@@ -4273,17 +4354,40 @@ async function cancelOrder(id) {
       const res = await fetch('/api/admin/farm-updates', {
         method: 'POST', credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
-        body: JSON.stringify({ body, date_label: date || undefined, photo_caption: caption || undefined })
+        body: JSON.stringify({ body, date_label: date || undefined, photo_url: photoUrl || undefined, photo_caption: caption || undefined })
       });
       const data = await res.json();
       if (!res.ok) { showContentFlash('farm-updates-flash', data.error || 'Error posting update.', 'err'); return; }
       showContentFlash('farm-updates-flash', 'Update posted!', 'ok');
-      document.getElementById('fu-body').value    = '';
-      document.getElementById('fu-date').value    = '';
-      document.getElementById('fu-caption').value = '';
+      document.getElementById('fu-body').value      = '';
+      document.getElementById('fu-date').value      = '';
+      document.getElementById('fu-photo-url').value = '';
+      document.getElementById('fu-caption').value   = '';
       loadAdminFarmUpdates();
     } catch (_) {
       showContentFlash('farm-updates-flash', 'Network error. Please try again.', 'err');
+    }
+  }
+
+  async function adminSaveFarmUpdate(id) {
+    const body     = (document.getElementById(`fu-edit-body-${id}`)?.value || '').trim();
+    const date     = (document.getElementById(`fu-edit-date-${id}`)?.value || '').trim();
+    const photoUrl = (document.getElementById(`fu-edit-photo-${id}`)?.value || '').trim();
+    const caption  = (document.getElementById(`fu-edit-caption-${id}`)?.value || '').trim();
+    if (!body) { showContentFlash('farm-updates-flash', 'Message cannot be empty.', 'err'); return; }
+    try {
+      const token = await getCsrfToken();
+      const res = await fetch(`/api/admin/farm-updates/${id}`, {
+        method: 'PUT', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+        body: JSON.stringify({ body, date_label: date || undefined, photo_url: photoUrl || '', photo_caption: caption || '' })
+      });
+      const data = await res.json();
+      if (!res.ok) { showContentFlash('farm-updates-flash', data.error || 'Error saving update.', 'err'); return; }
+      showContentFlash('farm-updates-flash', 'Update saved!', 'ok');
+      loadAdminFarmUpdates();
+    } catch (_) {
+      showContentFlash('farm-updates-flash', 'Network error.', 'err');
     }
   }
 
@@ -4324,6 +4428,8 @@ async function cancelOrder(id) {
   function renderAboutOurStory() {
     const el = document.getElementById('ap-story-text');
     if (el) el.value = (_aboutSections.our_story || {}).text || '';
+    const photoEl = document.getElementById('ap-story-photo-url');
+    if (photoEl) photoEl.value = (_aboutSections.our_story || {}).photo_url || '';
   }
 
   function renderAboutHensCards() {
@@ -4386,16 +4492,17 @@ async function cancelOrder(id) {
     if (!container) return;
     const members = ((_aboutSections.flock || {}).members) || [];
     container.innerHTML = members.map((m, i) => `
-      <div class="about-inline-group">
-        <input data-flock-icon="${i}" value="${escHtml(m.icon || '🐔')}" style="flex:0 0 60px;">
-        <input data-flock-name="${i}" value="${escHtml(m.name || '')}" placeholder="Name">
+      <div class="about-inline-group" style="flex-wrap:wrap;gap:.4rem .6rem;margin-bottom:.8rem;">
+        <input data-flock-icon="${i}" value="${escHtml(m.icon || '🐔')}" style="flex:0 0 60px;" placeholder="Icon">
+        <input data-flock-name="${i}" value="${escHtml(m.name || '')}" placeholder="Name" style="flex:1;min-width:100px;">
+        <input data-flock-photo="${i}" value="${escHtml(m.photo_url || '')}" placeholder="Photo URL (optional)" style="flex:2;min-width:180px;">
         <button class="btn-about-remove-row" onclick="removeFlockMember(${i})">✕</button>
       </div>`).join('');
   }
 
   function addFlockMember() {
     const members = ((_aboutSections.flock || {}).members) || [];
-    members.push({ icon: '🐔', name: '' });
+    members.push({ icon: '🐔', name: '', photo_url: '' });
     if (!_aboutSections.flock) _aboutSections.flock = {};
     _aboutSections.flock.members = members;
     renderAboutFlockMembers();
@@ -4411,7 +4518,10 @@ async function cancelOrder(id) {
   async function adminSaveAboutSection(key) {
     let content = {};
     if (key === 'our_story') {
-      content = { text: (document.getElementById('ap-story-text')?.value || '').trim() };
+      content = {
+        text:      (document.getElementById('ap-story-text')?.value || '').trim(),
+        photo_url: (document.getElementById('ap-story-photo-url')?.value || '').trim() || undefined
+      };
     } else if (key === 'hens_care') {
       const cards = [];
       document.querySelectorAll('[data-hens-icon]').forEach(el => {
@@ -4435,8 +4545,9 @@ async function cancelOrder(id) {
       document.querySelectorAll('[data-flock-name]').forEach(el => {
         const i = el.dataset.flockName;
         members.push({
-          icon: (document.querySelector(`[data-flock-icon="${i}"]`)?.value || '🐔').trim(),
-          name: el.value.trim()
+          icon:      (document.querySelector(`[data-flock-icon="${i}"]`)?.value || '🐔').trim(),
+          name:      el.value.trim(),
+          photo_url: (document.querySelector(`[data-flock-photo="${i}"]`)?.value || '').trim() || undefined
         });
       });
       content = { heading: 'Meet the Flock', members };

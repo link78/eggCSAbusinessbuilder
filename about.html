@@ -371,7 +371,7 @@
         Today, we remain committed to careful farming, healthy animals, and relationships built on trust.
       </p>
     </div>
-    <div class="story-photo">📷 Family-on-the-farm photo placeholder</div>
+    <div class="story-photo" id="about-story-photo">📷 Family-on-the-farm photo placeholder</div>
   </div>
 </section>
 
@@ -478,6 +478,11 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  // Converts **bold** markdown to <b> tags after HTML-escaping
+  function renderBoldText(s) {
+    return escH(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  }
+
   (async function loadAboutContent() {
     try {
       const r = await fetch('/api/about-content');
@@ -486,9 +491,15 @@
       const s = data.sections || {};
 
       // Our Story
-      if (s.our_story && s.our_story.text) {
+      if (s.our_story) {
         const el = document.getElementById('about-our-story-text');
-        if (el) el.innerHTML = `<p class="lead">${escH(s.our_story.text)}</p>`;
+        if (el && s.our_story.text) el.innerHTML = `<p class="lead">${renderBoldText(s.our_story.text)}</p>`;
+        if (s.our_story.photo_url) {
+          const photoEl = document.getElementById('about-story-photo');
+          if (photoEl) {
+            photoEl.innerHTML = `<img src="${escH(s.our_story.photo_url)}" alt="Farm story photo" style="width:100%;height:100%;object-fit:cover;border-radius:14px;" loading="lazy" onerror="this.parentElement.innerHTML='📷 Farm photo'">`;
+          }
+        }
       }
 
       // Hens Care
@@ -518,7 +529,10 @@
         if (grid) {
           grid.innerHTML = s.flock.members.map(m => `
             <article class="flock-card">
-              <div class="flock-photo">${escH(m.icon || '🐔')} Hen photo</div>
+              <div class="flock-photo">${m.photo_url
+                ? `<img src="${escH(m.photo_url)}" alt="${escH(m.name || 'Hen')}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.parentElement.innerHTML='${escH(m.icon || '🐔')} Hen photo'">`
+                : `${escH(m.icon || '🐔')} Hen photo`
+              }</div>
               <div class="flock-name">${escH(m.name || '')}</div>
             </article>`).join('');
         }

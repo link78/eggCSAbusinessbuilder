@@ -162,7 +162,7 @@ router.put('/plan-config/:id', requireAdmin, async (req, res) => {
 
 // POST /api/admin/farm-updates — add a new farm update
 router.post('/farm-updates', requireAdmin, async (req, res) => {
-  const { body, date_label, author, photo_caption } = req.body || {};
+  const { body, date_label, author, photo_caption, photo_url } = req.body || {};
   if (!body || !String(body).trim()) {
     return res.status(400).json({ error: 'body is required.' });
   }
@@ -172,12 +172,35 @@ router.post('/farm-updates', requireAdmin, async (req, res) => {
     : now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const authorStr = author ? String(author).trim() : 'Sakinah Ridge Farm';
   const caption   = photo_caption ? String(photo_caption).trim() : null;
+  const imgUrl    = photo_url    ? String(photo_url).trim()    : null;
 
   const row = (await db.query(
-    'INSERT INTO farm_updates (author, date_label, body, photo_caption) VALUES ($1, $2, $3, $4) RETURNING *',
-    [authorStr, label, String(body).trim(), caption]
+    'INSERT INTO farm_updates (author, date_label, body, photo_caption, photo_url) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+    [authorStr, label, String(body).trim(), caption, imgUrl]
   )).rows[0];
   res.status(201).json({ update: row });
+});
+
+// PUT /api/admin/farm-updates/:id — edit an existing farm update
+router.put('/farm-updates/:id', requireAdmin, async (req, res) => {
+  const existing = (await db.query('SELECT * FROM farm_updates WHERE id = $1', [req.params.id])).rows[0];
+  if (!existing) return res.status(404).json({ error: 'Update not found.' });
+
+  const { body, date_label, author, photo_caption, photo_url } = req.body || {};
+
+  const newBody    = body          !== undefined ? String(body).trim()          : existing.body;
+  const newLabel   = date_label    !== undefined ? String(date_label).trim()    : existing.date_label;
+  const newAuthor  = author        !== undefined ? String(author).trim()        : existing.author;
+  const newCaption = photo_caption !== undefined ? (String(photo_caption).trim() || null) : existing.photo_caption;
+  const newImgUrl  = photo_url     !== undefined ? (String(photo_url).trim()    || null) : existing.photo_url;
+
+  if (!newBody) return res.status(400).json({ error: 'body cannot be empty.' });
+
+  const row = (await db.query(
+    'UPDATE farm_updates SET body = $1, date_label = $2, author = $3, photo_caption = $4, photo_url = $5 WHERE id = $6 RETURNING *',
+    [newBody, newLabel, newAuthor || 'Sakinah Ridge Farm', newCaption, newImgUrl, req.params.id]
+  )).rows[0];
+  res.json({ update: row });
 });
 
 // DELETE /api/admin/farm-updates/:id — remove a farm update

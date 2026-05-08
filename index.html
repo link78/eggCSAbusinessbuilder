@@ -1558,6 +1558,11 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  // Converts **bold** markdown to <b> tags after HTML-escaping
+  function renderBoldText(s) {
+    return escHtmlFU(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  }
+
   async function loadFarmUpdates() {
     const feed = document.getElementById('updates-feed');
     if (!feed) return;
@@ -1577,7 +1582,8 @@
               <span class="update-author">${escHtmlFU(u.author)}</span>
               <span class="update-date">${escHtmlFU(u.date_label)}</span>
             </div>
-            <p class="update-text">${escHtmlFU(u.body)}</p>
+            <p class="update-text">${renderBoldText(u.body)}</p>
+            ${u.photo_url ? `<img src="${escHtmlFU(u.photo_url)}" alt="${escHtmlFU(u.photo_caption || 'Farm photo')}" style="max-width:100%;border-radius:8px;margin-top:.6rem;display:block;" loading="lazy" onerror="this.style.display='none'">` : ''}
             ${u.photo_caption ? `<div class="update-photo">📸 ${escHtmlFU(u.photo_caption)}</div>` : ''}
           </div>
         </div>`).join('');
