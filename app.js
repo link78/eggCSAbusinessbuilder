@@ -11,6 +11,7 @@ const reviewsRoutes   = require('./routes/reviews');
 const checklistRoutes = require('./routes/checklist');
 const adminRoutes     = require('./routes/admin');
 const planConfigRoutes = require('./routes/planConfig');
+const billingRoutes    = require('./routes/billing');
 
 const app        = express();
 const IS_PROD    = process.env.NODE_ENV === 'production';
@@ -42,6 +43,8 @@ const apiLimiter = rateLimit({
 });
 
 // ── Middleware ───────────────────────────────────────────────────────────────
+
+app.post('/webhook', express.raw({ type: 'application/json' }), billingRoutes.webhookHandler);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -89,6 +92,7 @@ app.use('/api/reviews',     apiLimiter,   reviewsRoutes);
 app.use('/api/checklist',   apiLimiter,   checklistRoutes);
 app.use('/api/admin',       apiLimiter,   adminRoutes);
 app.use('/api/plan-config', apiLimiter,   planConfigRoutes);
+app.use('/',                apiLimiter,   billingRoutes.router);
 
 // ── Public content endpoints ──────────────────────────────────────────────────
 

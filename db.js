@@ -31,6 +31,7 @@ async function init() {
       email         TEXT    UNIQUE NOT NULL,
       password_hash TEXT    NOT NULL,
       role          TEXT    NOT NULL DEFAULT 'user',
+      stripe_customer_id TEXT,
       avatar_url    TEXT,
       created_at    TIMESTAMPTZ DEFAULT NOW()
     );
@@ -50,6 +51,8 @@ async function init() {
       duration_weeks       INTEGER,
       boxes12_per_delivery INTEGER,
       boxes18_per_delivery INTEGER,
+      stripe_subscription_id TEXT,
+      stripe_price_id      TEXT,
       created_at           TIMESTAMPTZ DEFAULT NOW()
     );
 
@@ -96,6 +99,7 @@ async function init() {
   // ── Schema migrations ────────────────────────────────────────────────────────
   // Add notes column to users if it doesn't exist yet (idempotent)
   await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS notes TEXT NOT NULL DEFAULT ''`);
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT`);
 
   // Farm updates posted by admin
   await query(`
@@ -123,6 +127,8 @@ async function init() {
   // Both are added idempotently so existing databases migrate cleanly.
   await query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS delivery_frequency TEXT NOT NULL DEFAULT 'biweekly'`);
   await query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS eggs_per_delivery INTEGER`);
+  await query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT`);
+  await query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS stripe_price_id TEXT`);
   // Backfill eggs_per_delivery for existing orders that predate the column.
   await query(`UPDATE orders SET eggs_per_delivery = eggs_per_week * 2 WHERE eggs_per_delivery IS NULL`);
 
@@ -260,4 +266,3 @@ async function close() {
 const ready = init();
 
 module.exports = { query, pool, reset, close, ready };
-

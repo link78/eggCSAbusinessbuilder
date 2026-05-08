@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt  = require('bcryptjs');
 const db      = require('../db');
+const stripe  = require('../stripe');
 
 const router = express.Router();
 
@@ -30,11 +31,14 @@ router.post('/register', async (req, res) => {
 
   try {
     const hash = await bcrypt.hash(password, 12);
+    const cleanName = name.trim();
     const insertResult = await db.query(
-      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id',
-      [name.trim(), emailLower, hash]
+      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, stripe_customer_id',
+      [cleanName, emailLower, hash]
     );
-    const userId = insertResult.rows[0].id;
+    const insertedUser = insertResult.rows[0];
+    const userId = insertedUser.id;
+    await stripe.ensureStripeCustomerForUser(insertedUser);
 
     const user = (await db.query(
       'SELECT id, name, email, role, avatar_url, created_at FROM users WHERE id = $1',
