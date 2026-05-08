@@ -559,6 +559,65 @@
     .auth-links a { font-size: .84rem; color: #e85d04; font-weight: 600; text-decoration: none; }
     .auth-links a:hover { text-decoration: underline; }
 
+    /* ── Admin Content Panels (Farm Updates / About Page) ── */
+    .content-form-card {
+      background: #fff; border-radius: 12px; padding: 1.4rem 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07); margin-bottom: 1.4rem;
+    }
+    .content-form-card h3 { font-size: 1.05rem; font-weight: 700; color: #c45203; margin-bottom: 1rem; }
+    .content-field { margin-bottom: .9rem; }
+    .content-field label { display: block; font-size: .84rem; font-weight: 600; margin-bottom: .3rem; }
+    .content-field input,
+    .content-field textarea,
+    .content-field select {
+      width: 100%; padding: .55rem .75rem;
+      border: 1.5px solid #e0d8c8; border-radius: 8px;
+      font-size: .92rem; font-family: inherit; background: #fdf8f0;
+      transition: border-color .15s;
+    }
+    .content-field input:focus,
+    .content-field textarea:focus { outline: none; border-color: #e85d04; background: #fff; }
+    .content-field textarea { resize: vertical; min-height: 80px; }
+    .btn-content-save {
+      background: #3a6b35; color: #fff; border: none; border-radius: 8px;
+      padding: .6rem 1.4rem; font-size: .92rem; font-weight: 700;
+      cursor: pointer; transition: background .15s;
+    }
+    .btn-content-save:hover { background: #2a4f26; }
+    .btn-content-delete {
+      background: #fde8e8; color: #c0392b; border: none; border-radius: 6px;
+      padding: .28rem .65rem; font-size: .78rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap; transition: background .15s;
+    }
+    .btn-content-delete:hover { background: #f5c6c6; }
+    .content-flash {
+      margin-bottom: .8rem; padding: .55rem .9rem;
+      border-radius: 8px; font-size: .88rem; font-weight: 600; display: none;
+    }
+    .content-flash.ok  { background: #d4edda; color: #155724; display: block; }
+    .content-flash.err { background: #f8d7da; color: #721c24; display: block; }
+    .update-item-row {
+      display: flex; align-items: flex-start; gap: .75rem;
+      background: #fff; border-radius: 10px; padding: .9rem 1rem;
+      box-shadow: 0 1px 5px rgba(0,0,0,.05); margin-bottom: .6rem;
+    }
+    .update-item-body { flex: 1; min-width: 0; }
+    .update-item-meta { font-size: .78rem; color: #888; margin-bottom: .3rem; }
+    .update-item-text { font-size: .92rem; color: #2d2d2d; word-break: break-word; }
+    .update-item-caption { font-size: .8rem; color: #888; margin-top: .2rem; font-style: italic; }
+    .about-section-block { border: 1.5px solid #e0d8c8; border-radius: 10px; padding: 1.1rem 1.2rem; margin-bottom: 1rem; }
+    .about-section-block h4 { font-size: .92rem; font-weight: 700; color: #c45203; margin-bottom: .7rem; }
+    .about-inline-group { display: flex; gap: .6rem; align-items: center; margin-bottom: .5rem; }
+    .about-inline-group input { flex: 1; }
+    .btn-about-remove-row {
+      background: #fde8e8; color: #c0392b; border: none; border-radius: 6px;
+      padding: .25rem .6rem; font-size: .8rem; cursor: pointer; flex-shrink: 0;
+    }
+    .btn-about-add-row {
+      background: #f0e8d8; color: #444; border: none; border-radius: 6px;
+      padding: .3rem .8rem; font-size: .82rem; font-weight: 600; cursor: pointer; margin-top: .3rem;
+    }
+
     /* ═══════════════════════════════════════════════════════
        APP LAYOUT
     ═══════════════════════════════════════════════════════ */
@@ -1229,6 +1288,12 @@
         <div class="sidebar-nav-item" id="nav-reviews"     onclick="switchView('reviews')">
           <span class="nav-icon">⭐</span> Reviews
         </div>
+        <div class="sidebar-nav-item" id="nav-farm-updates" onclick="switchView('farm-updates')" style="display:none;">
+          <span class="nav-icon">🌿</span> Farm Updates
+        </div>
+        <div class="sidebar-nav-item" id="nav-about-page"  onclick="switchView('about-page')" style="display:none;">
+          <span class="nav-icon">📝</span> About Page
+        </div>
         <div class="sidebar-nav-item" id="nav-settings"    onclick="switchView('settings')">
           <span class="nav-icon">⚙️</span> Settings
         </div>
@@ -1390,6 +1455,85 @@
           <button class="pickup-export-btn mark-all" onclick="pickupMarkAll()">✅ Mark All Completed</button>
         </div>
       </section>
+
+<!-- ══════════════════════════════════════════
+     ADMIN: FARM UPDATES
+═══════════════════════════════════════════ -->
+<section class="view-panel" id="view-farm-updates">
+  <h2 class="section-title">🌿 Farm Updates</h2>
+  <p class="section-subtitle">Post updates to the Farm Updates section on the public home page.</p>
+
+  <!-- Add new update form -->
+  <div class="content-form-card">
+    <h3>Post a New Update</h3>
+    <div id="farm-updates-flash" class="content-flash"></div>
+    <div class="content-field">
+      <label for="fu-body">Message *</label>
+      <textarea id="fu-body" rows="4" placeholder="Share what's happening at the farm…" maxlength="2000"></textarea>
+    </div>
+    <div class="content-field">
+      <label for="fu-date">Date label (leave blank for today)</label>
+      <input id="fu-date" type="text" placeholder="e.g. May 5, 2026">
+    </div>
+    <div class="content-field">
+      <label for="fu-caption">Photo caption (optional)</label>
+      <input id="fu-caption" type="text" placeholder="e.g. Morning eggs on the collection tray" maxlength="200">
+    </div>
+    <button class="btn-content-save" onclick="adminPostFarmUpdate()">📢 Post Update</button>
+  </div>
+
+  <!-- Existing updates list -->
+  <div class="content-form-card">
+    <h3>Existing Updates</h3>
+    <div id="fu-list"><div style="color:#aaa;font-size:.9rem;">Loading…</div></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     ADMIN: ABOUT PAGE
+═══════════════════════════════════════════ -->
+<section class="view-panel" id="view-about-page">
+  <h2 class="section-title">📝 About Page Content</h2>
+  <p class="section-subtitle">Edit the content displayed on the public About page.</p>
+  <div id="about-page-flash" class="content-flash"></div>
+
+  <!-- Our Story -->
+  <div class="content-form-card">
+    <h3>Our Story</h3>
+    <div class="content-field">
+      <label for="ap-story-text">Story text</label>
+      <textarea id="ap-story-text" rows="5" maxlength="2000"></textarea>
+    </div>
+    <button class="btn-content-save" onclick="adminSaveAboutSection('our_story')">Save</button>
+  </div>
+
+  <!-- How We Raise Our Hens -->
+  <div class="content-form-card">
+    <h3>How We Raise Our Hens</h3>
+    <div id="ap-hens-cards"></div>
+    <button class="btn-about-add-row" onclick="addHensCard()">+ Add card</button>
+    <br><br>
+    <button class="btn-content-save" onclick="adminSaveAboutSection('hens_care')">Save</button>
+  </div>
+
+  <!-- What Makes Our Eggs Different -->
+  <div class="content-form-card">
+    <h3>What Makes Our Eggs Different</h3>
+    <div id="ap-eggs-items"></div>
+    <button class="btn-about-add-row" onclick="addEggItem()">+ Add item</button>
+    <br><br>
+    <button class="btn-content-save" onclick="adminSaveAboutSection('eggs_special')">Save</button>
+  </div>
+
+  <!-- Meet the Flock -->
+  <div class="content-form-card">
+    <h3>Meet the Flock</h3>
+    <div id="ap-flock-members"></div>
+    <button class="btn-about-add-row" onclick="addFlockMember()">+ Add member</button>
+    <br><br>
+    <button class="btn-content-save" onclick="adminSaveAboutSection('flock')">Save</button>
+  </div>
+</section>
 
 <!-- ══════════════════════════════════════════
      CUSTOMER PORTAL – SUBSCRIBER VIEW
@@ -2213,17 +2357,19 @@
      SIDEBAR / VIEW SWITCHING
   ═══════════════════════════════════════════════════════ */
   const VIEW_MAP = {
-    home:       { panelId: 'view-home',       navId: 'nav-home' },
-    calculator: { panelId: 'panel-0',         navId: 'nav-calculator' },
-    plans:      { panelId: 'panel-1',         navId: 'nav-plans' },
-    checklist:  { panelId: 'panel-2',         navId: null },
-    roadmap:    { panelId: 'panel-3',         navId: null },
-    portal:     { panelId: 'view-portal',    navId: 'nav-portal' },
-    reviews:    { panelId: 'panel-4',         navId: 'nav-reviews' },
-    settings:   { panelId: 'panel-5',         navId: 'nav-settings' },
-    customers:  { panelId: 'view-customers',  navId: 'nav-customers' },
-    orders:     { panelId: 'view-orders',     navId: 'nav-orders' },
-    pickup:     { panelId: 'view-pickup',     navId: 'nav-pickup' },
+    home:          { panelId: 'view-home',         navId: 'nav-home' },
+    calculator:    { panelId: 'panel-0',           navId: 'nav-calculator' },
+    plans:         { panelId: 'panel-1',           navId: 'nav-plans' },
+    checklist:     { panelId: 'panel-2',           navId: null },
+    roadmap:       { panelId: 'panel-3',           navId: null },
+    portal:        { panelId: 'view-portal',       navId: 'nav-portal' },
+    reviews:       { panelId: 'panel-4',           navId: 'nav-reviews' },
+    settings:      { panelId: 'panel-5',           navId: 'nav-settings' },
+    customers:     { panelId: 'view-customers',    navId: 'nav-customers' },
+    orders:        { panelId: 'view-orders',       navId: 'nav-orders' },
+    pickup:        { panelId: 'view-pickup',       navId: 'nav-pickup' },
+    'farm-updates':{ panelId: 'view-farm-updates', navId: 'nav-farm-updates' },
+    'about-page':  { panelId: 'view-about-page',  navId: 'nav-about-page' },
   };
 
   function switchView(name) {
@@ -2246,13 +2392,15 @@
     }
 
     // Side-effects
-    if (name === 'portal')    loadPortal();
-    if (name === 'reviews')   loadReviews();
-    if (name === 'settings')  renderSettings();
-    if (name === 'customers') loadViewCustomers();
-    if (name === 'orders')    loadViewOrders();
-    if (name === 'pickup')    loadPickupList();
-    if (name === 'home')      loadDashboardMetrics();
+    if (name === 'portal')         loadPortal();
+    if (name === 'reviews')        loadReviews();
+    if (name === 'settings')       renderSettings();
+    if (name === 'customers')      loadViewCustomers();
+    if (name === 'orders')         loadViewOrders();
+    if (name === 'pickup')         loadPickupList();
+    if (name === 'home')           loadDashboardMetrics();
+    if (name === 'farm-updates')   loadAdminFarmUpdates();
+    if (name === 'about-page')     loadAdminAboutPage();
   }
 
   // Legacy switchTab compatibility — maps old tab indices to views
@@ -3859,7 +4007,8 @@ async function cancelOrder(id) {
     if (portalNav) portalNav.style.display = (currentUser && currentUser.role !== 'admin') ? '' : 'none';
     // Hide admin-only nav items from customers
     const isAdmin = currentUser && currentUser.role === 'admin';
-    ['nav-home', 'nav-calculator', 'nav-customers', 'nav-orders', 'nav-pickup', 'nav-settings'].forEach(id => {
+    ['nav-home', 'nav-calculator', 'nav-customers', 'nav-orders', 'nav-pickup',
+     'nav-farm-updates', 'nav-about-page', 'nav-settings'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = isAdmin ? '' : 'none';
     });
@@ -4074,6 +4223,238 @@ async function cancelOrder(id) {
     } finally {
       btn.disabled = false;
       btn.textContent = 'Save';
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     ADMIN: FARM UPDATES
+  ═══════════════════════════════════════════════════════ */
+  function showContentFlash(elId, msg, type) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.className = 'content-flash ' + (type === 'ok' ? 'ok' : 'err');
+    el.textContent = msg;
+    if (type === 'ok') setTimeout(() => { el.className = 'content-flash'; el.textContent = ''; }, 4000);
+  }
+
+  async function loadAdminFarmUpdates() {
+    const list = document.getElementById('fu-list');
+    if (!list) return;
+    list.innerHTML = '<div style="color:#aaa;font-size:.9rem;">Loading…</div>';
+    try {
+      const data = await apiFetch('/api/farm-updates');
+      const updates = data.updates || [];
+      if (!updates.length) {
+        list.innerHTML = '<div style="color:#aaa;font-size:.9rem;">No updates posted yet.</div>';
+        return;
+      }
+      list.innerHTML = updates.map(u => `
+        <div class="update-item-row" id="fu-row-${u.id}">
+          <div class="update-item-body">
+            <div class="update-item-meta">${escHtml(u.author)} · ${escHtml(u.date_label)}</div>
+            <div class="update-item-text">${escHtml(u.body)}</div>
+            ${u.photo_caption ? `<div class="update-item-caption">📸 ${escHtml(u.photo_caption)}</div>` : ''}
+          </div>
+          <button class="btn-content-delete" onclick="adminDeleteFarmUpdate(${u.id})">🗑 Delete</button>
+        </div>`).join('');
+    } catch (_) {
+      list.innerHTML = '<div style="color:#c0392b;font-size:.9rem;">Failed to load updates.</div>';
+    }
+  }
+
+  async function adminPostFarmUpdate() {
+    const body    = (document.getElementById('fu-body')?.value || '').trim();
+    const date    = (document.getElementById('fu-date')?.value || '').trim();
+    const caption = (document.getElementById('fu-caption')?.value || '').trim();
+    if (!body) { showContentFlash('farm-updates-flash', 'Message is required.', 'err'); return; }
+
+    try {
+      const token = await getCsrfToken();
+      const res = await fetch('/api/admin/farm-updates', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+        body: JSON.stringify({ body, date_label: date || undefined, photo_caption: caption || undefined })
+      });
+      const data = await res.json();
+      if (!res.ok) { showContentFlash('farm-updates-flash', data.error || 'Error posting update.', 'err'); return; }
+      showContentFlash('farm-updates-flash', 'Update posted!', 'ok');
+      document.getElementById('fu-body').value    = '';
+      document.getElementById('fu-date').value    = '';
+      document.getElementById('fu-caption').value = '';
+      loadAdminFarmUpdates();
+    } catch (_) {
+      showContentFlash('farm-updates-flash', 'Network error. Please try again.', 'err');
+    }
+  }
+
+  async function adminDeleteFarmUpdate(id) {
+    if (!confirm('Delete this update?')) return;
+    try {
+      const token = await getCsrfToken();
+      const res = await fetch(`/api/admin/farm-updates/${id}`, {
+        method: 'DELETE', credentials: 'same-origin',
+        headers: { 'X-CSRF-Token': token }
+      });
+      if (!res.ok) { showContentFlash('farm-updates-flash', 'Failed to delete.', 'err'); return; }
+      const row = document.getElementById(`fu-row-${id}`);
+      if (row) row.remove();
+    } catch (_) {
+      showContentFlash('farm-updates-flash', 'Network error.', 'err');
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     ADMIN: ABOUT PAGE
+  ═══════════════════════════════════════════════════════ */
+  let _aboutSections = {};
+
+  async function loadAdminAboutPage() {
+    try {
+      const data = await apiFetch('/api/about-content');
+      _aboutSections = data.sections || {};
+    } catch (_) {
+      _aboutSections = {};
+    }
+    renderAboutOurStory();
+    renderAboutHensCards();
+    renderAboutEggsItems();
+    renderAboutFlockMembers();
+  }
+
+  function renderAboutOurStory() {
+    const el = document.getElementById('ap-story-text');
+    if (el) el.value = (_aboutSections.our_story || {}).text || '';
+  }
+
+  function renderAboutHensCards() {
+    const container = document.getElementById('ap-hens-cards');
+    if (!container) return;
+    const cards = ((_aboutSections.hens_care || {}).cards) || [];
+    container.innerHTML = cards.map((c, i) => `
+      <div class="about-section-block" id="hens-card-${i}">
+        <h4>Card ${i + 1}</h4>
+        <div class="content-field"><label>Icon</label><input data-hens-icon="${i}" value="${escHtml(c.icon || '')}"></div>
+        <div class="content-field"><label>Title</label><input data-hens-title="${i}" value="${escHtml(c.title || '')}"></div>
+        <div class="content-field"><label>Text</label><textarea data-hens-text="${i}" rows="2">${escHtml(c.text || '')}</textarea></div>
+        <button class="btn-about-remove-row" onclick="removeHensCard(${i})">Remove</button>
+      </div>`).join('');
+  }
+
+  function addHensCard() {
+    const cards = ((_aboutSections.hens_care || {}).cards) || [];
+    cards.push({ icon: '🌿', title: '', text: '' });
+    if (!_aboutSections.hens_care) _aboutSections.hens_care = {};
+    _aboutSections.hens_care.cards = cards;
+    renderAboutHensCards();
+  }
+
+  function removeHensCard(idx) {
+    const cards = ((_aboutSections.hens_care || {}).cards) || [];
+    cards.splice(idx, 1);
+    if (_aboutSections.hens_care) _aboutSections.hens_care.cards = cards;
+    renderAboutHensCards();
+  }
+
+  function renderAboutEggsItems() {
+    const container = document.getElementById('ap-eggs-items');
+    if (!container) return;
+    const items = ((_aboutSections.eggs_special || {}).items) || [];
+    container.innerHTML = items.map((item, i) => `
+      <div class="about-inline-group">
+        <input data-egg-item="${i}" value="${escHtml(item)}">
+        <button class="btn-about-remove-row" onclick="removeEggItem(${i})">✕</button>
+      </div>`).join('');
+  }
+
+  function addEggItem() {
+    const items = ((_aboutSections.eggs_special || {}).items) || [];
+    items.push('');
+    if (!_aboutSections.eggs_special) _aboutSections.eggs_special = {};
+    _aboutSections.eggs_special.items = items;
+    renderAboutEggsItems();
+  }
+
+  function removeEggItem(idx) {
+    const items = ((_aboutSections.eggs_special || {}).items) || [];
+    items.splice(idx, 1);
+    if (_aboutSections.eggs_special) _aboutSections.eggs_special.items = items;
+    renderAboutEggsItems();
+  }
+
+  function renderAboutFlockMembers() {
+    const container = document.getElementById('ap-flock-members');
+    if (!container) return;
+    const members = ((_aboutSections.flock || {}).members) || [];
+    container.innerHTML = members.map((m, i) => `
+      <div class="about-inline-group">
+        <input data-flock-icon="${i}" value="${escHtml(m.icon || '🐔')}" style="flex:0 0 60px;">
+        <input data-flock-name="${i}" value="${escHtml(m.name || '')}" placeholder="Name">
+        <button class="btn-about-remove-row" onclick="removeFlockMember(${i})">✕</button>
+      </div>`).join('');
+  }
+
+  function addFlockMember() {
+    const members = ((_aboutSections.flock || {}).members) || [];
+    members.push({ icon: '🐔', name: '' });
+    if (!_aboutSections.flock) _aboutSections.flock = {};
+    _aboutSections.flock.members = members;
+    renderAboutFlockMembers();
+  }
+
+  function removeFlockMember(idx) {
+    const members = ((_aboutSections.flock || {}).members) || [];
+    members.splice(idx, 1);
+    if (_aboutSections.flock) _aboutSections.flock.members = members;
+    renderAboutFlockMembers();
+  }
+
+  async function adminSaveAboutSection(key) {
+    let content = {};
+    if (key === 'our_story') {
+      content = { text: (document.getElementById('ap-story-text')?.value || '').trim() };
+    } else if (key === 'hens_care') {
+      const cards = [];
+      document.querySelectorAll('[data-hens-icon]').forEach(el => {
+        const i = el.dataset.hensIcon;
+        cards.push({
+          icon:  el.value.trim(),
+          title: (document.querySelector(`[data-hens-title="${i}"]`)?.value || '').trim(),
+          text:  (document.querySelector(`[data-hens-text="${i}"]`)?.value || '').trim()
+        });
+      });
+      content = { heading: 'How We Raise Our Hens', cards };
+    } else if (key === 'eggs_special') {
+      const items = [];
+      document.querySelectorAll('[data-egg-item]').forEach(el => {
+        const v = el.value.trim();
+        if (v) items.push(v);
+      });
+      content = { heading: 'What Makes Our Eggs Different', items };
+    } else if (key === 'flock') {
+      const members = [];
+      document.querySelectorAll('[data-flock-name]').forEach(el => {
+        const i = el.dataset.flockName;
+        members.push({
+          icon: (document.querySelector(`[data-flock-icon="${i}"]`)?.value || '🐔').trim(),
+          name: el.value.trim()
+        });
+      });
+      content = { heading: 'Meet the Flock', members };
+    }
+
+    try {
+      const token = await getCsrfToken();
+      const res = await fetch(`/api/admin/about-content/${encodeURIComponent(key)}`, {
+        method: 'PUT', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+        body: JSON.stringify({ content })
+      });
+      const data = await res.json();
+      if (!res.ok) { showContentFlash('about-page-flash', data.error || 'Error saving.', 'err'); return; }
+      _aboutSections[key] = content;
+      showContentFlash('about-page-flash', 'Saved!', 'ok');
+    } catch (_) {
+      showContentFlash('about-page-flash', 'Network error. Please try again.', 'err');
     }
   }
 

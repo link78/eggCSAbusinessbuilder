@@ -90,6 +90,25 @@ app.use('/api/checklist',   apiLimiter,   checklistRoutes);
 app.use('/api/admin',       apiLimiter,   adminRoutes);
 app.use('/api/plan-config', apiLimiter,   planConfigRoutes);
 
+// ── Public content endpoints ──────────────────────────────────────────────────
+
+// GET /api/farm-updates — list all farm updates, newest first
+app.get('/api/farm-updates', apiLimiter, async (req, res) => {
+  const rows = (await db.query('SELECT * FROM farm_updates ORDER BY created_at DESC')).rows;
+  res.json({ updates: rows });
+});
+
+// GET /api/about-content — list all about-page sections
+app.get('/api/about-content', apiLimiter, async (req, res) => {
+  const rows = (await db.query('SELECT * FROM about_content ORDER BY id ASC')).rows;
+  const sections = {};
+  for (const row of rows) {
+    try { sections[row.section_key] = JSON.parse(row.content_json); }
+    catch (_) { sections[row.section_key] = {}; }
+  }
+  res.json({ sections });
+});
+
 // ── Static Files ─────────────────────────────────────────────────────────────
 
 app.use(apiLimiter, express.static(path.join(__dirname)));

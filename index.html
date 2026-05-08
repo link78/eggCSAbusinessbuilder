@@ -729,53 +729,7 @@
     <h2 style="font-size:clamp(1.5rem,3.5vw,2rem);font-weight:800;color:var(--green-dark);margin-bottom:.5rem">Latest from the Farm</h2>
     <p style="font-size:1.05rem;color:var(--muted);margin-bottom:0">Photos, notes, and updates straight from Sakinah Ridge Farm.</p>
     <div class="updates-feed" id="updates-feed" aria-label="Farm updates feed">
-
-      <div class="update-card">
-        <div class="update-avatar">🌿</div>
-        <div class="update-body">
-          <div class="update-meta">
-            <span class="update-author">Sakinah Ridge Farm</span>
-            <span class="update-date">May 5, 2026</span>
-          </div>
-          <p class="update-text">The hens are loving this warm weather! We've been seeing record egg production this week — boxes are packed full. Pick-up days run Tuesday through Saturday. 🥚</p>
-          <div class="update-photo">📸 Spring pasture photo — hens foraging in the sunshine</div>
-        </div>
-      </div>
-
-      <div class="update-card">
-        <div class="update-avatar">🌿</div>
-        <div class="update-body">
-          <div class="update-meta">
-            <span class="update-author">Sakinah Ridge Farm</span>
-            <span class="update-date">Apr 28, 2026</span>
-          </div>
-          <p class="update-text">We just added a new flock of 30 hens to the back pasture. They'll start laying in about 6 weeks — great news for anyone on the waitlist! 🐔</p>
-        </div>
-      </div>
-
-      <div class="update-card">
-        <div class="update-avatar">🌿</div>
-        <div class="update-body">
-          <div class="update-meta">
-            <span class="update-author">Sakinah Ridge Farm</span>
-            <span class="update-date">Apr 20, 2026</span>
-          </div>
-          <p class="update-text">Reminder: the farm stand is open every Saturday 8am–noon in Raymond. Come grab your box and say hello! We also have a limited supply of raw honey this week.</p>
-        </div>
-      </div>
-
-      <div class="update-card">
-        <div class="update-avatar">🌿</div>
-        <div class="update-body">
-          <div class="update-meta">
-            <span class="update-author">Sakinah Ridge Farm</span>
-            <span class="update-date">Apr 12, 2026</span>
-          </div>
-          <p class="update-text">Spring has arrived at the farm! The pasture is greening up beautifully. Eggs are rich and flavorful as ever — you can see the deep orange yolks in this week's boxes. 🌱</p>
-          <div class="update-photo">📸 Fresh morning eggs on the collection tray</div>
-        </div>
-      </div>
-
+      <div class="update-card" style="color:var(--muted);font-size:.9rem;">Loading updates…</div>
     </div>
   </div>
 </div>
@@ -1596,7 +1550,41 @@
     } catch (_) {}
     loadPlans();
     loadReviews();
+    loadFarmUpdates();
   })();
+
+  /* ── Farm Updates ───────────────────────────────────────── */
+  function escHtmlFU(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function loadFarmUpdates() {
+    const feed = document.getElementById('updates-feed');
+    if (!feed) return;
+    try {
+      const r = await fetch('/api/farm-updates');
+      const data = await r.json();
+      const updates = data.updates || [];
+      if (!updates.length) {
+        feed.innerHTML = '<div class="update-card" style="color:var(--muted);font-size:.9rem;padding:1rem 0;">No updates yet — check back soon!</div>';
+        return;
+      }
+      feed.innerHTML = updates.map(u => `
+        <div class="update-card">
+          <div class="update-avatar">🌿</div>
+          <div class="update-body">
+            <div class="update-meta">
+              <span class="update-author">${escHtmlFU(u.author)}</span>
+              <span class="update-date">${escHtmlFU(u.date_label)}</span>
+            </div>
+            <p class="update-text">${escHtmlFU(u.body)}</p>
+            ${u.photo_caption ? `<div class="update-photo">📸 ${escHtmlFU(u.photo_caption)}</div>` : ''}
+          </div>
+        </div>`).join('');
+    } catch (_) {
+      if (feed) feed.innerHTML = '<div class="update-card" style="color:var(--muted);font-size:.9rem;padding:1rem 0;">Unable to load updates right now.</div>';
+    }
+  }
 </script>
 
 </body>

@@ -158,4 +158,61 @@ router.put('/plan-config/:id', requireAdmin, async (req, res) => {
   res.json({ plan: updated });
 });
 
+// ── Farm Updates ──────────────────────────────────────────────────────────────
+
+// POST /api/admin/farm-updates — add a new farm update
+router.post('/farm-updates', requireAdmin, async (req, res) => {
+  const { body, date_label, author, photo_caption } = req.body || {};
+  if (!body || !String(body).trim()) {
+    return res.status(400).json({ error: 'body is required.' });
+  }
+  const now = new Date();
+  const label = date_label
+    ? String(date_label).trim()
+    : now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const authorStr = author ? String(author).trim() : 'Sakinah Ridge Farm';
+  const caption   = photo_caption ? String(photo_caption).trim() : null;
+
+  const row = (await db.query(
+    'INSERT INTO farm_updates (author, date_label, body, photo_caption) VALUES ($1, $2, $3, $4) RETURNING *',
+    [authorStr, label, String(body).trim(), caption]
+  )).rows[0];
+  res.status(201).json({ update: row });
+});
+
+// DELETE /api/admin/farm-updates/:id — remove a farm update
+router.delete('/farm-updates/:id', requireAdmin, async (req, res) => {
+  const row = (await db.query('SELECT id FROM farm_updates WHERE id = $1', [req.params.id])).rows[0];
+  if (!row) return res.status(404).json({ error: 'Update not found.' });
+  await db.query('DELETE FROM farm_updates WHERE id = $1', [req.params.id]);
+  res.json({ ok: true });
+});
+
+// ── About Content ─────────────────────────────────────────────────────────────
+
+// PUT /api/admin/about-content/:section_key — save a section's content JSON
+router.put('/about-content/:section_key', requireAdmin, async (req, res) => {
+  const { section_key } = req.params;
+  const { content } = req.body || {};
+  if (content === undefined || content === null) {
+    return res.status(400).json({ error: 'content is required.' });
+  }
+  // Validate it is a plain object
+  if (typeof content !== 'object' || Array.isArray(content)) {
+    return res.status(400).json({ error: 'content must be a JSON object.' });
+  }
+
+  await db.query(
+    `INSERT INTO about_content (section_key, content_json, updated_at)
+     VALUES ($1, $2, NOW())
+     ON CONFLICT (section_key) DO UPDATE
+       SET content_json = EXCLUDED.content_json,
+           updated_at   = NOW()`,
+    [section_key, JSON.stringify(content)]
+  );
+
+  const row = (await db.query('SELECT * FROM about_content WHERE section_key = $1', [section_key])).rows[0];
+  res.json({ section: row });
+});
+
 module.exports = router;

@@ -86,6 +86,31 @@ async function init() {
   // Add notes column to users if it doesn't exist yet (idempotent)
   await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS notes TEXT NOT NULL DEFAULT ''`);
 
+  // Farm updates posted by admin
+  await query(`
+    CREATE TABLE IF NOT EXISTS farm_updates (
+      id            SERIAL PRIMARY KEY,
+      author        TEXT    NOT NULL DEFAULT 'Sakinah Ridge Farm',
+      date_label    TEXT    NOT NULL,
+      body          TEXT    NOT NULL,
+      photo_caption TEXT,
+      created_at    TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
+  // Editable about-page content sections
+  await query(`
+    CREATE TABLE IF NOT EXISTS about_content (
+      id           SERIAL PRIMARY KEY,
+      section_key  TEXT UNIQUE NOT NULL,
+      content_json TEXT        NOT NULL DEFAULT '{}',
+      updated_at   TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
+  // Seed default about content rows (idempotent)
+  await seedAboutContent();
+
   // ── Seed admins ─────────────────────────────────────────────────────────────
   // Promote known admin accounts if they exist.
   const adminEmails = ['absalim78@yahoo.com', 'koandak@hotmail.com'];
@@ -113,15 +138,73 @@ async function seedPlanConfig() {
   `);
 }
 /**
+ * Seed the about_content table with default section content.
+ * Uses INSERT ... ON CONFLICT DO NOTHING so it is safe to call multiple times.
+ */
+async function seedAboutContent() {
+  const defaults = [
+    {
+      key: 'our_story',
+      value: JSON.stringify({
+        heading: 'Our Story',
+        text: 'Sakinah Ridge Farm began as a small family project rooted in faith, stewardship, and community. We started with a handful of hens and a simple goal: provide fresh, honest food to neighbors in and around Raymond. Today, we remain committed to careful farming, healthy animals, and relationships built on trust.'
+      })
+    },
+    {
+      key: 'hens_care',
+      value: JSON.stringify({
+        heading: 'How We Raise Our Hens',
+        cards: [
+          { icon: '🌿', title: 'Free-Range / Pasture Access', text: 'Our hens have daily access to pasture where they can roam, scratch, and forage naturally.' },
+          { icon: '💧', title: 'Clean Feed & Fresh Water',    text: 'We provide quality feed and constant clean water to keep our flock healthy and productive.' },
+          { icon: '🤍', title: 'Humane, Stress-Free Environment', text: 'Low-stress care and clean living space help support stronger birds and better eggs.' }
+        ]
+      })
+    },
+    {
+      key: 'eggs_special',
+      value: JSON.stringify({
+        heading: 'What Makes Our Eggs Different',
+        items: ['Collected fresh daily', 'Rich yolks & strong shells', 'No antibiotics or hormones', 'Raised with care and Sakinah']
+      })
+    },
+    {
+      key: 'flock',
+      value: JSON.stringify({
+        heading: 'Meet the Flock',
+        members: [
+          { icon: '🐔', name: 'Ruby' },
+          { icon: '🐓', name: 'Atlas' },
+          { icon: '🐔', name: 'Sunny' },
+          { icon: '🐔', name: 'Pearl' },
+          { icon: '🐔', name: 'Maple' },
+          { icon: '🐔', name: 'Clover' }
+        ]
+      })
+    }
+  ];
+
+  for (const { key, value } of defaults) {
+    await query(
+      `INSERT INTO about_content (section_key, content_json)
+       VALUES ($1, $2)
+       ON CONFLICT (section_key) DO NOTHING`,
+      [key, value]
+    );
+  }
+}
+
+/**
  * Truncate all tables and reset sequences.
  * Only safe to call in test environments.
  */
 async function reset() {
   await query(
-    'TRUNCATE users, orders, reviews, checklist_progress, plan_config RESTART IDENTITY CASCADE'
+    'TRUNCATE users, orders, reviews, checklist_progress, plan_config, farm_updates, about_content RESTART IDENTITY CASCADE'
   );
   // Re-seed plan configurations so tests always start with a known state.
   await seedPlanConfig();
+  await seedAboutContent();
 }
 
 /**

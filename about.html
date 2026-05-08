@@ -364,7 +364,7 @@
   <span class="section-label">Our Story</span>
   <h2 id="our-story-title">Our Story</h2>
   <div class="story-wrap">
-    <div class="story-card">
+    <div class="story-card" id="about-our-story-text">
       <p class="lead">
         Sakinah Ridge Farm began as a small family project rooted in faith, stewardship, and community.
         We started with a handful of hens and a simple goal: provide fresh, honest food to neighbors in and around Raymond.
@@ -378,7 +378,7 @@
 <section class="section" id="how-we-raise-hens" aria-labelledby="hens-title" style="padding-top:0;">
   <span class="section-label">How We Raise Our Hens</span>
   <h2 id="hens-title">How We Raise Our Hens</h2>
-  <div class="hens-grid">
+  <div class="hens-grid" id="about-hens-grid">
     <article class="hens-card">
       <div class="hens-icon">🌿</div>
       <h3>Free-Range / Pasture Access</h3>
@@ -400,7 +400,7 @@
 <section class="section" id="why-eggs-special" aria-labelledby="eggs-title" style="padding-top:0;">
   <span class="section-label">What Makes Our Eggs Different</span>
   <h2 id="eggs-title">What Makes Our Eggs Different</h2>
-  <ul class="eggs-list">
+  <ul class="eggs-list" id="about-eggs-list">
     <li>Collected fresh daily</li>
     <li>Rich yolks &amp; strong shells</li>
     <li>No antibiotics or hormones</li>
@@ -411,7 +411,7 @@
 <section class="section" id="meet-the-flock" aria-labelledby="flock-title" style="padding-top:0;">
   <span class="section-label">Meet the Flock</span>
   <h2 id="flock-title">Meet the Flock</h2>
-  <div class="flock-grid">
+  <div class="flock-grid" id="about-flock-grid">
     <article class="flock-card">
       <div class="flock-photo">🐔 Hen photo</div>
       <div class="flock-name">Ruby</div>
@@ -472,6 +472,60 @@
                           : mql.addListener.bind(mql))(function (ev) {
       if (ev.matches) setOpen(false);
     });
+  })();
+
+  function escH(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  (async function loadAboutContent() {
+    try {
+      const r = await fetch('/api/about-content');
+      if (!r.ok) return;
+      const data = await r.json();
+      const s = data.sections || {};
+
+      // Our Story
+      if (s.our_story && s.our_story.text) {
+        const el = document.getElementById('about-our-story-text');
+        if (el) el.innerHTML = `<p class="lead">${escH(s.our_story.text)}</p>`;
+      }
+
+      // Hens Care
+      if (s.hens_care && Array.isArray(s.hens_care.cards)) {
+        const grid = document.getElementById('about-hens-grid');
+        if (grid) {
+          grid.innerHTML = s.hens_care.cards.map(c => `
+            <article class="hens-card">
+              <div class="hens-icon">${escH(c.icon || '🌿')}</div>
+              <h3>${escH(c.title || '')}</h3>
+              <p>${escH(c.text || '')}</p>
+            </article>`).join('');
+        }
+      }
+
+      // Eggs Special
+      if (s.eggs_special && Array.isArray(s.eggs_special.items)) {
+        const list = document.getElementById('about-eggs-list');
+        if (list) {
+          list.innerHTML = s.eggs_special.items.map(item => `<li>${escH(item)}</li>`).join('');
+        }
+      }
+
+      // Flock
+      if (s.flock && Array.isArray(s.flock.members)) {
+        const grid = document.getElementById('about-flock-grid');
+        if (grid) {
+          grid.innerHTML = s.flock.members.map(m => `
+            <article class="flock-card">
+              <div class="flock-photo">${escH(m.icon || '🐔')} Hen photo</div>
+              <div class="flock-name">${escH(m.name || '')}</div>
+            </article>`).join('');
+        }
+      }
+    } catch (_) {
+      // Keep static fallback content on error
+    }
   })();
 </script>
 
