@@ -22,7 +22,7 @@ const FIXED_PLANS = {
 
 // Flexible plan constraints
 const SOLO_MIN_BOXES   = 1;   // Solo / Couple: at least 1 box (12-egg or 18-egg)
-const CUSTOM_MIN_BOXES = 2;   // Custom: at least 2 boxes total
+const CUSTOM_MIN_BOXES = 1;   // Custom: at least 1 box (12-egg or 18-egg) total
 const CUSTOM_MIN_WEEKS = 2;   // Custom: at least 2 weeks duration
 const MAX_BOXES        = 20;  // max boxes per type per delivery
 const MAX_WEEKS        = 52;
@@ -144,7 +144,7 @@ router.post('/', requireAuth, async (req, res) => {
 
     if (totalBoxes < CUSTOM_MIN_BOXES) {
       return res.status(400).json({
-        error: `Custom plan requires at least ${CUSTOM_MIN_BOXES} boxes total (12-egg and/or 18-egg).`
+        error: `Custom plan requires at least ${CUSTOM_MIN_BOXES} box (12-egg or 18-egg).`
       });
     }
     if (totalBoxes > MAX_BOXES) {

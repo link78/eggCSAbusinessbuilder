@@ -1854,8 +1854,8 @@
       <div class="plan-emoji">🛠️</div>
       <h3>Custom Plan</h3>
       <p class="plan-tagline">Mix box sizes &amp; choose duration</p>
-      <div class="plan-price" id="custom-price-display">$24<span> total</span></div>
-      <p class="per-week" id="custom-summary-line">2 boxes · 2 wks · 24 eggs/wk</p>
+      <div class="plan-price" id="custom-price-display">$10<span> total</span></div>
+      <p class="per-week" id="custom-summary-line">1 box · 2 wks · 12 eggs/wk</p>
 
       <div class="custom-plan-controls">
         <div class="custom-control-row">
@@ -1870,7 +1870,7 @@
           <label>🥚 18-egg boxes <small style="color:#aaa;">($7/box/wk)</small></label>
           <div class="stepper-wrap">
             <button class="stepper-btn" onclick="adjustCustom('boxes18', -1)" aria-label="Fewer 18-egg boxes">−</button>
-            <span id="custom-boxes18-val">1</span>
+            <span id="custom-boxes18-val">0</span>
             <button class="stepper-btn" onclick="adjustCustom('boxes18', 1)" aria-label="More 18-egg boxes">+</button>
           </div>
         </div>
@@ -1886,7 +1886,7 @@
 
       <ul>
         <li>12-egg box $5 · 18-egg box $7 / delivery</li>
-        <li>Minimum 2 total boxes &amp; 2 weeks</li>
+        <li>Minimum 1 box &amp; 2 weeks</li>
         <li>Weekly pickup or delivery (+$2/wk)</li>
         <li>Newsletter + farm updates</li>
       </ul>
@@ -3288,9 +3288,9 @@
   let _soloBoxes18   = 0;
   const SOLO_MIN_BOXES = 1;
   let _customBoxes12 = 1;
-  let _customBoxes18 = 1;
+  let _customBoxes18 = 0;
   let _customWeeks   = 2;
-  const CUSTOM_MIN_BOXES = 2;
+  const CUSTOM_MIN_BOXES = 1;
   const MIN_WEEKS        = 2;
   const MAX_BOXES        = 20;
   const MAX_WEEKS        = 52;
@@ -3361,7 +3361,7 @@
   function openCustomSubscribeModal() {
     if (!currentUser) { showAuthGate(); showAuthForm('login'); return; }
     const total = _customBoxes12 + _customBoxes18;
-    if (total < CUSTOM_MIN_BOXES) { alert(`Custom Plan requires at least ${CUSTOM_MIN_BOXES} boxes total.`); return; }
+    if (total < CUSTOM_MIN_BOXES) { alert(`Custom Plan requires at least ${CUSTOM_MIN_BOXES} box (12-egg or 18-egg).`); return; }
     _pendingPlanName  = 'Custom';
     const base        = (_customBoxes12 * PRICE_PER_12_BOX + _customBoxes18 * PRICE_PER_18_BOX) * _customWeeks;
     _pendingPlanPrice = base;

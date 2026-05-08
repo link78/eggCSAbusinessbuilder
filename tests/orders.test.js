@@ -58,7 +58,7 @@ describe('GET /api/orders/plans', () => {
     expect(res.body.customPlan).toMatchObject({
       pricePerBox12: 5,
       pricePerBox18: 7,
-      minBoxes:      2,
+      minBoxes:      1,
       minWeeks:      2
     });
   });
@@ -318,17 +318,55 @@ describe('POST /api/orders', () => {
     expect(res.body.order.price).toBe(56);
   });
 
-  it('rejects Custom plan with fewer than 2 boxes total', async () => {
+  it('rejects Custom plan with 0 boxes total', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Custom',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Monday',
+      boxes12: 0,
+      boxes18: 0,   // total = 0, below minimum 1
+      durationWeeks: 2
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/at least/i);
+  });
+
+  it('places a Custom plan pickup order with a single 12-egg box', async () => {
     const res = await agent.post('/api/orders', {
       planName: 'Custom',
       fulfillmentMethod: 'pickup',
       pickupDay: 'Monday',
       boxes12: 1,
-      boxes18: 0,   // total = 1, below minimum 2
+      boxes18: 0,
       durationWeeks: 2
     });
-    expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/2 boxes/i);
+    expect(res.status).toBe(200);
+    expect(res.body.order).toMatchObject({
+      plan_name:            'Custom',
+      price:                10,   // 1×$5 × 2 weeks
+      eggs_per_week:        12,
+      boxes12_per_delivery: 1,
+      boxes18_per_delivery: 0
+    });
+  });
+
+  it('places a Custom plan pickup order with a single 18-egg box', async () => {
+    const res = await agent.post('/api/orders', {
+      planName: 'Custom',
+      fulfillmentMethod: 'pickup',
+      pickupDay: 'Tuesday',
+      boxes12: 0,
+      boxes18: 1,
+      durationWeeks: 2
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.order).toMatchObject({
+      plan_name:            'Custom',
+      price:                14,   // 1×$7 × 2 weeks
+      eggs_per_week:        18,
+      boxes12_per_delivery: 0,
+      boxes18_per_delivery: 1
+    });
   });
 
   it('rejects Custom plan with fewer than 2 weeks', async () => {

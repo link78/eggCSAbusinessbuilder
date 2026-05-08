@@ -804,8 +804,8 @@
       <div class="csa-detail">
         <span class="icon">📦</span>
         <div>
-          <h4>Weekly Egg Boxes</h4>
-          <p>1 dozen or 18-egg boxes, delivered or ready for pick-up each week.</p>
+          <h4>Biweekly Egg Boxes</h4>
+          <p>1 dozen or 18-egg boxes per week, delivered or ready for pick-up every 2 weeks.</p>
         </div>
       </div>
       <div class="csa-detail">
@@ -1196,7 +1196,7 @@
       price: `from $${customPlan.pricePerBox12 * customPlan.minBoxes * customPlan.minWeeks}`,
       sub:   `$${customPlan.pricePerBox12}/12-egg · $${customPlan.pricePerBox18}/18-egg per delivery`,
       feats: [
-        `${customPlan.minBoxes}–${customPlan.maxBoxes} boxes per weekly delivery`,
+        `${customPlan.minBoxes}–${customPlan.maxBoxes} boxes per biweekly delivery`,
         'Mix 12-egg and 18-egg boxes freely',
         `Choose ${customPlan.minWeeks}–${customPlan.maxWeeks} week duration`,
         'Pickup or local delivery'
@@ -1436,7 +1436,7 @@
       const b12 = Math.max(0, parseInt(document.getElementById('m-b12').value) || 0);
       const b18 = Math.max(0, parseInt(document.getElementById('m-b18').value) || 0);
       const wk  = parseInt(document.getElementById('m-weeks').value) || 0;
-      if (b12 + b18 < 2)  { showFlash('Custom plan requires at least 2 boxes total.', 'warn'); return null; }
+      if (b12 + b18 < 1)  { showFlash('Custom plan requires at least 1 box.', 'warn'); return null; }
       if (b12 + b18 > 20) { showFlash('Total boxes per delivery cannot exceed 20.', 'warn'); return null; }
       if (wk < 2)          { showFlash('Custom plan requires at least 2 weeks.', 'warn'); return null; }
       if (wk > 52)         { showFlash('Duration cannot exceed 52 weeks.', 'warn'); return null; }
