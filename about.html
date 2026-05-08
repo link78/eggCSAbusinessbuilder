@@ -530,7 +530,7 @@
           grid.innerHTML = s.flock.members.map(m => `
             <article class="flock-card">
               <div class="flock-photo">${m.photo_url
-                ? `<img src="${escH(m.photo_url)}" alt="${escH(m.name || 'Hen')}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.parentElement.innerHTML='${escH(m.icon || '🐔')} Hen photo'">`
+                ? `<img src="${escH(m.photo_url)}" alt="${escH(m.name || 'Hen')}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.display='none'">`
                 : `${escH(m.icon || '🐔')} Hen photo`
               }</div>
               <div class="flock-name">${escH(m.name || '')}</div>
