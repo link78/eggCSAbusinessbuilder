@@ -2581,10 +2581,17 @@
       const active = orders.filter(o => o.status === 'active');
       const subscribers = active.length;
 
-      // Monthly revenue: sum of monthly plan prices (exclude one-time Custom plans with duration_weeks)
+      // Monthly revenue: sum of all active plan prices, normalized to a monthly (bi-weekly) amount.
+      // For recurring plans price is already per-month; for Custom plans with a fixed duration
+      // we compute the 2-delivery (1-month) equivalent: price / duration_weeks * MONTHLY_WEEKS.
       const monthlyRevenue = active
-        .filter(o => !o.duration_weeks)
-        .reduce((sum, o) => sum + (parseFloat(o.price) || 0), 0);
+        .reduce((sum, o) => {
+          const price = parseFloat(o.price) || 0;
+          if (o.duration_weeks) {
+            return sum + price / o.duration_weeks * MONTHLY_WEEKS;
+          }
+          return sum + price;
+        }, 0);
 
       // Weekly egg demand: sum of eggs_per_week
       const weeklyEggs = active.reduce((sum, o) => sum + (parseInt(o.eggs_per_week) || 0), 0);
@@ -2619,8 +2626,14 @@
       // Orders that were active during this month (created on or before month end)
       const monthEnd = new Date(m.getFullYear(), m.getMonth() + 1, 0);
       return activeOrders
-        .filter(o => !o.duration_weeks && new Date(o.created_at) <= monthEnd)
-        .reduce((sum, o) => sum + (parseFloat(o.price) || 0), 0);
+        .filter(o => new Date(o.created_at) <= monthEnd)
+        .reduce((sum, o) => {
+          const price = parseFloat(o.price) || 0;
+          if (o.duration_weeks) {
+            return sum + price / o.duration_weeks * MONTHLY_WEEKS;
+          }
+          return sum + price;
+        }, 0);
     });
 
     // Canvas dimensions
