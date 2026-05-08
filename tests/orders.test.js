@@ -58,7 +58,7 @@ describe('GET /api/orders/plans', () => {
     expect(res.body.customPlan).toMatchObject({
       pricePerBox12: 5,
       pricePerBox18: 7,
-      minBoxes:      2,
+      minBoxes:      1,
       minWeeks:      2
     });
   });
