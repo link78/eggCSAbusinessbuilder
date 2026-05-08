@@ -812,7 +812,7 @@
         <span class="icon">📍</span>
         <div>
           <h4>Pick-Up &amp; Delivery</h4>
-          <p>Pick up at the farm in Raymond, NE, or opt for local delivery (+$2/bi-week).</p>
+          <p>Pick up at the farm in Raymond, NE, or opt for local delivery (+$2/bi-weekly).</p>
         </div>
       </div>
       <div class="csa-detail">
@@ -998,7 +998,7 @@
 
       <!-- Box counts (Solo / Couple and Custom) -->
       <div id="box-count-wrap" class="m-section" style="display:none">
-        <div class="m-section-label">Boxes Per Delivery</div>
+        <div class="m-section-label">Boxes Per Delivery/Week</div>
         <div class="two-col">
           <div class="m-group">
             <label for="m-b12">12-Egg Boxes <small>($5 each)</small></label>
@@ -1030,7 +1030,7 @@
           </label>
           <label class="radio-opt">
             <input type="radio" name="fulfillment" value="delivery" onchange="toggleFulfillment()">
-            Local Delivery (+$2/bi-week)
+            Local Delivery (+$2/bi-weekly)
           </label>
         </div>
         <div id="pickup-wrap" class="m-group" style="margin-top:.7rem">
@@ -1049,7 +1049,7 @@
 
       <!-- Price preview -->
       <div class="price-preview">
-        💵 Estimated total: <strong id="m-price">$—</strong><span id="m-price-note"></span>
+        💵 Estimated total: <strong id="m-price">$—</strong><span id="m-price-note"></span><span id="m-price-boxes"></span>
       </div>
 
       <!-- Account -->
@@ -1310,27 +1310,32 @@
     const isDelivery = document.querySelector('input[name="fulfillment"]:checked')?.value === 'delivery';
     const mo = soloCoupleConstraints.monthlyWeeks;
 
-    let price = NaN, note = '';
+    let price = NaN, note = '', boxes = 0;
     if (_selPlan === 'Small Family' || _selPlan === 'Family') {
       const bt  = document.querySelector('input[name="boxType"]:checked')?.value;
       const ppb = bt === '18' ? 7 : 5;
       price = ppb * mo + (isDelivery ? deliveryFeePerWeek * mo : 0);
       note  = '/mo';
+      boxes = 1;
     } else if (_selPlan === 'Solo / Couple') {
       const b12 = parseInt(document.getElementById('m-b12')?.value) || 0;
       const b18 = parseInt(document.getElementById('m-b18')?.value) || 0;
       price = (b12 * 5 + b18 * 7) * mo + (isDelivery ? deliveryFeePerWeek * mo : 0);
       note  = '/mo';
+      boxes = b12 + b18;
     } else if (_selPlan === 'Custom') {
       const b12 = parseInt(document.getElementById('m-b12')?.value) || 0;
       const b18 = parseInt(document.getElementById('m-b18')?.value) || 0;
       const wk  = parseInt(document.getElementById('m-weeks')?.value) || 0;
       price = (b12 * 5 + b18 * 7) * wk + (isDelivery ? deliveryFeePerWeek * wk : 0);
       note  = ' total';
+      boxes = b12 + b18;
     }
 
-    document.getElementById('m-price').textContent      = isNaN(price) || price <= 0 ? '—' : `$${price}`;
-    document.getElementById('m-price-note').textContent = isNaN(price) || price <= 0 ? ''  : note;
+    const boxLabel = boxes > 0 ? ` · ${boxes} box${boxes !== 1 ? 'es' : ''}/delivery` : '';
+    document.getElementById('m-price').textContent       = isNaN(price) || price <= 0 ? '—' : `$${price}`;
+    document.getElementById('m-price-note').textContent  = isNaN(price) || price <= 0 ? ''  : note;
+    document.getElementById('m-price-boxes').textContent = isNaN(price) || price <= 0 ? ''  : boxLabel;
   }
 
   /* ── Flash ──────────────────────────────────────────────── */
