@@ -1755,7 +1755,7 @@
       <h3>Solo / Couple</h3>
       <p class="plan-tagline">For 1–2 people · choose your box size</p>
       <div class="plan-price" id="solo-price-display">$10<span>/mo</span></div>
-      <p class="per-week" id="solo-summary-line">1 box · 12 eggs/delivery</p>
+      <p class="per-week" id="solo-summary-line">1 box · 12 eggs/wk · 24 eggs/delivery</p>
 
       <div class="custom-plan-controls">
         <div class="custom-control-row">
@@ -1777,8 +1777,9 @@
       </div>
 
       <ul>
-        <li>Minimum 1 box (12-egg or 18-egg)</li>
+        <li>Minimum 1 box (12-egg or 18-egg) per week</li>
         <li>12-egg: $5/delivery · 18-egg: $7/delivery</li>
+        <li>Delivery every 2 weeks (bi-weekly)</li>
         <li>+$2/delivery for local delivery</li>
         <li>Monthly billing · Cancel anytime</li>
       </ul>
@@ -1804,12 +1805,12 @@
         </label>
       </div>
 
-      <div class="plan-price" id="sf-price-display">$20<span>/mo</span></div>
-      <p class="per-week" id="sf-per-week">$5.00/week · 12 eggs/wk</p>
+      <div class="plan-price" id="sf-price-display">$10<span>/mo</span></div>
+      <p class="per-week" id="sf-per-week">12 eggs/week · 24 eggs/delivery</p>
       <ul>
-        <li id="sf-box-desc">1 dozen (12 eggs) per delivery</li>
-        <li>4 deliveries/month</li>
-        <li>Weekly pickup or delivery (+$2/wk)</li>
+        <li id="sf-box-desc">1 dozen (12 eggs) per week</li>
+        <li>2 deliveries/month (bi-weekly)</li>
+        <li>Pickup weekly or delivery every 2 weeks (+$2/delivery)</li>
         <li>Seasonal produce add-ons</li>
         <li>Newsletter + farm updates</li>
         <li>Cancel anytime</li>
@@ -1835,12 +1836,12 @@
         </label>
       </div>
 
-      <div class="plan-price" id="fam-price-display">$28<span>/mo</span></div>
-      <p class="per-week" id="fam-per-week">$7.00/week · 18 eggs/wk</p>
+      <div class="plan-price" id="fam-price-display">$14<span>/mo</span></div>
+      <p class="per-week" id="fam-per-week">18 eggs/week · 36 eggs/delivery</p>
       <ul>
-        <li id="fam-box-desc">18-egg box per delivery</li>
-        <li>4 deliveries/month</li>
-        <li>Weekly pickup or delivery (+$2/wk)</li>
+        <li id="fam-box-desc">18-egg box per week</li>
+        <li>2 deliveries/month (bi-weekly)</li>
+        <li>Pickup weekly or delivery every 2 weeks (+$2/delivery)</li>
         <li>Priority waitlist access</li>
         <li>Seasonal produce add-ons</li>
         <li>Cancel anytime</li>
@@ -1855,7 +1856,7 @@
       <h3>Custom Plan</h3>
       <p class="plan-tagline">Mix box sizes &amp; choose duration</p>
       <div class="plan-price" id="custom-price-display">$10<span> total</span></div>
-      <p class="per-week" id="custom-summary-line">1 box · 2 wks · 12 eggs/wk</p>
+      <p class="per-week" id="custom-summary-line">1 box · 2 wks · 12 eggs/wk · 24 eggs/delivery</p>
 
       <div class="custom-plan-controls">
         <div class="custom-control-row">
@@ -1887,7 +1888,7 @@
       <ul>
         <li>12-egg box $5 · 18-egg box $7 / delivery</li>
         <li>Minimum 1 box &amp; 2 weeks</li>
-        <li>Weekly pickup or delivery (+$2/wk)</li>
+        <li>Weekly pickup or delivery every 2 weeks (+$2/delivery)</li>
         <li>Newsletter + farm updates</li>
       </ul>
       <button class="plan-cta" onclick="openCustomSubscribeModal()">Build My Plan</button>
@@ -3168,7 +3169,11 @@
       const email = escHtml(o.user_email || '');
       const b12 = o.boxes12_per_delivery || 0;
       const b18 = o.boxes18_per_delivery || 0;
-      const eggLabel = o.eggs_per_week ? `${o.eggs_per_week} eggs` : (b12 || b18
+      const isDeliveryOrder = o.fulfillment_method === 'delivery';
+      const eggsToShow = isDeliveryOrder
+        ? (o.eggs_per_delivery || (parseInt(o.eggs_per_week, 10) * 2) || 0)
+        : (parseInt(o.eggs_per_week, 10) || 0);
+      const eggLabel = eggsToShow ? `${eggsToShow} eggs` : (b12 || b18
         ? [b12 > 0 ? `${b12 * 12}` : '', b18 > 0 ? `${b18 * 18}` : ''].filter(Boolean).join('/') + ' eggs'
         : '—');
       const methodTag = o.fulfillment_method === 'delivery'
@@ -3235,13 +3240,17 @@
       if (!am && !bm) return (DAYS.indexOf(a.pickup_day) || 99) - (DAYS.indexOf(b.pickup_day) || 99);
       return (a.user_name || '').localeCompare(b.user_name || '');
     });
-    const lines = ['Weekly Pickup / Delivery List', ''];
+    const lines = ['Pickup / Delivery List', ''];
     rows.forEach(o => {
-      const eggs = o.eggs_per_week ? `${o.eggs_per_week} eggs` : '—';
+      const isDeliveryOrder = o.fulfillment_method === 'delivery';
+      const eggs = isDeliveryOrder
+        ? (o.eggs_per_delivery || (parseInt(o.eggs_per_week, 10) * 2) || 0)
+        : (parseInt(o.eggs_per_week, 10) || 0);
+      const eggStr = eggs ? `${eggs} eggs` : '—';
       const method = o.fulfillment_method === 'delivery'
         ? `Delivery ($${DELIVERY_FEE_PER_WEEK}) — ${o.delivery_address || ''}`
         : pickupDateLabel(o, weekOffset);
-      lines.push(`${o.user_name || '—'} — ${eggs} — ${method}`);
+      lines.push(`${o.user_name || '—'} — ${eggStr} — ${method}`);
     });
     navigator.clipboard.writeText(lines.join('\n')).then(
       ()  => showFlash('view-orders-flash', 'List copied to clipboard.', 'ok'),
@@ -3267,12 +3276,12 @@
   const PRICE_PER_12_BOX      = 5;
   const PRICE_PER_18_BOX      = 7;
   const DELIVERY_FEE_PER_WEEK = 2;
-  const MONTHLY_WEEKS         = 4;
+  const MONTHLY_WEEKS         = 2;  // Bi-weekly: 2 deliveries per month
 
   function fixedPlanPrice(boxType)   { return (boxType === 'dozen' ? PRICE_PER_12_BOX : PRICE_PER_18_BOX) * MONTHLY_WEEKS; }
   function fixedPlanEggs(boxType)    { return boxType === 'dozen' ? 12 : 18; }
-  function fixedPlanPerWeek(boxType) { return boxType === 'dozen' ? '$5.00/week · 12 eggs/wk' : '$7.00/week · 18 eggs/wk'; }
-  function fixedPlanBoxDesc(boxType) { return boxType === 'dozen' ? '1 dozen (12 eggs) per delivery' : '18-egg box per delivery'; }
+  function fixedPlanPerWeek(boxType) { return boxType === 'dozen' ? '12 eggs/week · 24 eggs/delivery' : '18 eggs/week · 36 eggs/delivery'; }
+  function fixedPlanBoxDesc(boxType) { return boxType === 'dozen' ? '1 dozen (12 eggs) per week' : '18-egg box per week'; }
 
   function updateFixedPlanDisplay(planName) {
     const prefix    = planName === 'Small Family' ? 'sf' : 'fam';
@@ -3315,7 +3324,7 @@
     document.getElementById('solo-summary-line').textContent =
       total === 0
         ? 'Select at least 1 box'
-        : `${total} box${total > 1 ? 'es' : ''} · ${totalEggs} eggs/wk`;
+        : `${total} box${total > 1 ? 'es' : ''} · ${totalEggs} eggs/wk · ${totalEggs * 2} eggs/delivery`;
   }
 
   function adjustCustom(type, delta) {
@@ -3338,7 +3347,7 @@
     document.getElementById('custom-weeks-val').textContent   = _customWeeks;
     document.getElementById('custom-price-display').innerHTML = `$${base}<span> total</span>`;
     document.getElementById('custom-summary-line').textContent =
-      `${total} box${total !== 1 ? 'es' : ''} · ${_customWeeks} wk · ${totalEggs} eggs/wk`;
+      `${total} box${total !== 1 ? 'es' : ''} · ${_customWeeks} wk · ${totalEggs} eggs/wk · ${totalEggs * 2} eggs/delivery`;
   }
 
   function openSoloSubscribeModal() {

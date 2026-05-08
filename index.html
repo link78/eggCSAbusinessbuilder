@@ -1169,7 +1169,7 @@
         feats: [
           'Build your own weekly box',
           'Mix 12-egg ($5) &amp; 18-egg ($7) boxes',
-          'Monthly (4-week) subscription',
+          'Delivery every 2 weeks · monthly billing',
           'Pickup or local delivery'
         ]
       }
@@ -1184,7 +1184,7 @@
         feats: [
           `1 ${fam ? '18-egg' : 'dozen'} box per week`,
           `${fam ? p.eggsPerWeek18 : p.eggsPerWeek12} fresh pasture-raised eggs`,
-          'Monthly (4-week) subscription',
+          'Delivery every 2 weeks · monthly billing',
           'Box size switchable anytime',
           'Pickup or local delivery'
         ]
@@ -1228,7 +1228,7 @@
 
     document.getElementById('modal-plan-name').textContent = planName + ' Plan';
     document.getElementById('modal-plan-sub').textContent  =
-      isFixed  ? '1 box per week · monthly subscription' :
+      isFixed  ? '1 box per week · bi-weekly delivery · monthly billing' :
       isSolo   ? 'Flexible monthly subscription'         :
                  'Custom duration & box count';
 
