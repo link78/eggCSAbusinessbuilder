@@ -4310,7 +4310,7 @@ async function cancelOrder(id) {
         return `
         <div class="update-item-row" id="fu-row-${u.id}">
           <div class="update-item-body">
-            <div class="update-item-meta">${escHtml(u.author)} · ${escHtml(u.date_label)}</div>
+            <div class="update-item-meta">${escHtml(u.author)} · ${escHtml(u.date_label)} · 👍 ${Number(u.likes_count) || 0}</div>
             <div class="update-item-text">${escHtml(u.body)}</div>
             ${imgsHtml}
             ${u.photo_url ? `<img class="update-item-photo" src="${escHtml(u.photo_url)}" alt="Farm update photo" loading="lazy" onerror="this.style.display='none'">` : ''}
