@@ -4108,10 +4108,18 @@ async function cancelOrder(id) {
     const card = document.getElementById('portal-plan-card');
     const active = _portalOrders.find(o => o.status === 'active');
     if (!active) {
-      card.innerHTML = `<div class="portal-no-sub" style="grid-column:1/-1;">
-        You don't have an active subscription.
-        <a href="#" onclick="switchView('plans');return false;" style="color:#e85d04;font-weight:600;">Browse plans →</a>
-      </div>`;
+      const pending = _portalOrders.find(o => o.status === 'pending');
+      if (pending) {
+        card.innerHTML = `<div class="portal-no-sub" style="grid-column:1/-1;">
+          <p>Your subscription payment is pending. Complete your payment to activate your egg subscription.</p>
+          <button class="btn-primary" onclick="resumeCheckout(${pending.id})" style="margin-top:.8rem;">💳 Complete Payment</button>
+        </div>`;
+      } else {
+        card.innerHTML = `<div class="portal-no-sub" style="grid-column:1/-1;">
+          <p>You don't have an active subscription.</p>
+          <button class="btn-primary" onclick="switchView('plans')" style="margin-top:.8rem;">🥚 Subscribe Now</button>
+        </div>`;
+      }
       return;
     }
     const fulfillMethod  = active.fulfillment_method === 'delivery' ? '🚗 Delivery' : '🏡 Pick-up';
@@ -4207,6 +4215,33 @@ async function cancelOrder(id) {
 
   function openBillingPortal() {
     window.location.href = '/billing-portal';
+  }
+
+  async function resumeCheckout(orderId) {
+    const order = _portalOrders.find(o => o.id === orderId);
+    if (!order) return;
+    const btn = document.querySelector('#portal-panel-sub .btn-primary');
+    if (btn) { btn.disabled = true; btn.textContent = 'Opening checkout…'; }
+    try {
+      const body = {
+        planName:          order.plan_name,
+        fulfillmentMethod: order.fulfillment_method,
+        deliveryAddress:   order.delivery_address || undefined,
+        pickupDay:         order.pickup_day || undefined,
+        plan_id:           stripeServicePlanId(order.plan_name),
+        user_id:           currentUser && currentUser.id
+      };
+      if (order.boxes12_per_delivery != null) body.boxes12 = order.boxes12_per_delivery;
+      if (order.boxes18_per_delivery != null) body.boxes18 = order.boxes18_per_delivery;
+      if (order.duration_weeks)               body.durationWeeks = order.duration_weeks;
+      const data = await apiPost('/create-checkout-session', body);
+      if (data.error) { showFlash('portal-flash', data.error, 'err'); return; }
+      if (!data.url)  { showFlash('portal-flash', 'Checkout did not return a redirect URL.', 'err'); return; }
+      window.location.href = data.url;
+    } catch (_) {
+      showFlash('portal-flash', 'Failed to start checkout. Please try again.', 'err');
+      if (btn) { btn.disabled = false; btn.textContent = '💳 Complete Payment'; }
+    }
   }
 
   function renderPortalCancel() {
