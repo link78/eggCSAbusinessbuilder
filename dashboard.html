@@ -2356,6 +2356,33 @@
         <p style="font-size:.84rem;color:#888;margin:0 0 .8rem;">All subscriber orders — edit plan/status or cancel.</p>
         <div id="admin-orders-list">Loading…</div>
       </div>
+      <!-- Stripe Settings -->
+      <div class="card" style="margin-top:1.2rem;" id="admin-stripe-settings-card">
+        <h3>💳 Stripe Settings</h3>
+        <p style="font-size:.84rem;color:#888;margin:0 0 1rem;">
+          Enter your Stripe API keys to enable subscription billing.
+          Keys saved here are used as a fallback when the corresponding environment variable is not set.
+        </p>
+        <div id="admin-stripe-flash"></div>
+        <div style="margin-bottom:.9rem;">
+          <label style="display:block;font-weight:600;margin-bottom:.3rem;font-size:.9rem;" for="stripe-publishable-key-input">
+            Publishable Key <span style="font-weight:400;color:#888;">(pk_live_… or pk_test_…)</span>
+          </label>
+          <div id="stripe-publishable-source" style="font-size:.78rem;color:#888;margin-bottom:.35rem;display:none;"></div>
+          <input type="text" id="stripe-publishable-key-input" autocomplete="off" spellcheck="false"
+            placeholder="pk_test_…" style="width:100%;box-sizing:border-box;padding:.45rem .6rem;border:1px solid #ddd;border-radius:6px;font-size:.88rem;" />
+        </div>
+        <div style="margin-bottom:1rem;">
+          <label style="display:block;font-weight:600;margin-bottom:.3rem;font-size:.9rem;" for="stripe-secret-key-input">
+            Secret Key <span style="font-weight:400;color:#888;">(sk_live_… or sk_test_…)</span>
+          </label>
+          <div id="stripe-secret-source" style="font-size:.78rem;color:#888;margin-bottom:.35rem;display:none;"></div>
+          <input type="password" id="stripe-secret-key-input" autocomplete="new-password" spellcheck="false"
+            placeholder="sk_test_…" style="width:100%;box-sizing:border-box;padding:.45rem .6rem;border:1px solid #ddd;border-radius:6px;font-size:.88rem;" />
+          <div style="font-size:.75rem;color:#aaa;margin-top:.3rem;">Leave blank to keep the current secret key unchanged.</div>
+        </div>
+        <button class="btn-primary" onclick="adminSaveStripeSettings()" style="min-width:130px;">Save Keys</button>
+      </div>
     </div>
   </div>
 </section>
@@ -3671,6 +3698,7 @@
         adminPanel.style.display = 'block';
         loadAdminUsers();
         loadAdminOrders();
+        loadAdminStripeSettings();
       } else {
         adminPanel.style.display = 'none';
       }
@@ -3915,6 +3943,57 @@
   document.getElementById('edit-order-modal').addEventListener('click', function(e) {
     if (e.target === this) closeEditOrderModal();
   });
+
+  /* ═══════════════════════════════════════════════════════
+     ADMIN — STRIPE SETTINGS
+  ═══════════════════════════════════════════════════════ */
+
+  async function loadAdminStripeSettings() {
+    try {
+      const data = await apiFetch('/api/admin/stripe-settings');
+      if (data.error) return;
+
+      const pkInput = document.getElementById('stripe-publishable-key-input');
+      const skInput = document.getElementById('stripe-secret-key-input');
+      const pkSource = document.getElementById('stripe-publishable-source');
+      const skSource = document.getElementById('stripe-secret-source');
+
+      if (data.publishableKey) pkInput.value = data.publishableKey;
+
+      if (data.publishableSource === 'env') {
+        pkInput.disabled = true;
+        pkSource.textContent = '⚠ Set via environment variable (STRIPE_PUBLISHABLE_KEY). Edit your deployment env to change it.';
+        pkSource.style.display = 'block';
+      }
+      if (data.secretSource === 'env') {
+        skInput.disabled = true;
+        skInput.placeholder = '••••• (set via environment variable)';
+        skSource.textContent = '⚠ Set via environment variable (STRIPE_SECRET_KEY). Edit your deployment env to change it.';
+        skSource.style.display = 'block';
+      } else if (data.secretKeySet) {
+        skInput.placeholder = '••••• (saved — leave blank to keep)';
+      }
+    } catch (_) { /* non-critical */ }
+  }
+
+  async function adminSaveStripeSettings() {
+    const pk = document.getElementById('stripe-publishable-key-input').value.trim();
+    const sk = document.getElementById('stripe-secret-key-input').value.trim();
+    const body = {};
+    if (pk) body.publishableKey = pk;
+    if (sk) body.secretKey = sk;
+    if (!pk && !sk) {
+      showFlash('admin-stripe-flash', 'Enter at least one key to save.', 'warn'); return;
+    }
+    try {
+      const data = await apiPut('/api/admin/stripe-settings', body);
+      if (data.error) { showFlash('admin-stripe-flash', data.error, 'err'); return; }
+      showFlash('admin-stripe-flash', 'Stripe keys saved.', 'ok');
+      document.getElementById('stripe-secret-key-input').value = '';
+      document.getElementById('stripe-secret-key-input').placeholder = '••••• (saved — leave blank to keep)';
+    } catch (_) { showFlash('admin-stripe-flash', 'Failed to save keys.', 'err'); }
+  }
+
 
   async function loadOrders() {
     const container = document.getElementById('orders-list');

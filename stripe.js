@@ -1,16 +1,49 @@
 const Stripe = require('stripe');
 const db = require('./db');
 
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
-const STRIPE_PUBLISHABLE_KEY = process.env.STRIPE_PUBLISHABLE_KEY || '';
-const stripe = STRIPE_SECRET_KEY ? Stripe(STRIPE_SECRET_KEY) : null;
+// Keys read from environment variables at startup (highest priority).
+// DB-stored keys are used as fallback when the env var is not set.
+let _secretKey      = process.env.STRIPE_SECRET_KEY      || '';
+let _publishableKey = process.env.STRIPE_PUBLISHABLE_KEY || '';
+let _stripe = _secretKey ? Stripe(_secretKey) : null;
 
-function isConfigured() {
-  return Boolean(stripe);
+function _rebuild() {
+  _stripe = _secretKey ? Stripe(_secretKey) : null;
 }
 
-function getClient() {
-  return stripe;
+/**
+ * Load Stripe keys from the `settings` table, using them as a fallback when
+ * the corresponding environment variable is not set.  Call once after the DB
+ * is ready (e.g. after `db.ready` resolves) and again whenever an admin saves
+ * new keys via the admin API.
+ */
+async function loadFromDb() {
+  try {
+    const rows = (await db.query(
+      "SELECT key, value FROM settings WHERE key IN ('stripe_secret_key', 'stripe_publishable_key')"
+    )).rows;
+    for (const row of rows) {
+      if (row.key === 'stripe_secret_key' && !process.env.STRIPE_SECRET_KEY) {
+        _secretKey = row.value;
+      }
+      if (row.key === 'stripe_publishable_key' && !process.env.STRIPE_PUBLISHABLE_KEY) {
+        _publishableKey = row.value;
+      }
+    }
+    _rebuild();
+  } catch (_) {
+    // DB may not be available during early startup — caller can retry.
+  }
+}
+
+/**
+ * Update in-memory keys directly (used by the admin API after persisting to DB).
+ * Each parameter is optional; pass `undefined` to leave the existing value unchanged.
+ */
+function setKeys({ secretKey, publishableKey } = {}) {
+  if (secretKey      !== undefined && secretKey      !== null) _secretKey      = secretKey;
+  if (publishableKey !== undefined && publishableKey !== null) _publishableKey = publishableKey;
+  _rebuild();
 }
 
 function getBaseUrl(req) {
@@ -44,10 +77,10 @@ function getConfiguredPriceId(planId, planName) {
 }
 
 async function ensureStripeCustomerForUser(user) {
-  if (!stripe || !user) return null;
+  if (!_stripe || !user) return null;
   if (user.stripe_customer_id) return user.stripe_customer_id;
 
-  const customer = await stripe.customers.create({
+  const customer = await _stripe.customers.create({
     email: user.email,
     name: user.name,
     metadata: { user_id: String(user.id) }
@@ -104,14 +137,24 @@ async function updateSubscriptionStatus({ customerId, subscriptionId, priceId, s
   }
 }
 
+function isConfigured() {
+  return Boolean(_stripe);
+}
+
+function getClient() {
+  return _stripe;
+}
+
 function getPublishableKey() {
-  return STRIPE_PUBLISHABLE_KEY || null;
+  return _publishableKey || null;
 }
 
 module.exports = {
   getClient,
   isConfigured,
   getPublishableKey,
+  loadFromDb,
+  setKeys,
   getBaseUrl,
   planKeyFromName,
   getConfiguredPriceId,
