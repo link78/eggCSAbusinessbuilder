@@ -1122,6 +1122,7 @@
   let _csrf      = null;
   let _user      = null;
   let _authMode  = 'login';
+  let _stripePublishableKey = null;
 
   /* ── CSRF + API helpers ─────────────────────────────────── */
   async function getCsrf() {
@@ -1350,6 +1351,14 @@
   }
 
   /* ── Submit ─────────────────────────────────────────────── */
+  function _planKeyFromName(planName) {
+    if (planName === 'Small Family')  return 'small_family';
+    if (planName === 'Family')        return 'family';
+    if (planName === 'Solo / Couple') return 'solo_couple';
+    if (planName === 'Custom')        return 'custom';
+    return '';
+  }
+
   async function submitSubscription() {
     const btn      = document.getElementById('m-submit-btn');
     btn.disabled   = true;
@@ -1366,6 +1375,30 @@
       const payload = buildPayload();
       if (!payload) { btn.disabled = false; btn.textContent = 'Subscribe Now'; return; }
 
+      // If Stripe is configured, redirect to hosted checkout for payment
+      if (_stripePublishableKey) {
+        btn.textContent = 'Opening checkout…';
+        const checkoutBody = {
+          ...payload,
+          plan_id: _planKeyFromName(_selPlan),
+          user_id: _user && _user.id
+        };
+        const data = await apiPost('/create-checkout-session', checkoutBody);
+        if (data.error) {
+          showFlash(data.error, 'err');
+          btn.disabled = false; btn.textContent = 'Subscribe Now';
+          return;
+        }
+        if (!data.url) {
+          showFlash('Checkout did not return a redirect URL.', 'err');
+          btn.disabled = false; btn.textContent = 'Subscribe Now';
+          return;
+        }
+        window.location.href = data.url;
+        return;
+      }
+
+      // Fallback: create order directly when Stripe is not configured
       const data = await apiPost('/api/orders', payload);
       if (data.error) {
         showFlash(data.error, 'err');
@@ -1582,6 +1615,10 @@
     try {
       const d = await fetch('/api/auth/me', { credentials: 'same-origin' }).then(r => r.json());
       _user = d.user || null;
+    } catch (_) {}
+    try {
+      const sc = await fetch('/stripe-config', { credentials: 'same-origin' }).then(r => r.json());
+      _stripePublishableKey = sc.publishableKey || null;
     } catch (_) {}
     loadPlans();
     loadReviews();
