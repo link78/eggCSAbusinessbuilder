@@ -1232,6 +1232,7 @@
     }
     #change-plan-modal-box h3 { margin: 0 0 1rem; font-size: 1.1rem; color: #c45203; }
   </style>
+  <script src="https://js.stripe.com/v3/" async></script>
 </head>
 <body>
 
@@ -2415,6 +2416,7 @@
   let selectedRating = 0;
   let _planConfigs  = [];   // cached plan configurations
   let _editingPlanId = null;
+  let _stripePublishableKey = null;  // loaded from /stripe-config
 
   /* ═══════════════════════════════════════════════════════
      AUTH GATE
@@ -4968,6 +4970,12 @@ async function cancelOrder(id) {
 
   async function init() {
     await getCsrfToken();
+    try {
+      const stripeConfig = await apiFetch('/stripe-config');
+      _stripePublishableKey = stripeConfig.publishableKey || null;
+    } catch (_) {
+      _stripePublishableKey = null;
+    }
     try {
       const data = await apiFetch('/api/auth/me');
       currentUser = data.user || null;
