@@ -336,6 +336,23 @@
     }
     .info-note strong { color: #0c5296; }
 
+    /* ── STRIPE CONFIG NOTICE ── */
+    .stripe-config-notice {
+      background: #fff3cd; border-left: 4px solid #e8a800;
+      border-radius: 0 8px 8px 0; padding: .75rem 1.1rem;
+      font-size: .87rem; color: #856404; font-weight: 600;
+      line-height: 1.5; margin-bottom: 1rem;
+    }
+    .stripe-config-notice a { color: #856404; }
+
+    /* ── STRIPE CONNECTED BADGE ── */
+    .stripe-status-badge {
+      display: inline-flex; align-items: center; gap: .35rem;
+      padding: .3rem .75rem; border-radius: 20px; font-size: .82rem; font-weight: 700;
+    }
+    .stripe-status-badge.connected { background: #d4f5d4; color: #1a7a1a; }
+    .stripe-status-badge.disconnected { background: #fde8e8; color: #c0392b; }
+
     /* ── CUSTOM PLAN CARD ── */
     .custom-plan-card { border: 2px dashed #e0d8cc; }
     .custom-plan-controls { margin: .8rem 0; }
@@ -1356,6 +1373,9 @@
         <div class="sidebar-nav-item" id="nav-settings"    onclick="switchView('settings')">
           <span class="nav-icon">⚙️</span> Settings
         </div>
+        <div class="sidebar-nav-item" id="nav-billing"     onclick="switchView('billing')" style="display:none;">
+          <span class="nav-icon">💳</span> Billing
+        </div>
       </nav>
 
       <div class="sidebar-footer">
@@ -1746,6 +1766,8 @@
 <section class="view-panel tab-panel" id="panel-1">
   <h2 class="section-title">Subscription Plans</h2>
   <p class="section-subtitle">Choose a fixed plan or build your own. Pick-up or local delivery. +$2 per bi-weekly delivery.</p>
+
+  <div id="plans-stripe-notice" class="stripe-config-notice" style="display:none;"></div>
 
   <div class="plans-grid">
 
@@ -2392,6 +2414,64 @@
 </footer>
 
 <!-- ══════════════════════════════════════════
+     BILLING VIEW (admin only)
+═══════════════════════════════════════════ -->
+<section class="view-panel" id="view-billing">
+  <h2 class="section-title">💳 Billing &amp; Payments</h2>
+  <p class="section-subtitle">Configure Stripe, manage subscription payments, and monitor payment status.</p>
+  <div id="billing-flash"></div>
+
+  <!-- Stripe Configuration Card -->
+  <div class="card" id="billing-stripe-card">
+    <h3>🔑 Stripe Configuration</h3>
+    <div id="billing-stripe-status" style="margin-bottom:1rem;"></div>
+    <p style="font-size:.84rem;color:#888;margin:0 0 1rem;">
+      Enter your Stripe API keys to enable subscription checkout on every plan.
+      Keys saved here are used as a fallback when the corresponding environment variable is not set.
+    </p>
+    <div id="billing-stripe-flash"></div>
+    <div style="margin-bottom:.9rem;">
+      <label style="display:block;font-weight:600;margin-bottom:.3rem;font-size:.9rem;">
+        Publishable Key <span style="font-weight:400;color:#888;">(pk_live_… or pk_test_…)</span>
+      </label>
+      <div id="billing-stripe-publishable-source" style="font-size:.78rem;color:#888;margin-bottom:.35rem;display:none;"></div>
+      <input type="text" id="billing-stripe-publishable-key" autocomplete="off" spellcheck="false"
+        placeholder="pk_test_…" style="width:100%;box-sizing:border-box;padding:.45rem .6rem;border:1px solid #ddd;border-radius:6px;font-size:.88rem;" />
+    </div>
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;font-weight:600;margin-bottom:.3rem;font-size:.9rem;">
+        Secret Key <span style="font-weight:400;color:#888;">(sk_live_… or sk_test_…)</span>
+      </label>
+      <div id="billing-stripe-secret-source" style="font-size:.78rem;color:#888;margin-bottom:.35rem;display:none;"></div>
+      <input type="password" id="billing-stripe-secret-key" autocomplete="new-password" spellcheck="false"
+        placeholder="sk_test_…" style="width:100%;box-sizing:border-box;padding:.45rem .6rem;border:1px solid #ddd;border-radius:6px;font-size:.88rem;" />
+      <div style="font-size:.75rem;color:#aaa;margin-top:.3rem;">Leave blank to keep the current secret key unchanged.</div>
+    </div>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;">
+      <button class="btn-primary" onclick="billingPageSaveStripeKeys()" style="min-width:130px;">Save Keys</button>
+      <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer"
+         class="btn-secondary" style="text-decoration:none;">Open Stripe Dashboard ↗</a>
+    </div>
+    <div style="margin-top:1.1rem;padding:.85rem 1.1rem;background:#f5f0e8;border-radius:8px;font-size:.83rem;color:#555;line-height:1.6;">
+      <strong>Webhook endpoint:</strong>
+      <code style="font-family:monospace;background:#e8e0d0;padding:.1rem .4rem;border-radius:4px;">POST /webhook</code><br>
+      Required events: <code style="font-family:monospace;background:#e8e0d0;padding:.1rem .4rem;border-radius:4px;">invoice.payment_succeeded</code>,
+      <code style="font-family:monospace;background:#e8e0d0;padding:.1rem .4rem;border-radius:4px;">invoice.payment_failed</code>,
+      <code style="font-family:monospace;background:#e8e0d0;padding:.1rem .4rem;border-radius:4px;">customer.subscription.updated</code>,
+      <code style="font-family:monospace;background:#e8e0d0;padding:.1rem .4rem;border-radius:4px;">customer.subscription.deleted</code><br>
+      Set <code style="font-family:monospace;background:#e8e0d0;padding:.1rem .4rem;border-radius:4px;">STRIPE_WEBHOOK_SECRET</code> in your environment to validate webhook signatures.
+    </div>
+  </div>
+
+  <!-- Payment Overview -->
+  <div class="card" style="margin-top:1.2rem;">
+    <h3>📋 Payment Overview</h3>
+    <p style="font-size:.84rem;color:#888;margin:0 0 1rem;">All subscriber orders and their payment status.</p>
+    <div id="billing-orders-list"><div style="color:#aaa;font-size:.9rem;">Loading…</div></div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
      EDIT PLAN MODAL
 ═══════════════════════════════════════════ -->
 <div id="edit-plan-modal" onclick="closeEditPlanModal(event)" role="dialog" aria-modal="true" aria-labelledby="edit-plan-modal-title">
@@ -2491,6 +2571,7 @@
     pickup:        { panelId: 'view-pickup',       navId: 'nav-pickup' },
     'farm-updates':{ panelId: 'view-farm-updates', navId: 'nav-farm-updates' },
     'about-page':  { panelId: 'view-about-page',  navId: 'nav-about-page' },
+    billing:       { panelId: 'view-billing',      navId: 'nav-billing' },
   };
 
   function switchView(name) {
@@ -2522,6 +2603,8 @@
     if (name === 'home')           loadDashboardMetrics();
     if (name === 'farm-updates')   loadAdminFarmUpdates();
     if (name === 'about-page')     loadAdminAboutPage();
+    if (name === 'billing')        loadAdminBilling();
+    if (name === 'plans')          updatePlanStripeNotice();
   }
 
   // Legacy switchTab compatibility — maps old tab indices to views
@@ -4293,7 +4376,7 @@ async function cancelOrder(id) {
     // Hide admin-only nav items from customers
     const isAdmin = currentUser && currentUser.role === 'admin';
     ['nav-home', 'nav-calculator', 'nav-customers', 'nav-orders', 'nav-pickup',
-     'nav-farm-updates', 'nav-about-page', 'nav-settings'].forEach(id => {
+     'nav-farm-updates', 'nav-about-page', 'nav-settings', 'nav-billing'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = isAdmin ? '' : 'none';
     });
@@ -5102,6 +5185,7 @@ async function cancelOrder(id) {
     updateSoloPlanDisplay();
     updateCustomPlanDisplay();
     loadPlanConfig();  // Load plan config for Edit Plan modal
+    updatePlanStripeNotice();
 
     if (currentUser) {
       hideAuthGate();
@@ -5110,6 +5194,120 @@ async function cancelOrder(id) {
     } else {
       showAuthGate();
       showAuthForm('login');
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     BILLING PAGE (admin)
+  ═══════════════════════════════════════════════════════ */
+
+  function updatePlanStripeNotice() {
+    const noticeEl = document.getElementById('plans-stripe-notice');
+    if (!noticeEl) return;
+    if (_stripePublishableKey) {
+      noticeEl.style.display = 'none';
+      return;
+    }
+    if (currentUser && currentUser.role === 'admin') {
+      noticeEl.innerHTML = '⚠️ Stripe is not configured — customers cannot check out yet. ' +
+        '<a href="#" onclick="switchView(\'billing\');return false;">Configure Billing →</a>';
+    } else if (currentUser) {
+      noticeEl.innerHTML = '⚠️ Online payments are not yet available. Please contact the farm to arrange your subscription.';
+    } else {
+      noticeEl.style.display = 'none';
+      return;
+    }
+    noticeEl.style.display = 'block';
+  }
+
+  async function loadAdminBilling() {
+    // ── Stripe key status ──
+    try {
+      const data = await apiFetch('/api/admin/stripe-settings');
+      const pkInput  = document.getElementById('billing-stripe-publishable-key');
+      const skInput  = document.getElementById('billing-stripe-secret-key');
+      const pkSource = document.getElementById('billing-stripe-publishable-source');
+      const skSource = document.getElementById('billing-stripe-secret-source');
+      const statusEl = document.getElementById('billing-stripe-status');
+
+      if (data.publishableKey) pkInput.value = data.publishableKey;
+      if (data.secretKeySet) {
+        skInput.placeholder = '••••• (saved — leave blank to keep)';
+      }
+      if (data.publishableSource) {
+        pkSource.textContent = 'Source: ' + data.publishableSource;
+        pkSource.style.display = 'block';
+      }
+      if (data.secretSource) {
+        skSource.textContent = 'Source: ' + data.secretSource;
+        skSource.style.display = 'block';
+      }
+      const isConfigured = data.secretKeySet && data.publishableKey;
+      statusEl.innerHTML = isConfigured
+        ? '<span class="stripe-status-badge connected">✓ Stripe connected</span>'
+        : '<span class="stripe-status-badge disconnected">✗ Stripe not configured — enter your API keys below</span>';
+    } catch (_) {}
+
+    // ── Payment overview ──
+    try {
+      const data = await apiFetch('/api/admin/orders');
+      const container = document.getElementById('billing-orders-list');
+      if (!data.orders || data.orders.length === 0) {
+        container.innerHTML = '<div style="color:#aaa;font-size:.9rem;">No orders found.</div>';
+        return;
+      }
+      container.innerHTML = data.orders.map(o => {
+        const statusCls = o.status === 'active' ? 'status-active'
+          : o.status === 'pending' ? 'status-warn'
+          : 'status-cancelled';
+        const priceLine = o.duration_weeks ? `$${o.price} total` : `$${o.price}/mo`;
+        const nextBilling = (o.status === 'active' && o.next_billing_date)
+          ? new Date(o.next_billing_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          : null;
+        return `<div class="portal-billing-row">
+          <div>
+            <span style="font-weight:600;">${escHtml(o.user_name || 'Unknown')}</span>
+            <span style="font-size:.8rem;color:#888;margin-left:.5rem;">${escHtml(o.plan_name)}</span>
+            ${nextBilling ? `<div style="font-size:.78rem;color:#aaa;margin-top:.15rem;">Next billing: ${nextBilling}</div>` : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:flex-end;">
+            <span class="order-status ${statusCls}">${escHtml(o.status)}</span>
+            <span style="color:#e85d04;font-weight:700;">${escHtml(priceLine)}</span>
+          </div>
+        </div>`;
+      }).join('');
+    } catch (_) {
+      const container = document.getElementById('billing-orders-list');
+      if (container) container.innerHTML = '<div style="color:#aaa;font-size:.9rem;">Failed to load orders.</div>';
+    }
+  }
+
+  async function billingPageSaveStripeKeys() {
+    const pk = document.getElementById('billing-stripe-publishable-key').value.trim();
+    const sk = document.getElementById('billing-stripe-secret-key').value.trim();
+    if (!pk && !sk) {
+      showFlash('billing-stripe-flash', 'Enter at least one key to save.', 'warn');
+      return;
+    }
+    try {
+      const body = {};
+      if (pk) body.publishableKey = pk;
+      if (sk) body.secretKey = sk;
+      const data = await apiPut('/api/admin/stripe-settings', body);
+      if (data.error) { showFlash('billing-stripe-flash', data.error, 'err'); return; }
+      showFlash('billing-stripe-flash', 'Stripe keys saved successfully.', 'ok');
+      document.getElementById('billing-stripe-secret-key').value = '';
+      document.getElementById('billing-stripe-secret-key').placeholder = '••••• (saved — leave blank to keep)';
+      // Refresh in-memory publishable key and update plans notice
+      try {
+        const config = await apiFetch('/stripe-config');
+        _stripePublishableKey = config.publishableKey || null;
+        updatePlanStripeNotice();
+      } catch (_) {}
+      // Refresh billing status
+      loadAdminBilling();
+    } catch (_) {
+      showFlash('billing-stripe-flash', 'Failed to save keys.', 'err');
     }
   }
 
