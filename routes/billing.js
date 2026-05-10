@@ -145,6 +145,10 @@ async function createPendingOrder(userId, body, stripePriceId) {
   return inserted;
 }
 
+router.get('/stripe-config', (req, res) => {
+  res.json({ publishableKey: stripeService.getPublishableKey() });
+});
+
 router.post('/create-checkout-session', requireAuth, requireCsrf, async (req, res) => {
   if (!stripeService.isConfigured()) {
     return res.status(503).json({ error: 'Stripe is not configured.' });

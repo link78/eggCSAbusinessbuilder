@@ -2,6 +2,7 @@ const Stripe = require('stripe');
 const db = require('./db');
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
+const STRIPE_PUBLISHABLE_KEY = process.env.STRIPE_PUBLISHABLE_KEY || '';
 const stripe = STRIPE_SECRET_KEY ? Stripe(STRIPE_SECRET_KEY) : null;
 
 function isConfigured() {
@@ -103,9 +104,14 @@ async function updateSubscriptionStatus({ customerId, subscriptionId, priceId, s
   }
 }
 
+function getPublishableKey() {
+  return STRIPE_PUBLISHABLE_KEY || null;
+}
+
 module.exports = {
   getClient,
   isConfigured,
+  getPublishableKey,
   getBaseUrl,
   planKeyFromName,
   getConfiguredPriceId,
