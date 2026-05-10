@@ -4296,7 +4296,16 @@ async function cancelOrder(id) {
     }).join('');
   }
 
-  function openBillingPortal() {
+  async function openBillingPortal() {
+    try {
+      const cfg = await fetch('/api/billing/stripe-config').then(r => r.json());
+      if (!cfg.publishableKey) {
+        showFlash('portal-flash', 'Stripe payments are not configured yet. Please contact support.', 'err');
+        return;
+      }
+    } catch (_) {
+      // If the check fails, proceed and let the server handle the error.
+    }
     window.location.href = '/billing-portal';
   }
 
@@ -5191,6 +5200,11 @@ async function cancelOrder(id) {
       hideAuthGate();
       if (currentUser.role === 'admin') loadChecklist();
       switchView(currentUser.role === 'admin' ? 'home' : 'portal');
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('billing_error') === 'stripe_not_configured') {
+        showFlash('portal-flash', 'Stripe payments are not configured. Please contact support.', 'err');
+        history.replaceState(null, '', window.location.pathname);
+      }
     } else {
       showAuthGate();
       showAuthForm('login');

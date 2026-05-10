@@ -208,7 +208,7 @@ router.post('/create-checkout-session', requireAuth, requireCsrf, async (req, re
 
 router.get('/billing-portal', requireAuth, async (req, res) => {
   if (!stripeService.isConfigured()) {
-    return res.status(503).send('Stripe is not configured.');
+    return res.redirect('/dashboard?billing_error=stripe_not_configured');
   }
   try {
     const user = await stripeService.getUserWithStripeCustomer(req.session.userId);
