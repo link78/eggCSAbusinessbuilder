@@ -159,6 +159,15 @@ async function init() {
     )
   `);
 
+  // Generic key-value settings store (e.g. Stripe API keys configured via admin UI)
+  await query(`
+    CREATE TABLE IF NOT EXISTS settings (
+      key        TEXT PRIMARY KEY,
+      value      TEXT NOT NULL DEFAULT '',
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+
   // Seed default about content rows (idempotent)
   await seedAboutContent();
 
@@ -253,7 +262,7 @@ async function seedAboutContent() {
  */
 async function reset() {
   await query(
-    'TRUNCATE users, orders, reviews, checklist_progress, plan_config, farm_updates, farm_update_likes, about_content RESTART IDENTITY CASCADE'
+    'TRUNCATE users, orders, reviews, checklist_progress, plan_config, farm_updates, farm_update_likes, about_content, settings RESTART IDENTITY CASCADE'
   );
   // Re-seed plan configurations so tests always start with a known state.
   await seedPlanConfig();

@@ -4,6 +4,7 @@ const fs      = require('fs');
 const crypto  = require('crypto');
 const multer  = require('multer');
 const db      = require('../db');
+const stripeService = require('../stripe');
 
 const router = express.Router();
 
@@ -442,6 +443,60 @@ router.put('/about-content/:section_key', requireAdmin, async (req, res) => {
 
   const row = (await db.query('SELECT * FROM about_content WHERE section_key = $1', [section_key])).rows[0];
   res.json({ section: row });
+});
+
+// ── Stripe Settings ───────────────────────────────────────────────────────────
+
+// GET /api/admin/stripe-settings — return current Stripe key status.
+// The secret key is never returned; only whether it is set.
+// The publishable key is returned when it originates from the DB;
+// if it is set via environment variable the UI shows it read-only.
+router.get('/stripe-settings', requireAdmin, async (req, res) => {
+  const rows = (await db.query(
+    "SELECT key, value FROM settings WHERE key IN ('stripe_secret_key', 'stripe_publishable_key')"
+  )).rows;
+  const byKey = {};
+  for (const row of rows) byKey[row.key] = row.value;
+
+  const envSecretSet      = Boolean(process.env.STRIPE_SECRET_KEY);
+  const envPublishableSet = Boolean(process.env.STRIPE_PUBLISHABLE_KEY);
+
+  res.json({
+    publishableKey:    envPublishableSet ? process.env.STRIPE_PUBLISHABLE_KEY : (byKey.stripe_publishable_key || null),
+    secretKeySet:      envSecretSet || Boolean(byKey.stripe_secret_key),
+    publishableSource: envPublishableSet ? 'env' : (byKey.stripe_publishable_key ? 'db' : null),
+    secretSource:      envSecretSet      ? 'env' : (byKey.stripe_secret_key      ? 'db' : null)
+  });
+});
+
+// PUT /api/admin/stripe-settings — save Stripe keys to the settings table and
+// reload the in-memory Stripe client.  Only keys explicitly provided are updated.
+// Sending an empty string clears a DB-stored key (env-sourced keys are unaffected).
+router.put('/stripe-settings', requireAdmin, async (req, res) => {
+  const { publishableKey, secretKey } = req.body || {};
+
+  if (publishableKey !== undefined) {
+    const val = String(publishableKey).trim();
+    await db.query(
+      `INSERT INTO settings (key, value, updated_at)
+       VALUES ('stripe_publishable_key', $1, NOW())
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+      [val]
+    );
+  }
+
+  if (secretKey !== undefined) {
+    const val = String(secretKey).trim();
+    await db.query(
+      `INSERT INTO settings (key, value, updated_at)
+       VALUES ('stripe_secret_key', $1, NOW())
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+      [val]
+    );
+  }
+
+  await stripeService.loadFromDb();
+  res.json({ ok: true });
 });
 
 module.exports = router;

@@ -12,6 +12,12 @@ const checklistRoutes = require('./routes/checklist');
 const adminRoutes     = require('./routes/admin');
 const planConfigRoutes = require('./routes/planConfig');
 const billingRoutes    = require('./routes/billing');
+const stripeService    = require('./stripe');
+
+// Load any DB-stored Stripe keys as soon as the database is ready.
+// Environment variables always take precedence; this is a fallback for keys
+// configured through the admin dashboard.
+db.ready.then(() => stripeService.loadFromDb()).catch(() => {});
 
 const app        = express();
 const IS_PROD    = process.env.NODE_ENV === 'production';
