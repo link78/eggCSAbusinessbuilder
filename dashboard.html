@@ -2469,6 +2469,60 @@
     <p style="font-size:.84rem;color:#888;margin:0 0 1rem;">All subscriber orders and their payment status.</p>
     <div id="billing-orders-list"><div style="color:#aaa;font-size:.9rem;">Loading…</div></div>
   </div>
+
+  <!-- Plan Price IDs Card -->
+  <div class="card" style="margin-top:1.2rem;" id="billing-price-ids-card">
+    <h3>🏷️ Plan Price IDs</h3>
+    <p style="font-size:.84rem;color:#888;margin:0 0 1rem;">
+      Link each plan to a recurring Stripe price. Copy the <strong>Price ID</strong> from your
+      <a href="https://dashboard.stripe.com/products" target="_blank" rel="noopener noreferrer">Stripe Products</a> page.
+      Price IDs saved here are used as a fallback when the corresponding
+      <code style="font-size:.8rem;background:#f3f3f3;padding:.1rem .35rem;border-radius:4px;">STRIPE_PRICE_*</code>
+      environment variable is not set.
+    </p>
+    <div id="billing-price-ids-flash"></div>
+    <div style="display:grid;gap:.85rem;">
+      <div>
+        <label style="display:block;font-weight:600;margin-bottom:.3rem;font-size:.9rem;">
+          Small Family <span style="font-weight:400;color:#888;">(1 dozen / 12-egg box)</span>
+        </label>
+        <div id="billing-price-small-family-source" style="font-size:.78rem;color:#888;margin-bottom:.3rem;display:none;"></div>
+        <input type="text" id="billing-price-small-family" autocomplete="off" spellcheck="false"
+          placeholder="price_…" style="width:100%;box-sizing:border-box;padding:.45rem .6rem;border:1px solid #ddd;border-radius:6px;font-size:.88rem;" />
+      </div>
+      <div>
+        <label style="display:block;font-weight:600;margin-bottom:.3rem;font-size:.9rem;">
+          Family <span style="font-weight:400;color:#888;">(18-egg box)</span>
+        </label>
+        <div id="billing-price-family-source" style="font-size:.78rem;color:#888;margin-bottom:.3rem;display:none;"></div>
+        <input type="text" id="billing-price-family" autocomplete="off" spellcheck="false"
+          placeholder="price_…" style="width:100%;box-sizing:border-box;padding:.45rem .6rem;border:1px solid #ddd;border-radius:6px;font-size:.88rem;" />
+      </div>
+      <div>
+        <label style="display:block;font-weight:600;margin-bottom:.3rem;font-size:.9rem;">
+          Solo / Couple <span style="font-weight:400;color:#888;">(custom box selection)</span>
+        </label>
+        <div id="billing-price-solo-couple-source" style="font-size:.78rem;color:#888;margin-bottom:.3rem;display:none;"></div>
+        <input type="text" id="billing-price-solo-couple" autocomplete="off" spellcheck="false"
+          placeholder="price_… (optional — leaves blank for dynamic pricing)" style="width:100%;box-sizing:border-box;padding:.45rem .6rem;border:1px solid #ddd;border-radius:6px;font-size:.88rem;" />
+      </div>
+      <div>
+        <label style="display:block;font-weight:600;margin-bottom:.3rem;font-size:.9rem;">
+          Custom <span style="font-weight:400;color:#888;">(flexible duration)</span>
+        </label>
+        <div id="billing-price-custom-source" style="font-size:.78rem;color:#888;margin-bottom:.3rem;display:none;"></div>
+        <input type="text" id="billing-price-custom" autocomplete="off" spellcheck="false"
+          placeholder="price_… (optional — leaves blank for dynamic pricing)" style="width:100%;box-sizing:border-box;padding:.45rem .6rem;border:1px solid #ddd;border-radius:6px;font-size:.88rem;" />
+      </div>
+    </div>
+    <div style="margin-top:1rem;">
+      <button class="btn-primary" onclick="billingPageSavePriceIds()" style="min-width:130px;">Save Price IDs</button>
+    </div>
+    <div style="margin-top:1rem;padding:.85rem 1.1rem;background:#f5f0e8;border-radius:8px;font-size:.83rem;color:#555;line-height:1.6;">
+      If no price ID is set for a plan, checkout will use a <strong>dynamically created</strong> Stripe price
+      based on the plan total. Pre-creating prices in Stripe is recommended for production.
+    </div>
+  </div>
 </section>
 
 <!-- ══════════════════════════════════════════
@@ -2603,7 +2657,7 @@
     if (name === 'home')           loadDashboardMetrics();
     if (name === 'farm-updates')   loadAdminFarmUpdates();
     if (name === 'about-page')     loadAdminAboutPage();
-    if (name === 'billing')        loadAdminBilling();
+    if (name === 'billing')        { loadAdminBilling(); loadAdminBillingPriceIds(); }
     if (name === 'plans')          updatePlanStripeNotice();
   }
 
@@ -5322,6 +5376,45 @@ async function cancelOrder(id) {
       loadAdminBilling();
     } catch (_) {
       showFlash('billing-stripe-flash', 'Failed to save keys.', 'err');
+    }
+  }
+
+  async function loadAdminBillingPriceIds() {
+    try {
+      const data = await apiFetch('/api/admin/stripe-price-ids');
+      if (data.error) return;
+      const planKeys = ['small_family', 'family', 'solo_couple', 'custom'];
+      for (const planKey of planKeys) {
+        const dashKey = planKey.replace(/_/g, '-');
+        const input  = document.getElementById(`billing-price-${dashKey}`);
+        const source = document.getElementById(`billing-price-${dashKey}-source`);
+        if (!input || !data[planKey]) continue;
+        if (data[planKey].priceId) input.value = data[planKey].priceId;
+        if (data[planKey].source) {
+          source.textContent = 'Source: ' + data[planKey].source;
+          source.style.display = 'block';
+        } else {
+          source.style.display = 'none';
+        }
+      }
+    } catch (_) {}
+  }
+
+  async function billingPageSavePriceIds() {
+    const planKeys = ['small_family', 'family', 'solo_couple', 'custom'];
+    const body = {};
+    for (const planKey of planKeys) {
+      const dashKey = planKey.replace(/_/g, '-');
+      const input = document.getElementById(`billing-price-${dashKey}`);
+      if (input) body[planKey] = input.value.trim();
+    }
+    try {
+      const data = await apiPut('/api/admin/stripe-price-ids', body);
+      if (data.error) { showFlash('billing-price-ids-flash', data.error, 'err'); return; }
+      showFlash('billing-price-ids-flash', 'Price IDs saved successfully.', 'ok');
+      loadAdminBillingPriceIds();
+    } catch (_) {
+      showFlash('billing-price-ids-flash', 'Failed to save price IDs.', 'err');
     }
   }
 
