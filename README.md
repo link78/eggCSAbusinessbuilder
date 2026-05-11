@@ -55,10 +55,35 @@ The database schema is created automatically on first start — no manual migrat
 
 ---
 
+## Deployment
+
+This repository contains the full Node.js/Express application source code required for Railpack-compatible hosts to detect and build the app:
+
+- `package.json` — declares the Node.js runtime, dependencies, and `npm start`
+- `package-lock.json` — locks dependency versions for reproducible installs
+- `server.js` / `app.js` — Express entry point and application setup
+- `db.js` — PostgreSQL schema initialization
+- `routes/` — API route handlers
+- `*.html` — static frontend pages served by Express
+
+For Railpack or similar Node.js platform deploys:
+
+1. Push the complete repository, including `package.json`, `package-lock.json`, `server.js`, `app.js`, `db.js`, `routes/`, and frontend HTML files.
+2. Configure the required environment variables in the host dashboard.
+3. Use the default start command:
+
+```bash
+npm start
+```
+
+Railpack detects this as a Node.js app from `package.json` and starts `server.js` through the `start` script.
+
+---
+
 ## Features
 
 - 📊 **Revenue Calculator** — real-time supply/demand sliders
-- 📦 **Subscription Plans** — Small Family ($19/mo), Family ($28/mo); **Solo / Couple** (flexible, min 1 box, 12-egg $5/wk or 18-egg $7/wk); **Custom Plan** (min 2 boxes, 2 weeks, mixed 12-egg and/or 18-egg boxes). All plans: +$2/delivery when choosing local delivery.
+- 📦 **Subscription Plans** — Small Family ($19/mo), Family ($28/mo); **Solo / Couple** (flexible, min 1 box, 12-egg $5/wk or 18-egg $7/wk); **Custom Plan** (min 1 box, mixed 12-egg and/or 18-egg boxes). All plans: +$2/delivery when choosing local delivery.
   - Choose **pick-up** (select a preferred day) or **local delivery** (enter your address)
   - Monthly billing with a "cancel anytime" policy
 - ✅ **Launch Checklist** — 8-step guide saved to your account
@@ -71,7 +96,16 @@ The database schema is created automatically on first start — no manual migrat
 
 | Variable | Required | Description |
 |---|---|---|
+| `DATABASE_URL` | Yes | PostgreSQL connection string. The schema is created automatically on startup. |
+| `DATABASE_SSL` | No | Set to `false` for local PostgreSQL if SSL should be disabled. Remote hosts default to SSL. |
 | `SESSION_SECRET` | Production only | Secret used to sign session cookies. Use a long, random string. |
 | `PORT` | No | Port to listen on (default: `3000`) |
 | `NODE_ENV` | No | Set to `production` to enable secure cookies and enforce `SESSION_SECRET` |
-
+| `APP_URL` | Stripe only | Public base URL used for Stripe checkout redirects. |
+| `STRIPE_SECRET_KEY` | Stripe only | Stripe secret API key. |
+| `STRIPE_PUBLISHABLE_KEY` | Stripe only | Stripe publishable key exposed to the frontend. |
+| `STRIPE_WEBHOOK_SECRET` | Stripe only | Stripe webhook signing secret for `/webhook`. |
+| `STRIPE_PRICE_SMALL_FAMILY` | Stripe only | Optional recurring Price ID for the Small Family plan. |
+| `STRIPE_PRICE_FAMILY` | Stripe only | Optional recurring Price ID for the Family plan. |
+| `STRIPE_PRICE_SOLO_COUPLE` | Stripe only | Optional recurring Price ID for the Solo / Couple plan. |
+| `STRIPE_PRICE_CUSTOM` | Stripe only | Optional recurring Price ID for custom plans. |
