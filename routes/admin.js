@@ -499,4 +499,51 @@ router.put('/stripe-settings', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+// GET /api/admin/stripe-price-ids — return the configured Stripe price IDs for each plan.
+// Shows both the active value and its source (env var or db).
+router.get('/stripe-price-ids', requireAdmin, async (req, res) => {
+  const planKeys = ['small_family', 'family', 'solo_couple', 'custom'];
+  const dbRows = (await db.query(
+    `SELECT key, value FROM settings WHERE key = ANY($1)`,
+    [planKeys.map(k => `stripe_price_${k}`)]
+  )).rows;
+  const dbByKey = {};
+  for (const row of dbRows) dbByKey[row.key] = row.value;
+
+  const result = {};
+  for (const planKey of planKeys) {
+    const envKey = `STRIPE_PRICE_${planKey.toUpperCase()}`;
+    const envVal = process.env[envKey] || null;
+    const dbVal  = dbByKey[`stripe_price_${planKey}`] || null;
+    result[planKey] = {
+      priceId: envVal || dbVal || null,
+      source:  envVal ? 'env' : (dbVal ? 'db' : null)
+    };
+  }
+  res.json(result);
+});
+
+// PUT /api/admin/stripe-price-ids — save plan price IDs to the settings table
+// and reload the in-memory Stripe service.  Only keys explicitly provided are updated.
+// Send an empty string to clear a DB-stored price ID.
+router.put('/stripe-price-ids', requireAdmin, async (req, res) => {
+  const planKeys = ['small_family', 'family', 'solo_couple', 'custom'];
+  const body = req.body || {};
+
+  for (const planKey of planKeys) {
+    if (body[planKey] !== undefined) {
+      const val = String(body[planKey]).trim();
+      await db.query(
+        `INSERT INTO settings (key, value, updated_at)
+         VALUES ($1, $2, NOW())
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
+        [`stripe_price_${planKey}`, val]
+      );
+    }
+  }
+
+  await stripeService.loadFromDb();
+  res.json({ ok: true });
+});
+
 module.exports = router;

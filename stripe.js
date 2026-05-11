@@ -7,29 +7,43 @@ let _secretKey      = process.env.STRIPE_SECRET_KEY      || '';
 let _publishableKey = process.env.STRIPE_PUBLISHABLE_KEY || '';
 let _stripe = _secretKey ? Stripe(_secretKey) : null;
 
+// In-memory cache of DB-stored plan price IDs.
+// Format: { small_family: 'price_...', family: 'price_...', ... }
+let _dbPriceIds = {};
+
+// All settings keys that hold plan price IDs in the settings table.
+const PLAN_PRICE_KEYS = ['small_family', 'family', 'solo_couple', 'custom'];
+
 function _rebuild() {
   _stripe = _secretKey ? Stripe(_secretKey) : null;
 }
 
 /**
- * Load Stripe keys from the `settings` table, using them as a fallback when
- * the corresponding environment variable is not set.  Call once after the DB
- * is ready (e.g. after `db.ready` resolves) and again whenever an admin saves
- * new keys via the admin API.
+ * Load Stripe keys and plan price IDs from the `settings` table, using them
+ * as a fallback when the corresponding environment variable is not set.
+ * Call once after the DB is ready (e.g. after `db.ready` resolves) and again
+ * whenever an admin saves new keys via the admin API.
  */
 async function loadFromDb() {
   try {
+    const priceSettingKeys = PLAN_PRICE_KEYS.map(k => `stripe_price_${k}`);
+    const allKeys = ['stripe_secret_key', 'stripe_publishable_key', ...priceSettingKeys];
     const rows = (await db.query(
-      "SELECT key, value FROM settings WHERE key IN ('stripe_secret_key', 'stripe_publishable_key')"
+      `SELECT key, value FROM settings WHERE key = ANY($1)`,
+      [allKeys]
     )).rows;
+    const newDbPriceIds = {};
     for (const row of rows) {
       if (row.key === 'stripe_secret_key' && !process.env.STRIPE_SECRET_KEY) {
         _secretKey = row.value;
-      }
-      if (row.key === 'stripe_publishable_key' && !process.env.STRIPE_PUBLISHABLE_KEY) {
+      } else if (row.key === 'stripe_publishable_key' && !process.env.STRIPE_PUBLISHABLE_KEY) {
         _publishableKey = row.value;
+      } else if (row.key.startsWith('stripe_price_')) {
+        const planKey = row.key.slice('stripe_price_'.length);
+        newDbPriceIds[planKey] = row.value;
       }
     }
+    _dbPriceIds = newDbPriceIds;
     _rebuild();
   } catch (_) {
     // DB may not be available during early startup — caller can retry.
@@ -44,6 +58,14 @@ function setKeys({ secretKey, publishableKey } = {}) {
   if (secretKey      !== undefined && secretKey      !== null) _secretKey      = secretKey;
   if (publishableKey !== undefined && publishableKey !== null) _publishableKey = publishableKey;
   _rebuild();
+}
+
+/**
+ * Return the DB-cached price IDs for all plans.
+ * The returned object maps plan keys (e.g. 'small_family') to price IDs.
+ */
+function getDbPriceIds() {
+  return Object.assign({}, _dbPriceIds);
 }
 
 function getBaseUrl(req) {
@@ -73,7 +95,7 @@ function priceEnvName(planKey) {
 
 function getConfiguredPriceId(planId, planName) {
   const key = planId || planKeyFromName(planName);
-  return process.env[priceEnvName(key)] || null;
+  return process.env[priceEnvName(key)] || _dbPriceIds[key] || null;
 }
 
 async function ensureStripeCustomerForUser(user) {
@@ -155,6 +177,7 @@ module.exports = {
   getPublishableKey,
   loadFromDb,
   setKeys,
+  getDbPriceIds,
   getBaseUrl,
   planKeyFromName,
   getConfiguredPriceId,
