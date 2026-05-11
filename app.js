@@ -90,6 +90,14 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
+// ── Health Check ─────────────────────────────────────────────────────────────
+
+// Lightweight liveness probe for Railway / Railpack healthchecks.
+// Returns 200 as soon as the Express app is accepting connections.
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // ── API Routes ───────────────────────────────────────────────────────────────
 
 app.use('/api/auth',        authLimiter,  authRoutes);

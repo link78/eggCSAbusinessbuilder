@@ -65,6 +65,8 @@ This repository contains the full Node.js/Express application source code requir
 - `db.js` — PostgreSQL schema initialization
 - `routes/` — API route handlers
 - `*.html` — static frontend pages served by Express
+- `railway.json` — Railway build & deploy configuration (Railpack builder, `/healthz` healthcheck)
+- `.nvmrc` — pins the Node.js version used at build time
 
 For Railpack or similar Node.js platform deploys:
 
@@ -77,6 +79,30 @@ npm start
 ```
 
 Railpack detects this as a Node.js app from `package.json` and starts `server.js` through the `start` script.
+
+### Deploying to Railway
+
+This repo is pre-configured for [Railway](https://railway.com) via `railway.json`:
+
+- **Builder:** Railpack (auto-detects Node.js from `package.json`)
+- **Start command:** `npm start`
+- **Healthcheck:** `GET /healthz` returns `200 {"status":"ok"}`
+- **Node version:** pinned via `.nvmrc` (Node 20) and `engines.node` in `package.json` (`>=18`)
+
+**Steps:**
+
+1. Create a new Railway project and connect this GitHub repository (or run `railway up` from the Railway CLI).
+2. Add the **PostgreSQL** plugin to the project. Railway auto-injects `DATABASE_URL` into the service; the schema is created on first start by `db.js`.
+3. In the service's **Variables** tab, set at minimum:
+   - `SESSION_SECRET` — long random string (e.g. `openssl rand -hex 32`)
+   - `NODE_ENV=production`
+   - `APP_URL` — your Railway public URL (e.g. `https://<service>.up.railway.app`), required for Stripe redirects
+   - Stripe keys (`STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`) if billing is enabled
+4. Railway provides `PORT` automatically — `server.js` already honors `process.env.PORT`.
+5. Generate a public domain under **Settings → Networking**; the healthcheck path is `/healthz`.
+6. **Persistent uploads:** Railway containers have an ephemeral filesystem. To keep user uploads (profile pictures, farm-update photos, about-page images) across deploys, attach a **Volume** mounted at `/app/uploads` in the service settings.
+
+Once deployed, Railway will redeploy automatically on every push to the connected branch.
 
 ---
 
