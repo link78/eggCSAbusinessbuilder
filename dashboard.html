@@ -4641,7 +4641,7 @@ async function cancelOrder(id) {
         : (viewerRole === 'admin'
             ? `<div class="msg-sender-label">${escHtml(m.sender_name || 'Customer')}</div>`
             : '');
-      return `<div class="msg-bubble ${cls}">${label}${escHtml(m.body).replace(/\n/g, '<br>')}<span class="msg-time">${escHtml(formatMsgTime(m.created_at))}</span></div>`;
+      return `<div class="msg-bubble ${cls}">${label}${escHtml(m.body)}<span class="msg-time">${escHtml(formatMsgTime(m.created_at))}</span></div>`;
     }).join('');
     // Auto-scroll to newest message.
     el.scrollTop = el.scrollHeight;
