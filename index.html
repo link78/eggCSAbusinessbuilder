@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sakinah Ridge Farm LLC – Raymond, Nebraska</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:      #3a6b35;
+      --green-dark: #2a4f26;
+      --amber:      #e07b00;
+      --amber-lt:   #f5a623;
+      --cream:      #fdf8f0;
+      --brown:      #5c3d1e;
+      --text:       #2d2d2d;
+      --muted:      #666;
+      --border:     #e6ddd0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ── NAVBAR ─────────────────────────────────────────────── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .9rem 2rem;
+      background: #fff;
+      border-bottom: 2px solid var(--border);
+      gap: 1rem;
+    }
+    .navbar-logo {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--green-dark);
+      white-space: nowrap;
+    }
+    .navbar-logo .logo-icon { font-size: 1.6rem; }
+    .navbar-links {
+      display: flex;
+      align-items: center;
+      gap: .25rem;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+    .navbar-links a {
+      padding: .45rem .85rem;
+      border-radius: 6px;
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--text);
+      transition: background .15s, color .15s;
+    }
+    .navbar-links a:hover { background: var(--cream); color: var(--green); }
+    .navbar-links a.btn-login {
+      background: var(--green);
+      color: #fff;
+      border-radius: 20px;
+      padding: .45rem 1.1rem;
+    }
+    .navbar-links a.btn-login:hover { background: var(--green-dark); }
+
+    /* ── HERO ───────────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4rem 1.5rem;
+      background:
+        linear-gradient(rgba(0,0,0,.42), rgba(0,0,0,.38)),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='480'%3E%3Crect width='1200' height='480' fill='%233a6b35'/%3E%3Ccircle cx='600' cy='240' r='160' fill='%23e07b00' opacity='.18'/%3E%3Ccircle cx='200' cy='350' r='80' fill='%23f5a623' opacity='.12'/%3E%3Ccircle cx='1000' cy='100' r='100' fill='%232a4f26' opacity='.25'/%3E%3C/svg%3E")
+        center/cover no-repeat;
+      color: #fff;
+    }
+    .hero-content { max-width: 680px; }
+    .hero-eyebrow {
+      display: inline-block;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 20px;
+      padding: .3rem .9rem;
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 1.1rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: .75rem;
+      letter-spacing: -.5px;
+    }
+    .hero p {
+      font-size: 1.15rem;
+      opacity: .9;
+      margin-bottom: 2rem;
+    }
+    .hero-ctas {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-block;
+      padding: .75rem 1.6rem;
+      border-radius: 8px;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      border: 2px solid transparent;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+    .btn-primary {
+      background: var(--amber);
+      color: #fff;
+      border-color: var(--amber);
+    }
+    .btn-primary:hover { background: var(--amber-lt); border-color: var(--amber-lt); }
+    .btn-outline {
+      background: transparent;
+      color: #fff;
+      border-color: rgba(255,255,255,.7);
+    }
+    .btn-outline:hover { background: rgba(255,255,255,.12); }
+
+    /* ── SECTIONS ───────────────────────────────────────────── */
+    .section {
+      padding: 4rem 1.5rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .section-label {
+      display: inline-block;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: .55rem;
+    }
+    .section h2 {
+      font-size: clamp(1.5rem, 3.5vw, 2rem);
+      font-weight: 800;
+      color: var(--green-dark);
+      margin-bottom: .7rem;
+    }
+    .section .lead {
+      font-size: 1.05rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      max-width: 650px;
+    }
+    .divider {
+      border: none;
+      border-top: 2px solid var(--border);
+    }
+
+    /* ── FARM STORY CARDS ───────────────────────────────────── */
+    .story-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.4rem;
+      margin-top: 1.5rem;
+    }
+    .story-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.6rem 1.4rem;
+    }
+    .story-card .icon { font-size: 2rem; margin-bottom: .7rem; }
+    .story-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: .5rem; color: var(--green-dark); }
+    .story-card p  { font-size: .9rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── CSA SECTION ────────────────────────────────────────── */
+    .csa-bg {
+      background: linear-gradient(135deg, #f0ebe0 0%, #e8f4e8 100%);
+      padding: 4rem 1.5rem;
+    }
+    .csa-inner { max-width: 900px; margin: 0 auto; }
+    .csa-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.2rem;
+      margin: 1.8rem 0 2rem;
+    }
+    .csa-detail {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.3rem 1.2rem;
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: .8rem;
+    }
+    .csa-detail .icon { font-size: 1.6rem; flex-shrink: 0; }
+    .csa-detail h4 { font-size: .95rem; font-weight: 700; color: var(--green-dark); margin-bottom: .25rem; }
+    .csa-detail p  { font-size: .85rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── CUSTOMER LOGIN ─────────────────────────────────────── */
+    .login-section {
+      text-align: center;
+      padding: 3.5rem 1.5rem;
+      background: var(--green-dark);
+      color: #fff;
+    }
+    .login-section p { opacity: .85; margin-bottom: 1.3rem; font-size: 1.05rem; }
+    .btn-white {
+      background: #fff;
+      color: var(--green-dark);
+      border-color: #fff;
+      font-weight: 700;
+    }
+    .btn-white:hover { background: #f0f0f0; }
+
+    /* ── FOOTER ─────────────────────────────────────────────── */
+    footer {
+      background: #1c2e1a;
+      color: rgba(255,255,255,.75);
+      padding: 2.2rem 1.5rem;
+      text-align: center;
+      font-size: .88rem;
+      line-height: 1.9;
+    }
+    footer strong { color: #fff; }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.4rem;
+      flex-wrap: wrap;
+      margin-top: .5rem;
+    }
+    .footer-links a { color: rgba(255,255,255,.6); transition: color .15s; }
+    .footer-links a:hover { color: #fff; }
+
+    /* ── FARM UPDATES (DISCUSSION) ──────────────────────────── */
+    .updates-bg {
+      background: #fff;
+      padding: 3.5rem 1.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .updates-inner { max-width: 900px; margin: 0 auto; }
+    .updates-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+      margin-top: 1.5rem;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: .4rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .update-card {
+      display: flex;
+      gap: 1rem;
+      background: var(--cream);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.1rem 1.2rem;
+    }
+    .update-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .update-body { flex: 1; min-width: 0; }
+    .update-meta {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      margin-bottom: .35rem;
+    }
+    .update-author { font-weight: 700; font-size: .9rem; color: var(--green-dark); }
+    .update-date   { font-size: .78rem; color: var(--muted); }
+    .update-text   { font-size: .9rem; color: var(--text); line-height: 1.6; }
+    .update-actions {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-top: .7rem;
+    }
+    .btn-like {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      border-radius: 999px;
+      padding: .35rem .8rem;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .btn-like:hover { background: #f3f7f0; border-color: var(--green); }
+    .btn-like.liked {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+    .btn-like[disabled] { cursor: not-allowed; opacity: .6; }
+    .btn-like .like-count { font-variant-numeric: tabular-nums; }
+    .update-photo  {
+      margin-top: .7rem;
+      border-radius: 10px;
+      overflow: hidden;
+      width: 100%;
+      max-height: 180px;
+      background: linear-gradient(135deg,#e8f4e8,#f0ebe0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: .85rem;
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+
+    /* ── CUSTOMER REVIEWS ───────────────────────────────────── */
+    .reviews-bg {
+      background: linear-gradient(135deg, #f9f5ee 0%, #edf5ed 100%);
+      padding: 4rem 1.5rem;
+    }
+    .reviews-inner { max-width: 900px; margin: 0 auto; }
+    .reviews-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .reviews-header-left {}
+    .reviews-avg {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      margin-top: .55rem;
+    }
+    .reviews-avg .stars { color: #f5a623; font-size: 1.3rem; letter-spacing: .05em; }
+    .reviews-avg .score { font-size: 1.5rem; font-weight: 800; color: var(--green-dark); }
+    .reviews-avg .count { font-size: .85rem; color: var(--muted); }
+    .btn-write-review {
+      display: inline-block;
+      padding: .6rem 1.3rem;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      white-space: nowrap;
+    }
+    .btn-write-review:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.3rem;
+    }
+    .review-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.4rem 1.3rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .review-card-top {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      margin-bottom: .7rem;
+    }
+    .reviewer-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .95rem; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .reviewer-name  { font-weight: 700; font-size: .95rem; color: var(--text); }
+    .reviewer-date  { font-size: .78rem; color: var(--muted); }
+    .review-stars   { color: #f5a623; font-size: 1rem; margin-bottom: .55rem; letter-spacing: .04em; }
+    .review-title   { font-size: .9rem; font-weight: 700; color: var(--green-dark); margin-bottom: .35rem; }
+    .review-body    { font-size: .88rem; color: var(--muted); line-height: 1.65; flex: 1; }
+    .reviews-empty  { color: var(--muted); font-size: .95rem; padding: 1.5rem 0; }
+
+    /* Write-Review modal */
+    .wr-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 600;
+      display: none; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .wr-overlay.open { display: flex; }
+    .wr-card {
+      background: #fff; border-radius: 18px;
+      padding: 2rem 1.8rem;
+      max-width: 480px; width: 100%;
+      max-height: 92vh; overflow-y: auto;
+    }
+    .wr-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.3rem; padding-bottom: .9rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .wr-header h3 { font-size: 1.1rem; font-weight: 800; color: var(--green-dark); }
+    .wr-close {
+      background: none; border: none; font-size: 1.2rem;
+      cursor: pointer; color: var(--muted); padding: .2rem .4rem;
+      border-radius: 6px; line-height: 1;
+    }
+    .wr-close:hover { background: var(--cream); color: var(--text); }
+    .star-picker { display: flex; gap: .3rem; margin-bottom: 1rem; }
+    .star-btn {
+      background: none; border: none; font-size: 1.6rem;
+      cursor: pointer; color: #ddd; transition: color .1s;
+      padding: 0; line-height: 1;
+    }
+    .star-btn.active, .star-btn:hover { color: #f5a623; }
+    .wr-flash {
+      padding: .65rem .9rem; border-radius: 8px;
+      font-size: .87rem; margin-bottom: .8rem; display: none;
+    }
+    .wr-flash.warn { background: #fff8e1; color: #7c5a00; border: 1px solid #f5d660; }
+    .wr-flash.err  { background: #fdecea; color: #a41b0b; border: 1px solid #f5c6c2; }
+    .wr-flash.ok   { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .navbar { padding: .8rem 1rem; }
+      .navbar-logo span:last-child { display: none; }
+      .section, .csa-inner { padding-left: 1rem; padding-right: 1rem; }
+      .reviews-header { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* ── PLAN CARDS ─────────────────────────────────────────── */
+    .plans-heading {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--green-dark);
+      margin: 2.5rem 0 1.2rem;
+    }
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .plan-card {
+      background: #fff;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 1.6rem 1.3rem;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .plan-card.plan-featured {
+      border-color: var(--amber);
+      box-shadow: 0 4px 20px rgba(224,123,0,.15);
+    }
+    .plan-tag {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--amber);
+      color: #fff;
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      padding: .2rem .75rem;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .plan-icon { font-size: 1.8rem; margin-bottom: .5rem; }
+    .plan-name { font-size: 1rem; font-weight: 800; color: var(--green-dark); margin-bottom: .3rem; }
+    .plan-price { font-size: 1.55rem; font-weight: 800; color: var(--text); line-height: 1.2; }
+    .plan-sub-price { font-size: .78rem; color: var(--muted); margin-bottom: .9rem; }
+    .plan-features {
+      list-style: none;
+      font-size: .84rem;
+      color: var(--muted);
+      line-height: 1.7;
+      flex: 1;
+      margin-bottom: 1rem;
+    }
+    .plan-features li::before { content: "✓ "; color: var(--green); font-weight: 700; }
+    .btn-plan {
+      display: block;
+      width: 100%;
+      padding: .62rem 1rem;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      text-align: center;
+      margin-top: auto;
+    }
+    .btn-plan:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .btn-plan-featured { background: var(--amber); }
+    .btn-plan-featured:hover { background: #c96e00; }
+    .plans-loading {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--muted);
+      padding: 2rem;
+    }
+
+    /* ── SUBSCRIBE MODAL ────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.52);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 2rem 1.8rem;
+      max-width: 490px;
+      width: 100%;
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-plan-name { font-size: 1.15rem; font-weight: 800; color: var(--green-dark); }
+    .modal-plan-sub  { font-size: .84rem; color: var(--muted); margin-top: .2rem; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--muted);
+      padding: .2rem .4rem;
+      border-radius: 6px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .modal-close:hover { background: var(--cream); color: var(--text); }
+    .m-section { margin-bottom: 1.3rem; }
+    .m-section-label {
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: .6rem;
+    }
+    .m-group { margin-bottom: .75rem; }
+    .m-group label {
+      display: block;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: .3rem;
+    }
+    .m-group label small { font-weight: 400; color: var(--muted); }
+    .m-input {
+      width: 100%;
+      padding: .58rem .8rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: .9rem;
+      color: var(--text);
+      background: #fff;
+      transition: border-color .15s;
+    }
+    .m-input:focus { outline: none; border-color: var(--green); }
+    .radio-row { display: flex; flex-direction: column; gap: .45rem; }
+    .radio-opt {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-size: .9rem;
+      padding: .5rem .7rem;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+    .radio-opt:has(input:checked) { border-color: var(--green); background: rgba(58,107,53,.05); }
+    .radio-opt input[type="radio"] { flex-shrink: 0; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+    .price-preview {
+      background: var(--cream);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: .8rem 1.1rem;
+      font-size: .9rem;
+      color: var(--muted);
+      margin-bottom: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .price-preview strong { color: var(--green-dark); font-size: 1.15rem; }
+    .auth-tabs-bar {
+      display: flex;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1rem;
+    }
+    .m-auth-tab {
+      background: none;
+      border: none;
+      padding: .45rem .9rem;
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color .15s;
+    }
+    .m-auth-tab.active { color: var(--green-dark); border-bottom-color: var(--green-dark); }
+    .m-auth-tab:hover:not(.active) { color: var(--text); }
+    .logged-in-bar {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .65rem .9rem;
+      font-size: .88rem;
+      color: var(--muted);
+    }
+    .btn-sub {
+      display: block;
+      width: 100%;
+      padding: .85rem 1rem;
+      background: var(--amber);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      margin-top: .5rem;
+    }
+    .btn-sub:hover { background: #c96e00; transform: translateY(-1px); }
+    .btn-sub:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .m-flash {
+      padding: .7rem .9rem;
+      border-radius: 8px;
+      font-size: .87rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .m-flash.warn { background: #fff8e1; color: #7c5a00; border: 1px solid #f5d660; }
+    .m-flash.err  { background: #fdecea; color: #a41b0b; border: 1px solid #f5c6c2; }
+    .m-success { text-align: center; padding: .5rem 0; }
+    .m-success-icon { font-size: 3rem; margin-bottom: .6rem; }
+    .m-success h3 { font-size: 1.25rem; font-weight: 800; color: var(--green-dark); margin-bottom: .6rem; }
+    .m-success p { color: var(--muted); font-size: .92rem; line-height: 1.65; margin-bottom: 1.5rem; }
+    @media (max-width: 500px) {
+      .modal-card { padding: 1.4rem 1.1rem; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     NAVBAR
+═══════════════════════════════════════════ -->
+<header>
+  <nav class="navbar" aria-label="Main navigation">
+    <a class="navbar-logo" href="/">
+      <span class="logo-icon">🌿</span>
+      <span>Sakinah Ridge Farm LLC</span>
+    </a>
+    <ul class="navbar-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="#egg-csa">Egg CSA</a></li>
+      <li><a href="#farm-products">Farm Products</a></li>
+      <li><a href="#reviews">Reviews</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li><a href="/dashboard#account" class="btn-login">Login</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- ══════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════ -->
+<section class="hero" aria-label="Hero">
+  <div class="hero-content">
+    <span class="hero-eyebrow">Raymond, Nebraska · Pasture-Raised</span>
+    <h1>Fresh Eggs.<br>Honest Farming.</h1>
+    <p>Sakinah Ridge Farm — Raymond, Nebraska</p>
+    <div class="hero-ctas">
+      <a class="btn btn-primary" href="/dashboard">Enter Farm Dashboard</a>
+      <a class="btn btn-outline" href="#egg-csa">Learn About Our Egg CSA</a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FARM UPDATES (DISCUSSION)
+═══════════════════════════════════════════ -->
+<div class="updates-bg" id="farm-updates">
+  <div class="updates-inner">
+    <span class="section-label">Farm Updates</span>
+    <h2 style="font-size:clamp(1.5rem,3.5vw,2rem);font-weight:800;color:var(--green-dark);margin-bottom:.5rem">Latest from the Farm</h2>
+    <p style="font-size:1.05rem;color:var(--muted);margin-bottom:0">Photos, notes, and updates straight from Sakinah Ridge Farm.</p>
+    <div class="updates-feed" id="updates-feed" aria-label="Farm updates feed">
+      <div class="update-card" style="color:var(--muted);font-size:.9rem;">Loading updates…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FARM STORY
+═══════════════════════════════════════════ -->
+<section class="section" id="farm-story" aria-labelledby="story-heading">
+  <span class="section-label">Our Story</span>
+  <h2 id="story-heading">Small Farm. Real Food. Real People.</h2>
+  <p class="lead">We're a family farm rooted in Raymond, Nebraska — growing food with care, raising hens on pasture, and building real relationships with our community.</p>
+
+  <div class="story-grid">
+    <div class="story-card">
+      <div class="icon">🏡</div>
+      <h3>Who We Are</h3>
+      <p>Sakinah Ridge Farm LLC is a small family-run operation in Raymond, NE. We believe food grown close to home — with honesty and intention — nourishes in ways that go beyond nutrition.</p>
+    </div>
+    <div class="story-card">
+      <div class="icon">🐔</div>
+      <h3>How We Raise Our Hens</h3>
+      <p>Our hens live on open pasture with room to roam, scratch, and forage. No crowded cages — just happy chickens producing the kind of eggs you can taste the difference in.</p>
+    </div>
+    <div class="story-card">
+      <div class="icon">🥚</div>
+      <h3>Why Our Eggs Are Different</h3>
+      <p>Pasture-raised eggs from hens that move freely have richer yolks and better flavor. Collected fresh and delivered or picked up locally — you know exactly where your food comes from.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ══════════════════════════════════════════
+     EGG CSA
+═══════════════════════════════════════════ -->
+<div class="csa-bg" id="egg-csa">
+  <div class="csa-inner">
+    <span class="section-label">Egg CSA</span>
+    <h2>Fresh Eggs — On a Schedule You Can Count On</h2>
+    <p class="lead">Subscribe to a weekly egg box and skip the grocery store run. Choose your size, pick your cadence, and pick up locally or get local delivery.</p>
+
+    <div class="csa-details">
+      <div class="csa-detail">
+        <span class="icon">📦</span>
+        <div>
+          <h4>Biweekly Egg Boxes</h4>
+          <p>1 dozen or 18-egg boxes per week, delivered or ready for pick-up every 2 weeks.</p>
+        </div>
+      </div>
+      <div class="csa-detail">
+        <span class="icon">📍</span>
+        <div>
+          <h4>Pick-Up &amp; Delivery</h4>
+          <p>Pick up at the farm in Raymond, NE, or opt for local delivery (+$2/bi-weekly).</p>
+        </div>
+      </div>
+      <div class="csa-detail">
+        <span class="icon">💵</span>
+        <div>
+          <h4>Simple Pricing</h4>
+          <p>1 dozen: $5/box · 18 eggs: $7/box. Monthly or pay-as-you-go options available.</p>
+        </div>
+      </div>
+      <div class="csa-detail">
+        <span class="icon">🔄</span>
+        <div>
+          <h4>Flexible Plans</h4>
+          <p>Solo, small family, or family-size plans. Pause or cancel anytime.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="plans-heading">Choose Your Plan</h3>
+    <div id="plans-grid" class="plans-grid">
+      <div class="plans-loading">Loading available plans…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FARM PRODUCTS  (anchor target)
+═══════════════════════════════════════════ -->
+<section class="section" id="farm-products" aria-labelledby="products-heading">
+  <span class="section-label">Farm Products</span>
+  <h2 id="products-heading">More From the Farm</h2>
+  <p class="lead">Beyond eggs, Sakinah Ridge Farm brings seasonal produce and farm goods to the community. Check back as we grow — or <a href="/dashboard#account" style="color:var(--green);text-decoration:underline;">create an account</a> to get notified first.</p>
+</section>
+
+<!-- ══════════════════════════════════════════
+     CUSTOMER REVIEWS
+═══════════════════════════════════════════ -->
+<div class="reviews-bg" id="reviews">
+  <div class="reviews-inner">
+    <div class="reviews-header">
+      <div class="reviews-header-left">
+        <span class="section-label">Customer Reviews</span>
+        <h2 style="font-size:clamp(1.5rem,3.5vw,2rem);font-weight:800;color:var(--green-dark);margin-bottom:.1rem">What Our Customers Say</h2>
+        <div class="reviews-avg" id="reviews-avg" aria-label="Average rating">
+          <span class="stars">★★★★★</span>
+          <span class="score" id="avg-score">4.9</span>
+          <span class="count" id="avg-count">based on reviews</span>
+        </div>
+      </div>
+      <button class="btn-write-review" onclick="openWriteReview()" aria-label="Write a review">✏️ Write a Review</button>
+    </div>
+
+    <div id="reviews-grid" class="reviews-grid" aria-live="polite">
+      <!-- Seeded placeholder cards shown before API loads -->
+      <div class="review-card">
+        <div class="review-card-top">
+          <div class="reviewer-avatar">M</div>
+          <div>
+            <div class="reviewer-name">Maria</div>
+            <div class="reviewer-date">May 2026</div>
+          </div>
+        </div>
+        <div class="review-stars">★★★★★</div>
+        <div class="review-title">Best eggs in Lincoln</div>
+        <p class="review-body">Best eggs in Lincoln. Always fresh. I've been a subscriber for 6 months and have never been disappointed.</p>
+      </div>
+      <div class="review-card">
+        <div class="review-card-top">
+          <div class="reviewer-avatar">O</div>
+          <div>
+            <div class="reviewer-name">Omar</div>
+            <div class="reviewer-date">April 2026</div>
+          </div>
+        </div>
+        <div class="review-stars">★★★★★</div>
+        <div class="review-title">Reliable every week</div>
+        <p class="review-body">Reliable delivery every week. The eggs are noticeably better than anything from the grocery store — richer yolks and great flavor.</p>
+      </div>
+      <div class="review-card">
+        <div class="review-card-top">
+          <div class="reviewer-avatar">S</div>
+          <div>
+            <div class="reviewer-name">Sarah</div>
+            <div class="reviewer-date">April 2026</div>
+          </div>
+        </div>
+        <div class="review-stars">★★★★☆</div>
+        <div class="review-title">Love the taste</div>
+        <p class="review-body">Love the taste. Pickup is easy and the farm family is so friendly. Highly recommend to anyone in the area!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Write-Review modal -->
+<div id="write-review-modal" class="wr-overlay" role="dialog" aria-modal="true" aria-labelledby="wr-title">
+  <div class="wr-card">
+    <div class="wr-header">
+      <h3 id="wr-title">Write a Review</h3>
+      <button class="wr-close" onclick="closeWriteReview()" aria-label="Close">✕</button>
+    </div>
+    <div id="wr-flash" class="wr-flash" role="alert"></div>
+    <div id="wr-form">
+      <div class="m-section-label" style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);margin-bottom:.5rem">Your Rating</div>
+      <div class="star-picker" id="star-picker" aria-label="Select star rating">
+        <button type="button" class="star-btn" data-val="1" onclick="setStarRating(1)" aria-label="1 star">★</button>
+        <button type="button" class="star-btn" data-val="2" onclick="setStarRating(2)" aria-label="2 stars">★</button>
+        <button type="button" class="star-btn" data-val="3" onclick="setStarRating(3)" aria-label="3 stars">★</button>
+        <button type="button" class="star-btn" data-val="4" onclick="setStarRating(4)" aria-label="4 stars">★</button>
+        <button type="button" class="star-btn" data-val="5" onclick="setStarRating(5)" aria-label="5 stars">★</button>
+      </div>
+      <div class="m-group" style="margin-bottom:.75rem">
+        <label style="display:block;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.3rem" for="wr-title-input">Title</label>
+        <input id="wr-title-input" class="m-input" type="text" placeholder="e.g. Best eggs around!" maxlength="120">
+      </div>
+      <div class="m-group" style="margin-bottom:1rem">
+        <label style="display:block;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.3rem" for="wr-body">Your Review</label>
+        <textarea id="wr-body" class="m-input" rows="4" maxlength="1000" placeholder="Share your experience…" style="resize:vertical"></textarea>
+      </div>
+      <div id="wr-login-note" style="font-size:.85rem;color:var(--muted);margin-bottom:.8rem;display:none">
+        You must be <a href="/dashboard#account" style="color:var(--green);text-decoration:underline">signed in</a> to submit a review.
+      </div>
+      <button class="btn-sub" style="margin-top:0" onclick="submitReview()">Submit Review</button>
+    </div>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<!-- ══════════════════════════════════════════
+     CUSTOMER LOGIN
+═══════════════════════════════════════════ -->
+<section class="login-section" aria-label="Subscribe">
+  <p>Ready to get started? Choose a plan above to subscribe.</p>
+  <a class="btn btn-white" href="#egg-csa">View Plans &amp; Subscribe</a>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer>
+  <strong>Sakinah Ridge Farm LLC</strong> · Raymond, NE<br>
+  <nav class="footer-links" aria-label="Footer links">
+    <a href="mailto:info@sakinahridgefarm.com">Contact</a>
+    <a href="#" aria-label="Facebook">Facebook</a>
+    <a href="#" aria-label="Instagram">Instagram</a>
+    <a href="#privacy">Privacy Policy</a>
+  </nav>
+</footer>
+
+<!-- ══════════════════════════════════════════
+     SUBSCRIBE MODAL
+═══════════════════════════════════════════ -->
+<div id="subscribe-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-plan-name">
+  <div class="modal-card">
+
+    <div class="modal-header">
+      <div>
+        <div id="modal-plan-name" class="modal-plan-name">Subscribe</div>
+        <div id="modal-plan-sub"  class="modal-plan-sub"></div>
+      </div>
+      <button class="modal-close" onclick="closeSubscribeModal()" aria-label="Close">✕</button>
+    </div>
+
+    <div id="m-flash" class="m-flash" role="alert"></div>
+
+    <div id="m-form">
+
+      <!-- Box size (Small Family / Family only) -->
+      <div id="box-type-wrap" class="m-section" style="display:none">
+        <div class="m-section-label">Box Size</div>
+        <div class="radio-row">
+          <label class="radio-opt">
+            <input type="radio" name="boxType" value="dozen" onchange="updatePricePreview()">
+            1 Dozen (12 eggs) — <strong>$5/box</strong>
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="boxType" value="18" onchange="updatePricePreview()">
+            18 Eggs — <strong>$7/box</strong>
+          </label>
+        </div>
+      </div>
+
+      <!-- Box counts (Solo / Couple and Custom) -->
+      <div id="box-count-wrap" class="m-section" style="display:none">
+        <div class="m-section-label">Boxes Per Delivery/Week</div>
+        <div class="two-col">
+          <div class="m-group">
+            <label for="m-b12">12-Egg Boxes <small>($5 each)</small></label>
+            <input id="m-b12" class="m-input" type="number" min="0" max="20" value="1" oninput="updatePricePreview()">
+          </div>
+          <div class="m-group">
+            <label for="m-b18">18-Egg Boxes <small>($7 each)</small></label>
+            <input id="m-b18" class="m-input" type="number" min="0" max="20" value="0" oninput="updatePricePreview()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Duration (Custom only) -->
+      <div id="duration-wrap" class="m-section" style="display:none">
+        <div class="m-section-label">Duration</div>
+        <div class="m-group">
+          <label for="m-weeks">Weeks (2–52)</label>
+          <input id="m-weeks" class="m-input" type="number" min="2" max="52" value="4" oninput="updatePricePreview()">
+        </div>
+      </div>
+
+      <!-- Fulfillment -->
+      <div class="m-section">
+        <div class="m-section-label">Pickup or Delivery</div>
+        <div class="radio-row">
+          <label class="radio-opt">
+            <input type="radio" name="fulfillment" value="pickup" checked onchange="toggleFulfillment()">
+            Pick Up at Farm (free)
+          </label>
+          <label class="radio-opt">
+            <input type="radio" name="fulfillment" value="delivery" onchange="toggleFulfillment()">
+            Local Delivery (+$2/bi-weekly)
+          </label>
+        </div>
+        <div id="pickup-wrap" class="m-group" style="margin-top:.7rem">
+          <label for="m-pickup-day">Pickup Day</label>
+          <select id="m-pickup-day" class="m-input">
+            <option value="">— Select a day —</option>
+            <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+            <option>Thursday</option><option>Friday</option><option>Saturday</option>
+          </select>
+        </div>
+        <div id="delivery-wrap" class="m-group" style="margin-top:.7rem;display:none">
+          <label for="m-address">Delivery Address</label>
+          <input id="m-address" class="m-input" type="text" placeholder="123 Main St, City, NE">
+        </div>
+      </div>
+
+      <!-- Price preview -->
+      <div class="price-preview">
+        💵 Estimated total: <strong id="m-price">$—</strong><span id="m-price-note"></span><span id="m-price-boxes"></span><span id="m-price-delivery"></span>
+      </div>
+
+      <!-- Account -->
+      <div class="m-section">
+        <div class="m-section-label">Your Account</div>
+
+        <div id="m-logged-in" style="display:none">
+          <div class="logged-in-bar">✅ Signed in as <strong id="m-user-name"></strong>. Ready to subscribe!</div>
+        </div>
+
+        <div id="m-auth-forms">
+          <div class="auth-tabs-bar">
+            <button type="button" class="m-auth-tab active" onclick="switchAuthTab(this,'login')">Sign In</button>
+            <button type="button" class="m-auth-tab"        onclick="switchAuthTab(this,'register')">Create Account</button>
+          </div>
+
+          <div id="m-login-wrap">
+            <div class="m-group">
+              <label for="m-email">Email</label>
+              <input id="m-email" class="m-input" type="email" placeholder="you@example.com" autocomplete="email">
+            </div>
+            <div class="m-group">
+              <label for="m-password">Password</label>
+              <input id="m-password" class="m-input" type="password" placeholder="Your password" autocomplete="current-password">
+            </div>
+          </div>
+
+          <div id="m-register-wrap" style="display:none">
+            <div class="m-group">
+              <label for="m-name">Full Name</label>
+              <input id="m-name" class="m-input" type="text" placeholder="Your name" autocomplete="name">
+            </div>
+            <div class="m-group">
+              <label for="m-reg-email">Email</label>
+              <input id="m-reg-email" class="m-input" type="email" placeholder="you@example.com" autocomplete="email">
+            </div>
+            <div class="m-group">
+              <label for="m-reg-pw">Password</label>
+              <input id="m-reg-pw" class="m-input" type="password" placeholder="At least 6 characters" autocomplete="new-password">
+            </div>
+            <div class="m-group">
+              <label for="m-reg-pw2">Confirm Password</label>
+              <input id="m-reg-pw2" class="m-input" type="password" placeholder="Repeat password">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button id="m-submit-btn" class="btn-sub" onclick="submitSubscription()">Sign In &amp; Subscribe</button>
+    </div>
+
+    <!-- Success state -->
+    <div id="m-success" class="m-success" style="display:none">
+      <div class="m-success-icon">🥚</div>
+      <h3>You're subscribed!</h3>
+      <p id="m-success-msg">Your egg CSA subscription is confirmed. We'll be in touch soon!</p>
+      <button class="btn btn-primary" onclick="closeSubscribeModal()">Great, thanks!</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  /* ═══════════════════════════════════════════════════════════
+     SUBSCRIPTION PLANS  –  index.html
+  ═══════════════════════════════════════════════════════════ */
+
+  let _plansData = null;
+  let _selPlan   = null;
+  let _csrf      = null;
+  let _user      = null;
+  let _authMode  = 'login';
+  let _stripePublishableKey = null;
+
+  /* ── CSRF + API helpers ─────────────────────────────────── */
+  async function getCsrf() {
+    if (_csrf) return _csrf;
+    const r = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+    _csrf = (await r.json()).csrfToken;
+    return _csrf;
+  }
+
+  async function apiPost(url, body) {
+    const token = await getCsrf();
+    const r = await fetch(url, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+      body: JSON.stringify(body)
+    });
+    return r.json();
+  }
+
+  /* ── Plans ──────────────────────────────────────────────── */
+  async function loadPlans() {
+    try {
+      const r = await fetch('/api/orders/plans');
+      _plansData = await r.json();
+      renderPlanCards();
+    } catch (e) {
+      const grid = document.getElementById('plans-grid');
+      if (grid) grid.innerHTML =
+        '<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:2rem">Unable to load plans right now — please try again later or contact us directly.</p>';
+    }
+  }
+
+  function renderPlanCards() {
+    const grid = document.getElementById('plans-grid');
+    if (!grid || !_plansData) return;
+
+    const { plans, deliveryFeePerWeek, soloCoupleConstraints, customPlan } = _plansData;
+    const dlvMo = deliveryFeePerWeek * soloCoupleConstraints.monthlyWeeks;
+
+    const cards = [
+      {
+        name: 'Solo / Couple', icon: '👫', featured: false, tag: '',
+        price: `from $${soloCoupleConstraints.pricePerBox12 * soloCoupleConstraints.monthlyWeeks}/mo`,
+        sub:   `+$${dlvMo}/mo for local delivery`,
+        feats: [
+          'Build your own weekly box',
+          'Mix 12-egg ($5) &amp; 18-egg ($7) boxes',
+          'Delivery every 2 weeks · monthly billing',
+          'Pickup or local delivery'
+        ]
+      }
+    ];
+
+    for (const p of plans) {
+      const fam = p.name === 'Family';
+      cards.push({
+        name: p.name, icon: fam ? '👨‍👩‍👧‍👦' : '👨‍👩‍👧', featured: fam, tag: fam ? 'Most Popular' : '',
+        price: `$${fam ? p.price18 : p.price12}/mo`,
+        sub:   `${fam ? 18 : 12} eggs/week · +$${dlvMo}/mo delivery`,
+        feats: [
+          `1 ${fam ? '18-egg' : 'dozen'} box per week`,
+          `${fam ? p.eggsPerWeek18 : p.eggsPerWeek12} fresh pasture-raised eggs`,
+          'Delivery every 2 weeks · monthly billing',
+          'Box size switchable anytime',
+          'Pickup or local delivery'
+        ]
+      });
+    }
+
+    cards.push({
+      name: 'Custom', icon: '⚙️', featured: false, tag: '',
+      price: `from $${customPlan.pricePerBox12 * customPlan.minBoxes * customPlan.minWeeks}`,
+      sub:   `$${customPlan.pricePerBox12}/12-egg · $${customPlan.pricePerBox18}/18-egg per delivery`,
+      feats: [
+        `${customPlan.minBoxes}–${customPlan.maxBoxes} boxes per biweekly delivery`,
+        'Mix 12-egg and 18-egg boxes freely',
+        `Choose ${customPlan.minWeeks}–${customPlan.maxWeeks} week duration`,
+        'Pickup or local delivery'
+      ]
+    });
+
+    grid.innerHTML = cards.map(c => `
+      <div class="plan-card${c.featured ? ' plan-featured' : ''}">
+        ${c.tag ? `<div class="plan-tag">${c.tag}</div>` : ''}
+        <div class="plan-icon">${c.icon}</div>
+        <div class="plan-name">${c.name}</div>
+        <div class="plan-price">${c.price}</div>
+        <div class="plan-sub-price">${c.sub}</div>
+        <ul class="plan-features">${c.feats.map(f => `<li>${f}</li>`).join('')}</ul>
+        <button class="btn-plan${c.featured ? ' btn-plan-featured' : ''}"
+                onclick="openSubscribeModal('${c.name}')">
+          Choose Plan
+        </button>
+      </div>`).join('');
+  }
+
+  /* ── Modal ──────────────────────────────────────────────── */
+  function openSubscribeModal(planName) {
+    _selPlan = planName;
+
+    const isFixed  = planName === 'Small Family' || planName === 'Family';
+    const isSolo   = planName === 'Solo / Couple';
+    const isCustom = planName === 'Custom';
+
+    document.getElementById('modal-plan-name').textContent = planName + ' Plan';
+    document.getElementById('modal-plan-sub').textContent  =
+      isFixed  ? '1 box per week · bi-weekly delivery · monthly billing' :
+      isSolo   ? 'Flexible monthly subscription'         :
+                 'Custom duration & box count';
+
+    document.getElementById('box-type-wrap').style.display  = isFixed             ? 'block' : 'none';
+    document.getElementById('box-count-wrap').style.display = isSolo || isCustom  ? 'block' : 'none';
+    document.getElementById('duration-wrap').style.display  = isCustom            ? 'block' : 'none';
+
+    if (isFixed) {
+      const def = planName === 'Small Family' ? 'dozen' : '18';
+      const r = document.querySelector(`input[name="boxType"][value="${def}"]`);
+      if (r) r.checked = true;
+    }
+    if (isSolo || isCustom) {
+      document.getElementById('m-b12').value = '1';
+      document.getElementById('m-b18').value = isCustom ? '1' : '0';
+    }
+    if (isCustom) document.getElementById('m-weeks').value = '4';
+
+    const pickupR = document.querySelector('input[name="fulfillment"][value="pickup"]');
+    if (pickupR) pickupR.checked = true;
+    toggleFulfillment();
+
+    refreshAuthSection();
+
+    const flash = document.getElementById('m-flash');
+    flash.style.display = 'none';
+    flash.className = 'm-flash';
+
+    document.getElementById('m-success').style.display = 'none';
+    document.getElementById('m-form').style.display    = 'block';
+
+    updatePricePreview();
+    document.getElementById('subscribe-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSubscribeModal() {
+    document.getElementById('subscribe-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function toggleFulfillment() {
+    const isDelivery = document.querySelector('input[name="fulfillment"]:checked')?.value === 'delivery';
+    document.getElementById('pickup-wrap').style.display   = isDelivery ? 'none'  : 'block';
+    document.getElementById('delivery-wrap').style.display = isDelivery ? 'block' : 'none';
+    updatePricePreview();
+  }
+
+  function switchAuthTab(btn, mode) {
+    _authMode = mode;
+    document.querySelectorAll('.m-auth-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('m-login-wrap').style.display    = mode === 'login'    ? 'block' : 'none';
+    document.getElementById('m-register-wrap').style.display = mode === 'register' ? 'block' : 'none';
+    const sb = document.getElementById('m-submit-btn');
+    sb.innerHTML = mode === 'login'
+      ? 'Sign In &amp; Subscribe'
+      : 'Create Account &amp; Subscribe';
+  }
+
+  function refreshAuthSection() {
+    const sb = document.getElementById('m-submit-btn');
+    if (_user) {
+      document.getElementById('m-logged-in').style.display  = 'block';
+      document.getElementById('m-auth-forms').style.display = 'none';
+      document.getElementById('m-user-name').textContent    = _user.name;
+      sb.textContent = 'Subscribe Now';
+    } else {
+      document.getElementById('m-logged-in').style.display  = 'none';
+      document.getElementById('m-auth-forms').style.display = 'block';
+      sb.innerHTML = 'Sign In &amp; Subscribe';
+    }
+  }
+
+  /* ── Price preview ──────────────────────────────────────── */
+  function updatePricePreview() {
+    if (!_plansData || !_selPlan) return;
+    const { deliveryFeePerWeek, soloCoupleConstraints } = _plansData;
+    const isDelivery = document.querySelector('input[name="fulfillment"]:checked')?.value === 'delivery';
+    const mo = soloCoupleConstraints.monthlyWeeks;
+
+    let price = NaN, note = '', boxes = 0;
+    if (_selPlan === 'Small Family' || _selPlan === 'Family') {
+      const bt  = document.querySelector('input[name="boxType"]:checked')?.value;
+      const ppb = bt === '18' ? 7 : 5;
+      price = ppb * mo + (isDelivery ? deliveryFeePerWeek * mo : 0);
+      note  = '/mo';
+      boxes = 1;
+    } else if (_selPlan === 'Solo / Couple') {
+      const b12 = parseInt(document.getElementById('m-b12')?.value) || 0;
+      const b18 = parseInt(document.getElementById('m-b18')?.value) || 0;
+      price = (b12 * 5 + b18 * 7) * mo + (isDelivery ? deliveryFeePerWeek * mo : 0);
+      note  = '/mo';
+      boxes = b12 + b18;
+    } else if (_selPlan === 'Custom') {
+      const b12 = parseInt(document.getElementById('m-b12')?.value) || 0;
+      const b18 = parseInt(document.getElementById('m-b18')?.value) || 0;
+      const wk  = parseInt(document.getElementById('m-weeks')?.value) || 0;
+      price = (b12 * 5 + b18 * 7) * wk + (isDelivery ? deliveryFeePerWeek * wk : 0);
+      note  = ' total';
+      boxes = b12 + b18;
+    }
+
+    const boxLabel      = boxes > 0 ? ` · ${boxes} box${boxes !== 1 ? 'es' : ''}/delivery` : '';
+    const deliveryLabel = isDelivery ? ' · +$2/bi-weekly delivery' : '';
+    document.getElementById('m-price').textContent        = isNaN(price) || price <= 0 ? '—' : `$${price}`;
+    document.getElementById('m-price-note').textContent   = isNaN(price) || price <= 0 ? ''  : note;
+    document.getElementById('m-price-boxes').textContent  = isNaN(price) || price <= 0 ? ''  : boxLabel;
+    document.getElementById('m-price-delivery').textContent = isNaN(price) || price <= 0 ? '' : deliveryLabel;
+  }
+
+  /* ── Flash ──────────────────────────────────────────────── */
+  function showFlash(msg, type) {
+    const el = document.getElementById('m-flash');
+    el.textContent    = msg;
+    el.className      = `m-flash ${type}`;
+    el.style.display  = 'block';
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  /* ── Submit ─────────────────────────────────────────────── */
+  function _planKeyFromName(planName) {
+    if (planName === 'Small Family')  return 'small_family';
+    if (planName === 'Family')        return 'family';
+    if (planName === 'Solo / Couple') return 'solo_couple';
+    if (planName === 'Custom')        return 'custom';
+    return '';
+  }
+
+  async function submitSubscription() {
+    const btn      = document.getElementById('m-submit-btn');
+    btn.disabled   = true;
+    const origHTML = btn.innerHTML;
+    btn.textContent = 'Processing…';
+
+    try {
+      if (!_user) {
+        const ok = await doAuth();
+        if (!ok) { btn.disabled = false; btn.innerHTML = origHTML; return; }
+        refreshAuthSection();
+      }
+
+      const payload = buildPayload();
+      if (!payload) { btn.disabled = false; btn.textContent = 'Subscribe Now'; return; }
+
+      // If Stripe is configured, redirect to hosted checkout for payment
+      if (_stripePublishableKey) {
+        btn.textContent = 'Opening checkout…';
+        const checkoutBody = {
+          ...payload,
+          plan_id: _planKeyFromName(_selPlan),
+          user_id: _user && _user.id
+        };
+        const data = await apiPost('/create-checkout-session', checkoutBody);
+        if (data.error) {
+          showFlash(data.error, 'err');
+          btn.disabled = false; btn.textContent = 'Subscribe Now';
+          return;
+        }
+        if (!data.url) {
+          showFlash('Checkout did not return a redirect URL.', 'err');
+          btn.disabled = false; btn.textContent = 'Subscribe Now';
+          return;
+        }
+        window.location.href = data.url;
+        return;
+      }
+
+      // Fallback: create order directly when Stripe is not configured
+      const data = await apiPost('/api/orders', payload);
+      if (data.error) {
+        showFlash(data.error, 'err');
+        btn.disabled = false; btn.textContent = 'Subscribe Now';
+        return;
+      }
+
+      const o = data.order;
+      document.getElementById('m-form').style.display  = 'none';
+      document.getElementById('m-flash').style.display = 'none';
+      document.getElementById('m-success-msg').textContent =
+        `Your ${o.plan_name} subscription is confirmed! ` +
+        (o.fulfillment_method === 'pickup'
+          ? `Pick up on ${o.pickup_day}s at the farm.`
+          : `We'll deliver to ${o.delivery_address}.`) +
+        ' Your first box is on its way 🥚';
+      document.getElementById('m-success').style.display = 'block';
+
+    } catch (e) {
+      showFlash('Something went wrong. Please try again.', 'err');
+      btn.disabled = false; btn.innerHTML = origHTML;
+    }
+  }
+
+  async function doAuth() {
+    if (_authMode === 'login') {
+      const email    = document.getElementById('m-email').value.trim();
+      const password = document.getElementById('m-password').value;
+      if (!email || !password) { showFlash('Email and password are required.', 'warn'); return false; }
+      const data = await apiPost('/api/auth/login', { email, password });
+      if (data.error) { showFlash(data.error, 'err'); return false; }
+      _user = data.user; return true;
+    } else {
+      const name     = document.getElementById('m-name').value.trim();
+      const email    = document.getElementById('m-reg-email').value.trim();
+      const password = document.getElementById('m-reg-pw').value;
+      const confirm  = document.getElementById('m-reg-pw2').value;
+      if (!name || !email || !password || !confirm) { showFlash('All fields are required.', 'warn'); return false; }
+      if (password !== confirm) { showFlash('Passwords do not match.', 'err'); return false; }
+      const data = await apiPost('/api/auth/register', { name, email, password });
+      if (data.error) { showFlash(data.error, 'err'); return false; }
+      _user = data.user; return true;
+    }
+  }
+
+  function buildPayload() {
+    const method    = document.querySelector('input[name="fulfillment"]:checked')?.value;
+    const pickupDay = document.getElementById('m-pickup-day').value;
+    const address   = document.getElementById('m-address').value.trim();
+
+    if (!method)                        { showFlash('Please choose pickup or delivery.', 'warn'); return null; }
+    if (method === 'pickup'   && !pickupDay) { showFlash('Please select a pickup day.', 'warn'); return null; }
+    if (method === 'delivery' && !address)   { showFlash('Please enter your delivery address.', 'warn'); return null; }
+
+    const p = {
+      planName: _selPlan,
+      fulfillmentMethod: method,
+      ...(method === 'pickup'   ? { pickupDay }                  : {}),
+      ...(method === 'delivery' ? { deliveryAddress: address }   : {})
+    };
+
+    if (_selPlan === 'Small Family' || _selPlan === 'Family') {
+      const bt = document.querySelector('input[name="boxType"]:checked')?.value;
+      if (!bt) { showFlash('Please choose a box size.', 'warn'); return null; }
+      p.boxType = bt;
+
+    } else if (_selPlan === 'Solo / Couple') {
+      const b12 = Math.max(0, parseInt(document.getElementById('m-b12').value) || 0);
+      const b18 = Math.max(0, parseInt(document.getElementById('m-b18').value) || 0);
+      if (b12 + b18 < 1)  { showFlash('Please choose at least 1 box.', 'warn'); return null; }
+      if (b12 + b18 > 20) { showFlash('Total boxes per delivery cannot exceed 20.', 'warn'); return null; }
+      p.boxes12 = b12; p.boxes18 = b18;
+
+    } else if (_selPlan === 'Custom') {
+      const b12 = Math.max(0, parseInt(document.getElementById('m-b12').value) || 0);
+      const b18 = Math.max(0, parseInt(document.getElementById('m-b18').value) || 0);
+      const wk  = parseInt(document.getElementById('m-weeks').value) || 0;
+      if (b12 + b18 < 1)  { showFlash('Custom plan requires at least 1 box.', 'warn'); return null; }
+      if (b12 + b18 > 20) { showFlash('Total boxes per delivery cannot exceed 20.', 'warn'); return null; }
+      if (wk < 2)          { showFlash('Custom plan requires at least 2 weeks.', 'warn'); return null; }
+      if (wk > 52)         { showFlash('Duration cannot exceed 52 weeks.', 'warn'); return null; }
+      p.boxes12 = b12; p.boxes18 = b18; p.durationWeeks = wk;
+    }
+
+    return p;
+  }
+
+  /* ── Close on overlay click / Escape ───────────────────── */
+  document.getElementById('subscribe-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeSubscribeModal();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSubscribeModal(); });
+
+  /* ── CUSTOMER REVIEWS ──────────────────────────────────── */
+  let _wrRating = 0;
+
+  async function loadReviews() {
+    try {
+      const r = await fetch('/api/reviews');
+      const { reviews } = await r.json();
+      if (!reviews || reviews.length === 0) return; // keep seeded cards
+      renderReviews(reviews);
+    } catch (_) { /* keep seeded placeholder cards on error */ }
+  }
+
+  function starsHtml(rating) {
+    const full  = Math.round(rating);
+    return '★'.repeat(full) + '☆'.repeat(5 - full);
+  }
+
+  function formatMonth(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
+  function renderReviews(reviews) {
+    const grid = document.getElementById('reviews-grid');
+    if (!grid) return;
+
+    const total = reviews.length;
+    const avg   = total ? (reviews.reduce((s, r) => s + r.rating, 0) / total).toFixed(1) : '—';
+
+    const scoreEl = document.getElementById('avg-score');
+    const countEl = document.getElementById('avg-count');
+    if (scoreEl) scoreEl.textContent = avg;
+    if (countEl) countEl.textContent = `based on ${total} review${total !== 1 ? 's' : ''}`;
+
+    grid.innerHTML = reviews.map(r => `
+      <div class="review-card">
+        <div class="review-card-top">
+          <div class="reviewer-avatar" style="background:var(--green)">${(r.user_name || '?')[0].toUpperCase()}</div>
+          <div>
+            <div class="reviewer-name">${escHtml(r.user_name || 'Anonymous')}</div>
+            <div class="reviewer-date">${formatMonth(r.created_at)}</div>
+          </div>
+        </div>
+        <div class="review-stars">${starsHtml(r.rating)}</div>
+        <div class="review-title">${escHtml(r.title)}</div>
+        <p class="review-body">${escHtml(r.body)}</p>
+      </div>`).join('');
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* Write-Review modal */
+  function openWriteReview() {
+    _wrRating = 0;
+    updateStarPicker(0);
+    document.getElementById('wr-title-input').value = '';
+    document.getElementById('wr-body').value = '';
+    showWrFlash('', '');
+    const note = document.getElementById('wr-login-note');
+    if (note) note.style.display = _user ? 'none' : 'block';
+    document.getElementById('write-review-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeWriteReview() {
+    document.getElementById('write-review-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function setStarRating(val) {
+    _wrRating = val;
+    updateStarPicker(val);
+  }
+
+  function updateStarPicker(val) {
+    document.querySelectorAll('.star-btn').forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.dataset.val) <= val);
+    });
+  }
+
+  function showWrFlash(msg, type) {
+    const el = document.getElementById('wr-flash');
+    if (!msg) { el.style.display = 'none'; return; }
+    el.textContent   = msg;
+    el.className     = `wr-flash ${type}`;
+    el.style.display = 'block';
+  }
+
+  async function submitReview() {
+    if (!_user) {
+      showWrFlash('Please sign in before submitting a review.', 'warn');
+      return;
+    }
+    if (!_wrRating) { showWrFlash('Please select a star rating.', 'warn'); return; }
+    const title = document.getElementById('wr-title-input').value.trim();
+    const body  = document.getElementById('wr-body').value.trim();
+    if (!title) { showWrFlash('Please enter a review title.', 'warn'); return; }
+    if (!body)  { showWrFlash('Please write your review.', 'warn'); return; }
+
+    try {
+      const data = await apiPost('/api/reviews', { rating: _wrRating, title, body });
+      if (data.error) { showWrFlash(data.error, 'err'); return; }
+      showWrFlash('Thank you! Your review has been submitted.', 'ok');
+      setTimeout(closeWriteReview, 1800);
+      loadReviews();
+    } catch (_) {
+      showWrFlash('Something went wrong. Please try again.', 'err');
+    }
+  }
+
+  document.getElementById('write-review-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeWriteReview();
+  });
+
+  /* ── Boot ───────────────────────────────────────────────── */
+  (async () => {
+    try {
+      const d = await fetch('/api/auth/me', { credentials: 'same-origin' }).then(r => r.json());
+      _user = d.user || null;
+    } catch (_) {}
+    try {
+      const sc = await fetch('/stripe-config', { credentials: 'same-origin' }).then(r => r.json());
+      _stripePublishableKey = sc.publishableKey || null;
+    } catch (_) {}
+    loadPlans();
+    loadReviews();
+    loadFarmUpdates();
+  })();
+
+  /* ── Farm Updates ───────────────────────────────────────── */
+  function escHtmlFU(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Converts **bold** markdown to <b> tags after HTML-escaping
+  function renderBoldText(s) {
+    return escHtmlFU(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  }
+
+  async function loadFarmUpdates() {
+    const feed = document.getElementById('updates-feed');
+    if (!feed) return;
+    try {
+      const r = await fetch('/api/farm-updates');
+      const data = await r.json();
+      const updates = data.updates || [];
+      if (!updates.length) {
+        feed.innerHTML = '<div class="update-card" style="color:var(--muted);font-size:.9rem;padding:1rem 0;">No updates yet — check back soon!</div>';
+        return;
+      }
+      feed.innerHTML = updates.map(u => {
+        const imgs = Array.isArray(u.image_urls) ? u.image_urls : [];
+        let imagesHtml = '';
+        if (imgs.length === 1) {
+          imagesHtml = `<div class="update-images-container" style="margin-top:.8rem;">
+            <img src="${escHtmlFU(imgs[0])}" alt="${escHtmlFU(u.photo_caption || 'Farm photo')}" style="max-width:100%;width:100%;max-height:560px;object-fit:cover;border-radius:10px;display:block;" loading="lazy" onerror="this.style.display='none'">
+          </div>`;
+        } else if (imgs.length > 1) {
+          imagesHtml = `<div class="update-images-container update-images-strip" style="display:flex;gap:.6rem;overflow-x:auto;margin-top:.8rem;padding-bottom:.4rem;scroll-snap-type:x mandatory;">
+            ${imgs.map(src => `<img src="${escHtmlFU(src)}" alt="${escHtmlFU(u.photo_caption || 'Farm photo')}" style="height:380px;width:auto;border-radius:10px;flex:0 0 auto;scroll-snap-align:start;" loading="lazy" onerror="this.style.display='none'">`).join('')}
+          </div>`;
+        }
+        return `
+        <div class="update-card">
+          <div class="update-avatar">🌿</div>
+          <div class="update-body">
+            <div class="update-meta">
+              <span class="update-author">${escHtmlFU(u.author)}</span>
+              <span class="update-date">${escHtmlFU(u.date_label)}</span>
+            </div>
+            <p class="update-text">${renderBoldText(u.body)}</p>
+            ${imagesHtml}
+            ${u.photo_url ? `<img src="${escHtmlFU(u.photo_url)}" alt="${escHtmlFU(u.photo_caption || 'Farm photo')}" style="max-width:100%;border-radius:8px;margin-top:.6rem;display:block;" loading="lazy" onerror="this.style.display='none'">` : ''}
+            ${u.photo_caption ? `<div class="update-photo">📸 ${escHtmlFU(u.photo_caption)}</div>` : ''}
+            <div class="update-actions">
+              <button type="button"
+                      class="btn-like${u.liked ? ' liked' : ''}"
+                      id="like-btn-${u.id}"
+                      data-update-id="${u.id}"
+                      aria-pressed="${u.liked ? 'true' : 'false'}"
+                      aria-label="${u.liked ? 'Unlike this update' : 'Like this update'}"
+                      onclick="toggleFarmUpdateLike(${u.id})">
+                <span aria-hidden="true">👍</span>
+                <span class="like-label">${u.liked ? 'Liked' : 'Like'}</span>
+                <span class="like-count">${Number(u.likes_count) || 0}</span>
+              </button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    } catch (_) {
+      if (feed) feed.innerHTML = '<div class="update-card" style="color:var(--muted);font-size:.9rem;padding:1rem 0;">Unable to load updates right now.</div>';
+    }
+  }
+
+  async function toggleFarmUpdateLike(id) {
+    if (!_user) {
+      // Send the visitor to the login screen on the dashboard.
+      window.location.href = '/dashboard#account';
+      return;
+    }
+    const btn = document.getElementById(`like-btn-${id}`);
+    if (!btn || btn.disabled) return;
+    btn.disabled = true;
+    try {
+      const token = await getCsrf();
+      const r = await fetch(`/api/farm-updates/${id}/like`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        if (r.status === 401) window.location.href = '/dashboard#account';
+        return;
+      }
+      const liked = !!data.liked;
+      const count = Number(data.likes_count) || 0;
+      btn.classList.toggle('liked', liked);
+      btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+      btn.setAttribute('aria-label', liked ? 'Unlike this update' : 'Like this update');
+      const lbl = btn.querySelector('.like-label');
+      const cnt = btn.querySelector('.like-count');
+      if (lbl) lbl.textContent = liked ? 'Liked' : 'Like';
+      if (cnt) cnt.textContent = String(count);
+    } catch (_) {
+      /* ignore network error */
+    } finally {
+      btn.disabled = false;
+    }
+  }
+</script>
+
+</body>
+</html>
