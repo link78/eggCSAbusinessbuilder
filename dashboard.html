@@ -3700,7 +3700,7 @@
         const data = await apiPost('/api/orders', body);
         if (data.error) { showFlash('modal-flash', data.error, 'err'); return; }
         closeSubscribeModal();
-        showFlash('plans-flash', '✅ Subscription confirmed! You\'ll be contacted to arrange payment.', 'ok');
+        showFlash('plans-flash', "\u2705 Subscription confirmed! You'll be contacted to arrange payment.", 'ok');
         await loadPortal();
         switchView('portal');
       }
