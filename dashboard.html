@@ -943,6 +943,105 @@
     .portal-tab.active { background: #e85d04; color: #fff; border-color: #e85d04; }
     .portal-tab-panel { display: none; }
     .portal-tab-panel.active { display: block; }
+
+    /* ── INTERNAL MESSENGER ── */
+    .msg-thread {
+      max-height: 50vh; overflow-y: auto;
+      padding: .5rem .2rem; display: flex; flex-direction: column; gap: .55rem;
+      background: #fffdf9; border: 1px solid #f0e8d8; border-radius: 8px;
+    }
+    .msg-thread .msg-empty {
+      color: #aaa; font-size: .9rem; text-align: center; padding: 1.5rem .5rem;
+    }
+    .msg-bubble {
+      max-width: 78%; padding: .55rem .85rem; border-radius: 12px;
+      font-size: .92rem; line-height: 1.4; word-wrap: break-word;
+      white-space: pre-wrap; position: relative;
+    }
+    .msg-bubble .msg-time {
+      display: block; font-size: .68rem; font-weight: 500;
+      margin-top: .3rem; opacity: .65;
+    }
+    .msg-bubble.from-admin {
+      align-self: flex-start; background: #f5ede4; color: #2a2a2a;
+      border-bottom-left-radius: 3px;
+    }
+    .msg-bubble.from-me {
+      align-self: flex-end; background: #e85d04; color: #fff;
+      border-bottom-right-radius: 3px;
+    }
+    .msg-bubble.from-me .msg-time { color: #fff; opacity: .8; }
+    .msg-sender-label {
+      font-size: .7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .03em; margin-bottom: .15rem; opacity: .75;
+    }
+    .msg-compose {
+      display: flex; gap: .5rem; margin-top: .8rem; align-items: flex-end;
+    }
+    .msg-compose textarea {
+      flex: 1; min-height: 64px; max-height: 200px; resize: vertical;
+      padding: .55rem .7rem; border: 1px solid #e0d4bc; border-radius: 8px;
+      font-family: inherit; font-size: .92rem; line-height: 1.4;
+      background: #fff;
+    }
+    .msg-compose textarea:focus { outline: none; border-color: #e85d04; }
+    .msg-send-btn {
+      background: #e85d04; color: #fff; border: none; border-radius: 8px;
+      padding: .6rem 1.1rem; font-size: .9rem; font-weight: 700;
+      cursor: pointer; transition: background .15s; white-space: nowrap;
+    }
+    .msg-send-btn:hover:not(:disabled) { background: #c24f00; }
+    .msg-send-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* Sidebar unread badge */
+    .nav-unread-badge {
+      display: inline-block; background: #e85d04; color: #fff;
+      border-radius: 999px; padding: 1px 7px; font-size: .68rem;
+      font-weight: 700; margin-left: .35rem; vertical-align: middle;
+      min-width: 18px; text-align: center;
+    }
+
+    /* Admin conversation list */
+    .conv-list { display: flex; flex-direction: column; gap: .55rem; }
+    .conv-row {
+      display: flex; gap: .9rem; align-items: center;
+      padding: .8rem 1rem; background: #fff; border: 1px solid #f0e8d8;
+      border-radius: 10px; cursor: pointer; transition: background .15s, border-color .15s;
+    }
+    .conv-row:hover { background: #fdf3ec; border-color: #e85d04; }
+    .conv-avatar {
+      width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, #e85d04, #f48c06);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 1rem;
+    }
+    .conv-avatar img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+    .conv-body { flex: 1; min-width: 0; }
+    .conv-top {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: .5rem;
+    }
+    .conv-name { font-weight: 700; font-size: .95rem; color: #2a2a2a; }
+    .conv-time { font-size: .72rem; color: #999; white-space: nowrap; }
+    .conv-preview {
+      font-size: .85rem; color: #666; margin-top: .15rem;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .conv-preview.has-unread { color: #2a2a2a; font-weight: 600; }
+    .conv-unread {
+      background: #e85d04; color: #fff; border-radius: 999px;
+      padding: 2px 8px; font-size: .72rem; font-weight: 700;
+      margin-left: .5rem;
+    }
+
+    /* Admin: customer-profile "Message" button */
+    .pp-msg-btn {
+      display: inline-block; margin-top: .8rem;
+      background: #e8f4fd; color: #0c6dbf; border: none; border-radius: 6px;
+      padding: .45rem .9rem; font-size: .85rem; font-weight: 600;
+      cursor: pointer; transition: background .15s;
+    }
+    .pp-msg-btn:hover { background: #cce5ff; }
     .portal-plan-card { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem 1.4rem; }
     @media (max-width: 540px) { .portal-plan-card { grid-template-columns: 1fr; } }
     .portal-plan-field { display: flex; flex-direction: column; padding: .55rem 0; border-bottom: 1px solid #f5ede4; }
@@ -1358,6 +1457,9 @@
         <div class="sidebar-nav-item" id="nav-pickup"      onclick="switchView('pickup')">
           <span class="nav-icon">🚚</span> Pickup List
         </div>
+        <div class="sidebar-nav-item" id="nav-messages"    onclick="switchView('messages')" style="display:none;">
+          <span class="nav-icon">💬</span> Messages<span id="admin-msg-badge" class="nav-unread-badge" style="display:none;">0</span>
+        </div>
         <div class="sidebar-nav-item" id="nav-portal"      onclick="switchView('portal')" style="display:none;">
           <span class="nav-icon">🥚</span> My Subscription
         </div>
@@ -1466,6 +1568,7 @@
                 <div class="pp-value" id="pp-status">—</div>
                 <div class="pp-label">Member Since</div>
                 <div class="pp-value" id="pp-since">—</div>
+                <button class="pp-msg-btn" id="pp-msg-btn" onclick="adminOpenThreadFromProfile()">💬 Message this customer</button>
               </div>
               <div class="profile-panel-right">
                 <div class="pp-card">
@@ -1534,6 +1637,40 @@
           <button class="pickup-export-btn mark-all" onclick="pickupMarkAll()">✅ Mark All Completed</button>
         </div>
       </section>
+
+<!-- ══════════════════════════════════════════
+     ADMIN: INTERNAL MESSENGER
+═══════════════════════════════════════════ -->
+<section class="view-panel" id="view-messages">
+  <h2 class="section-title">💬 Messages</h2>
+  <p class="section-subtitle">Chat with subscribers — answer questions and send updates.</p>
+  <div id="admin-messages-flash"></div>
+
+  <div id="admin-messages-layout" style="display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:1.2rem;align-items:start;">
+    <!-- Conversation list -->
+    <div class="card" style="padding:.9rem;">
+      <h3 style="font-size:.95rem;font-weight:700;margin:.1rem 0 .8rem;color:#c45203;">Conversations</h3>
+      <div id="admin-conv-list" class="conv-list">
+        <div style="color:#aaa;font-size:.9rem;">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Active thread -->
+    <div class="card" id="admin-msg-thread-card">
+      <div id="admin-msg-thread-header" style="font-size:1rem;font-weight:700;color:#2a2a2a;margin-bottom:.6rem;">
+        Select a conversation
+      </div>
+      <div class="msg-thread" id="admin-msg-thread">
+        <div class="msg-empty">No conversation selected.</div>
+      </div>
+      <div class="msg-compose" id="admin-msg-compose" style="display:none;">
+        <textarea id="admin-msg-input" placeholder="Reply to this customer…" maxlength="4000"
+                  onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); adminSendMessage(); }"></textarea>
+        <button class="msg-send-btn" id="admin-msg-send" onclick="adminSendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ══════════════════════════════════════════
      ADMIN: FARM UPDATES
@@ -1651,6 +1788,7 @@
   <div class="portal-tabs" role="tablist">
     <button class="portal-tab active" id="ptab-sub"     role="tab" onclick="switchPortalTab('sub')">📦 Subscription</button>
     <button class="portal-tab"        id="ptab-billing" role="tab" onclick="switchPortalTab('billing')">💳 Billing</button>
+    <button class="portal-tab"        id="ptab-messages" role="tab" onclick="switchPortalTab('messages')">💬 Messages<span id="portal-msg-badge" class="nav-unread-badge" style="display:none;">0</span></button>
     <button class="portal-tab"        id="ptab-cancel"  role="tab" onclick="switchPortalTab('cancel')">✖ Cancel</button>
   </div>
 
@@ -1666,6 +1804,23 @@
     <div class="card">
       <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:1rem;color:#c45203;">💳 Billing History</h3>
       <div id="portal-billing-list"><div style="color:#aaa;font-size:.9rem;">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- Tab: Messages (to the farm) -->
+  <div class="portal-tab-panel" id="portal-panel-messages">
+    <div class="card">
+      <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:.4rem;color:#c45203;">💬 Messages with Sakinah Ridge Farm</h3>
+      <p style="margin:0 0 .8rem;color:#666;font-size:.85rem;">Use this space to chat directly with the farm — questions about pickups, plan changes, or anything else.</p>
+      <div id="portal-msg-flash"></div>
+      <div class="msg-thread" id="portal-msg-thread">
+        <div class="msg-empty">Loading…</div>
+      </div>
+      <div class="msg-compose">
+        <textarea id="portal-msg-input" placeholder="Write a message to the farm…" maxlength="4000"
+                  onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); portalSendMessage(); }"></textarea>
+        <button class="msg-send-btn" id="portal-msg-send" onclick="portalSendMessage()">Send</button>
+      </div>
     </div>
   </div>
 
@@ -2623,6 +2778,7 @@
     customers:     { panelId: 'view-customers',    navId: 'nav-customers' },
     orders:        { panelId: 'view-orders',       navId: 'nav-orders' },
     pickup:        { panelId: 'view-pickup',       navId: 'nav-pickup' },
+    messages:      { panelId: 'view-messages',     navId: 'nav-messages' },
     'farm-updates':{ panelId: 'view-farm-updates', navId: 'nav-farm-updates' },
     'about-page':  { panelId: 'view-about-page',  navId: 'nav-about-page' },
     billing:       { panelId: 'view-billing',      navId: 'nav-billing' },
@@ -2654,6 +2810,7 @@
     if (name === 'customers')      loadViewCustomers();
     if (name === 'orders')         loadViewOrders();
     if (name === 'pickup')         loadPickupList();
+    if (name === 'messages')       loadAdminConversations();
     if (name === 'home')           loadDashboardMetrics();
     if (name === 'farm-updates')   loadAdminFarmUpdates();
     if (name === 'about-page')     loadAdminAboutPage();
@@ -4244,10 +4401,13 @@ async function cancelOrder(id) {
   }
 
   function switchPortalTab(tab) {
-    ['sub','billing','cancel'].forEach(t => {
-      document.getElementById('ptab-' + t).classList.toggle('active', t === tab);
-      document.getElementById('portal-panel-' + t).classList.toggle('active', t === tab);
+    ['sub','billing','messages','cancel'].forEach(t => {
+      const tabBtn = document.getElementById('ptab-' + t);
+      const panel  = document.getElementById('portal-panel-' + t);
+      if (tabBtn) tabBtn.classList.toggle('active', t === tab);
+      if (panel)  panel.classList.toggle('active', t === tab);
     });
+    if (tab === 'messages') loadPortalMessages();
   }
 
   function _nextWeekdayDate(dayName) {
@@ -4441,6 +4601,265 @@ async function cancelOrder(id) {
     }
   }
 
+  /* ═══════════════════════════════════════════════════════
+     INTERNAL MESSENGER
+  ═══════════════════════════════════════════════════════ */
+  let _adminActiveThreadUserId = null;
+  let _adminConversations      = [];
+  let _msgUnreadPoll           = null;
+
+  function formatMsgTime(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    if (sameDay) {
+      return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    }
+    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+
+  function renderMessages(containerId, messages, viewerRole) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!messages || messages.length === 0) {
+      el.innerHTML = '<div class="msg-empty">No messages yet. Say hello! 👋</div>';
+      return;
+    }
+    el.innerHTML = messages.map(m => {
+      // "from-me" if the current viewer sent it; otherwise "from-admin" styling
+      // (we display admin and customer messages with different visual roles).
+      const senderIsAdmin = m.sender_role === 'admin';
+      let cls;
+      if (viewerRole === 'admin') {
+        cls = senderIsAdmin ? 'from-me' : 'from-admin';
+      } else {
+        cls = senderIsAdmin ? 'from-admin' : 'from-me';
+      }
+      const label = senderIsAdmin
+        ? '<div class="msg-sender-label">Sakinah Ridge Farm</div>'
+        : (viewerRole === 'admin'
+            ? `<div class="msg-sender-label">${escHtml(m.sender_name || 'Customer')}</div>`
+            : '');
+      return `<div class="msg-bubble ${cls}">${label}${escHtml(m.body).replace(/\n/g, '<br>')}<span class="msg-time">${escHtml(formatMsgTime(m.created_at))}</span></div>`;
+    }).join('');
+    // Auto-scroll to newest message.
+    el.scrollTop = el.scrollHeight;
+  }
+
+  // ── Customer-side messenger ──────────────────────────────────────────────
+  async function loadPortalMessages() {
+    const thread = document.getElementById('portal-msg-thread');
+    if (!thread) return;
+    thread.innerHTML = '<div class="msg-empty">Loading…</div>';
+    try {
+      const data = await apiFetch('/api/messages');
+      if (data.error) {
+        thread.innerHTML = `<div class="msg-empty">${escHtml(data.error)}</div>`;
+        return;
+      }
+      renderMessages('portal-msg-thread', data.messages || [], 'user');
+      // Reading the thread marks admin → user messages as read, so refresh the badge.
+      refreshPortalUnreadBadge();
+    } catch (_) {
+      thread.innerHTML = '<div class="msg-empty">Could not load messages. Please try again later.</div>';
+    }
+  }
+
+  async function portalSendMessage() {
+    const input = document.getElementById('portal-msg-input');
+    const sendBtn = document.getElementById('portal-msg-send');
+    if (!input || !sendBtn) return;
+    const body = (input.value || '').trim();
+    if (!body) return;
+    sendBtn.disabled = true;
+    try {
+      const data = await apiPost('/api/messages', { body });
+      if (data.error) {
+        showFlash('portal-msg-flash', data.error, 'err');
+        return;
+      }
+      input.value = '';
+      await loadPortalMessages();
+    } catch (_) {
+      showFlash('portal-msg-flash', 'Could not send your message. Please try again.', 'err');
+    } finally {
+      sendBtn.disabled = false;
+    }
+  }
+
+  async function refreshPortalUnreadBadge() {
+    if (!currentUser || currentUser.role === 'admin') return;
+    try {
+      const data = await apiFetch('/api/messages/unread-count');
+      const badge = document.getElementById('portal-msg-badge');
+      if (!badge) return;
+      const n = (data && typeof data.unread === 'number') ? data.unread : 0;
+      if (n > 0) {
+        badge.textContent = n > 99 ? '99+' : String(n);
+        badge.style.display = '';
+      } else {
+        badge.style.display = 'none';
+      }
+    } catch (_) { /* ignore */ }
+  }
+
+  // ── Admin-side messenger ─────────────────────────────────────────────────
+  async function loadAdminConversations() {
+    const list = document.getElementById('admin-conv-list');
+    if (!list) return;
+    list.innerHTML = '<div style="color:#aaa;font-size:.9rem;">Loading…</div>';
+    try {
+      const data = await apiFetch('/api/admin/messages');
+      if (data.error) {
+        list.innerHTML = `<div style="color:#c45203;font-size:.9rem;">${escHtml(data.error)}</div>`;
+        return;
+      }
+      _adminConversations = data.conversations || [];
+      renderAdminConversations();
+      refreshAdminUnreadBadge();
+    } catch (_) {
+      list.innerHTML = '<div style="color:#c45203;font-size:.9rem;">Could not load conversations.</div>';
+    }
+  }
+
+  function renderAdminConversations() {
+    const list = document.getElementById('admin-conv-list');
+    if (!list) return;
+    if (_adminConversations.length === 0) {
+      list.innerHTML = '<div style="color:#aaa;font-size:.9rem;padding:.5rem 0;">No conversations yet. Open a customer profile to start one.</div>';
+      return;
+    }
+    list.innerHTML = _adminConversations.map(c => {
+      const initial = (c.user_name || '?').trim().charAt(0).toUpperCase() || '?';
+      const avatar = c.user_avatar_url
+        ? `<img src="${escHtml(c.user_avatar_url)}" alt="">`
+        : escHtml(initial);
+      const previewPrefix = c.last_sender_role === 'admin' ? 'You: ' : '';
+      const unreadBadge = c.unread_count > 0
+        ? `<span class="conv-unread">${c.unread_count}</span>`
+        : '';
+      return `
+        <div class="conv-row" onclick="adminOpenThread(${c.user_id})">
+          <div class="conv-avatar">${avatar}</div>
+          <div class="conv-body">
+            <div class="conv-top">
+              <span class="conv-name">${escHtml(c.user_name || c.user_email)}</span>
+              <span class="conv-time">${escHtml(formatMsgTime(c.last_created_at))}</span>
+            </div>
+            <div class="conv-preview ${c.unread_count > 0 ? 'has-unread' : ''}">${escHtml(previewPrefix + (c.last_body || ''))}${unreadBadge}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function adminOpenThread(userId) {
+    _adminActiveThreadUserId = userId;
+    const header  = document.getElementById('admin-msg-thread-header');
+    const thread  = document.getElementById('admin-msg-thread');
+    const compose = document.getElementById('admin-msg-compose');
+    if (thread)  thread.innerHTML = '<div class="msg-empty">Loading…</div>';
+    if (compose) compose.style.display = '';
+    if (header)  header.textContent = 'Loading…';
+    try {
+      const data = await apiFetch(`/api/admin/messages/${userId}`);
+      if (data.error) {
+        if (thread) thread.innerHTML = `<div class="msg-empty">${escHtml(data.error)}</div>`;
+        return;
+      }
+      if (header) header.textContent = `Conversation with ${data.user.name || data.user.email}`;
+      renderMessages('admin-msg-thread', data.messages || [], 'admin');
+      // After opening, customer→admin messages are marked read — refresh the list.
+      loadAdminConversations();
+    } catch (_) {
+      if (thread) thread.innerHTML = '<div class="msg-empty">Could not load this thread.</div>';
+    }
+  }
+
+  async function adminSendMessage() {
+    if (!_adminActiveThreadUserId) return;
+    const input = document.getElementById('admin-msg-input');
+    const sendBtn = document.getElementById('admin-msg-send');
+    if (!input || !sendBtn) return;
+    const body = (input.value || '').trim();
+    if (!body) return;
+    sendBtn.disabled = true;
+    try {
+      const data = await apiPost(`/api/admin/messages/${_adminActiveThreadUserId}`, { body });
+      if (data.error) {
+        showFlash('admin-messages-flash', data.error, 'err');
+        return;
+      }
+      input.value = '';
+      await adminOpenThread(_adminActiveThreadUserId);
+    } catch (_) {
+      showFlash('admin-messages-flash', 'Could not send the message. Please try again.', 'err');
+    } finally {
+      sendBtn.disabled = false;
+    }
+  }
+
+  // From the customer-profile slide-over: jump to the Messages view scoped
+  // to this customer so the admin can reply in context.
+  function adminOpenThreadFromProfile() {
+    if (!_profileUserId) return;
+    closeCustomerProfile();
+    switchView('messages');
+    // Defer until the view is active and the layout is rendered.
+    setTimeout(() => adminOpenThread(_profileUserId), 50);
+  }
+
+  async function refreshAdminUnreadBadge() {
+    if (!currentUser || currentUser.role !== 'admin') return;
+    // Total unread = sum across conversations (already fetched).
+    let total = 0;
+    if (Array.isArray(_adminConversations)) {
+      for (const c of _adminConversations) total += (c.unread_count || 0);
+    } else {
+      try {
+        const data = await apiFetch('/api/admin/messages');
+        for (const c of (data.conversations || [])) total += (c.unread_count || 0);
+      } catch (_) { return; }
+    }
+    const badge = document.getElementById('admin-msg-badge');
+    if (!badge) return;
+    if (total > 0) {
+      badge.textContent = total > 99 ? '99+' : String(total);
+      badge.style.display = '';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  // Lightweight polling so users see new messages without a refresh.
+  function startMessengerPolling() {
+    if (_msgUnreadPoll) clearInterval(_msgUnreadPoll);
+    _msgUnreadPoll = setInterval(() => {
+      if (!currentUser) return;
+      if (currentUser.role === 'admin') {
+        // Fetch fresh conversation summary to update both the list and badge.
+        apiFetch('/api/admin/messages').then(data => {
+          if (data && Array.isArray(data.conversations)) {
+            _adminConversations = data.conversations;
+            // Re-render only if the admin messages view is currently visible.
+            const panel = document.getElementById('view-messages');
+            if (panel && panel.classList.contains('active')) {
+              renderAdminConversations();
+            }
+            refreshAdminUnreadBadge();
+          }
+        }).catch(() => {});
+      } else {
+        refreshPortalUnreadBadge();
+      }
+    }, 30000);
+  }
+
+  function stopMessengerPolling() {
+    if (_msgUnreadPoll) { clearInterval(_msgUnreadPoll); _msgUnreadPoll = null; }
+  }
+
 
   function updateSidebarUser() {
     if (currentUser) {
@@ -4456,6 +4875,7 @@ async function cancelOrder(id) {
     // Hide admin-only nav items from customers
     const isAdmin = currentUser && currentUser.role === 'admin';
     ['nav-home', 'nav-calculator', 'nav-customers', 'nav-orders', 'nav-pickup',
+     'nav-messages',
      'nav-farm-updates', 'nav-about-page', 'nav-settings', 'nav-billing'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = isAdmin ? '' : 'none';
@@ -4558,6 +4978,9 @@ async function cancelOrder(id) {
       updateSidebarUser();
       if (currentUser.role === 'admin') loadChecklist();
       switchView(currentUser.role === 'admin' ? 'home' : 'portal');
+      // Initial unread badge + start background polling.
+      if (currentUser.role === 'admin') refreshAdminUnreadBadge(); else refreshPortalUnreadBadge();
+      startMessengerPolling();
     } catch (e) {
       showFlash('gate-login-flash', 'Login failed. Please try again.', 'err');
     }
@@ -4585,12 +5008,15 @@ async function cancelOrder(id) {
       updateSidebarUser();
       if (currentUser.role === 'admin') loadChecklist();
       switchView(currentUser.role === 'admin' ? 'home' : 'portal');
+      if (currentUser.role === 'admin') refreshAdminUnreadBadge(); else refreshPortalUnreadBadge();
+      startMessengerPolling();
     } catch (e) {
       showFlash('gate-register-flash', 'Registration failed. Please try again.', 'err');
     }
   }
 
   async function doLogout() {
+    stopMessengerPolling();
     try { await apiPost('/api/auth/logout', {}); } catch (_) {}
     window.location.href = '/';
   }
@@ -5271,6 +5697,8 @@ async function cancelOrder(id) {
       hideAuthGate();
       if (currentUser.role === 'admin') loadChecklist();
       switchView(currentUser.role === 'admin' ? 'home' : 'portal');
+      if (currentUser.role === 'admin') refreshAdminUnreadBadge(); else refreshPortalUnreadBadge();
+      startMessengerPolling();
       const params = new URLSearchParams(window.location.search);
       if (params.get('checkout') === 'success') {
         showFlash('portal-flash', '✅ Payment successful! Your egg subscription is now active.', 'ok');
