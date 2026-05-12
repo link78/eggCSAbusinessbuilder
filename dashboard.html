@@ -3570,6 +3570,8 @@
     document.getElementById('modal-delivery-address').value = '';
     document.getElementById('modal-flash').style.display    = 'none';
     updateFulfillmentFields();
+    const submitBtn = document.querySelector('#subscribe-modal .btn-primary');
+    if (submitBtn) submitBtn.textContent = _stripePublishableKey ? 'Proceed to Checkout' : 'Subscribe';
     document.getElementById('subscribe-modal').classList.add('open');
     document.getElementById('modal-pickup-day').focus();
   }
@@ -3591,6 +3593,8 @@
     document.getElementById('modal-delivery-address').value = '';
     document.getElementById('modal-flash').style.display   = 'none';
     updateFulfillmentFields();
+    const submitBtn = document.querySelector('#subscribe-modal .btn-primary');
+    if (submitBtn) submitBtn.textContent = _stripePublishableKey ? 'Proceed to Checkout' : 'Subscribe';
     document.getElementById('subscribe-modal').classList.add('open');
     document.getElementById('modal-pickup-day').focus();
   }
@@ -3666,7 +3670,7 @@
 
     const btn = document.querySelector('#subscribe-modal .btn-primary');
     btn.disabled    = true;
-    btn.textContent = 'Opening checkout…';
+    btn.textContent = _stripePublishableKey ? 'Opening checkout…' : 'Processing…';
 
     try {
       const body = {
@@ -3686,15 +3690,25 @@
       body.plan_id = stripeServicePlanId(_pendingPlanName);
       body.user_id = currentUser && currentUser.id;
 
-      const data = await apiPost('/create-checkout-session', body);
-      if (data.error) { showFlash('modal-flash', data.error, 'err'); return; }
-      if (!data.url) { showFlash('modal-flash', 'Checkout did not return a redirect URL.', 'err'); return; }
-      window.location.href = data.url;
+      if (_stripePublishableKey) {
+        const data = await apiPost('/create-checkout-session', body);
+        if (data.error) { showFlash('modal-flash', data.error, 'err'); return; }
+        if (!data.url) { showFlash('modal-flash', 'Checkout did not return a redirect URL.', 'err'); return; }
+        window.location.href = data.url;
+      } else {
+        // Stripe not configured — create order directly and let farm arrange payment
+        const data = await apiPost('/api/orders', body);
+        if (data.error) { showFlash('modal-flash', data.error, 'err'); return; }
+        closeSubscribeModal();
+        showFlash('plans-flash', '✅ Subscription confirmed! You\'ll be contacted to arrange payment.', 'ok');
+        await loadPortal();
+        switchView('portal');
+      }
     } catch (e) {
-      showFlash('modal-flash', 'Failed to start checkout. Please try again.', 'err');
+      showFlash('modal-flash', 'Failed to process subscription. Please try again.', 'err');
     } finally {
       btn.disabled    = false;
-      btn.textContent = 'Proceed to Checkout';
+      btn.textContent = _stripePublishableKey ? 'Proceed to Checkout' : 'Subscribe';
     }
   }
 
@@ -4128,6 +4142,11 @@
       showFlash('admin-stripe-flash', 'Stripe keys saved.', 'ok');
       document.getElementById('stripe-secret-key-input').value = '';
       document.getElementById('stripe-secret-key-input').placeholder = '••••• (saved — leave blank to keep)';
+      try {
+        const config = await apiFetch('/stripe-config');
+        _stripePublishableKey = config.publishableKey || null;
+        updatePlanStripeNotice();
+      } catch (_) {}
     } catch (_) { showFlash('admin-stripe-flash', 'Failed to save keys.', 'err'); }
   }
 
@@ -4351,14 +4370,9 @@ async function cancelOrder(id) {
   }
 
   async function openBillingPortal() {
-    try {
-      const cfg = await fetch('/api/billing/stripe-config').then(r => r.json());
-      if (!cfg.publishableKey) {
-        showFlash('portal-flash', 'Stripe payments are not configured yet. Please contact support.', 'err');
-        return;
-      }
-    } catch (_) {
-      // If the check fails, proceed and let the server handle the error.
+    if (!_stripePublishableKey) {
+      showFlash('portal-flash', 'Stripe payments are not configured yet. Please contact support.', 'err');
+      return;
     }
     window.location.href = '/billing-portal';
   }
@@ -5255,7 +5269,13 @@ async function cancelOrder(id) {
       if (currentUser.role === 'admin') loadChecklist();
       switchView(currentUser.role === 'admin' ? 'home' : 'portal');
       const params = new URLSearchParams(window.location.search);
-      if (params.get('billing_error') === 'stripe_not_configured') {
+      if (params.get('checkout') === 'success') {
+        showFlash('portal-flash', '✅ Payment successful! Your egg subscription is now active.', 'ok');
+        history.replaceState(null, '', window.location.pathname);
+      } else if (params.get('checkout') === 'cancelled') {
+        showFlash('portal-flash', 'Checkout was cancelled. Your subscription is still pending — you can complete payment any time.', 'warn');
+        history.replaceState(null, '', window.location.pathname);
+      } else if (params.get('billing_error') === 'stripe_not_configured') {
         showFlash('portal-flash', 'Stripe payments are not configured. Please contact support.', 'err');
         history.replaceState(null, '', window.location.pathname);
       }
