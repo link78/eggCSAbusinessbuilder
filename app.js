@@ -23,6 +23,15 @@ const app        = express();
 const IS_PROD    = process.env.NODE_ENV === 'production';
 const SESSION_SECRET = process.env.SESSION_SECRET;
 
+// Trust the first proxy (Railway / Heroku / Render etc.) so that req.secure
+// is correct when the app runs behind an HTTPS-terminating reverse proxy.
+// Without this, express-session never sends the session cookie (secure:true
+// fails the req.secure check) and every request gets a fresh empty session,
+// making req.session.csrfToken always undefined → 403 on every POST.
+if (IS_PROD) {
+  app.set('trust proxy', 1);
+}
+
 if (!SESSION_SECRET && IS_PROD) {
   console.error('FATAL: SESSION_SECRET environment variable is required in production.');
   process.exit(1);

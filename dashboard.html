@@ -3529,6 +3529,11 @@
       `${total} box${total !== 1 ? 'es' : ''} · ${_customWeeks} wk · ${totalEggs} eggs/wk · ${totalEggs * 2} eggs/delivery`;
   }
 
+  function _updateSubscribeButtonText() {
+    const btn = document.querySelector('#subscribe-modal .btn-primary');
+    if (btn) btn.textContent = _stripePublishableKey ? 'Proceed to Checkout' : 'Subscribe';
+  }
+
   function openSoloSubscribeModal() {
     if (!currentUser) { showAuthGate(); showAuthForm('login'); return; }
     const total = _soloBoxes12 + _soloBoxes18;
@@ -3570,8 +3575,7 @@
     document.getElementById('modal-delivery-address').value = '';
     document.getElementById('modal-flash').style.display    = 'none';
     updateFulfillmentFields();
-    const submitBtn = document.querySelector('#subscribe-modal .btn-primary');
-    if (submitBtn) submitBtn.textContent = _stripePublishableKey ? 'Proceed to Checkout' : 'Subscribe';
+    _updateSubscribeButtonText();
     document.getElementById('subscribe-modal').classList.add('open');
     document.getElementById('modal-pickup-day').focus();
   }
@@ -3593,8 +3597,7 @@
     document.getElementById('modal-delivery-address').value = '';
     document.getElementById('modal-flash').style.display   = 'none';
     updateFulfillmentFields();
-    const submitBtn = document.querySelector('#subscribe-modal .btn-primary');
-    if (submitBtn) submitBtn.textContent = _stripePublishableKey ? 'Proceed to Checkout' : 'Subscribe';
+    _updateSubscribeButtonText();
     document.getElementById('subscribe-modal').classList.add('open');
     document.getElementById('modal-pickup-day').focus();
   }
@@ -3700,7 +3703,7 @@
         const data = await apiPost('/api/orders', body);
         if (data.error) { showFlash('modal-flash', data.error, 'err'); return; }
         closeSubscribeModal();
-        showFlash('plans-flash', "\u2705 Subscription confirmed! You'll be contacted to arrange payment.", 'ok');
+        showFlash('plans-flash', "✅ Subscription confirmed! You'll be contacted to arrange payment.", 'ok');
         await loadPortal();
         switchView('portal');
       }
