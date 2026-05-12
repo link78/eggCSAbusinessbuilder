@@ -168,6 +168,24 @@ async function init() {
     )
   `);
 
+  // ── Internal messenger ──────────────────────────────────────────────────────
+  // Direct messages between users (admins ↔ customers). Both participants are
+  // referenced via foreign keys; rows are kept lightweight (single body field
+  // + read receipt). ON DELETE CASCADE removes the thread if either party
+  // is deleted, which is the correct behaviour for an internal-only tool.
+  await query(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id            SERIAL PRIMARY KEY,
+      sender_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      recipient_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      body          TEXT    NOT NULL,
+      read_at       TIMESTAMPTZ,
+      created_at    TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await query(`CREATE INDEX IF NOT EXISTS idx_messages_recipient ON messages(recipient_id, read_at)`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_messages_pair      ON messages(sender_id, recipient_id, created_at)`);
+
   // Seed default about content rows (idempotent)
   await seedAboutContent();
 
@@ -262,7 +280,7 @@ async function seedAboutContent() {
  */
 async function reset() {
   await query(
-    'TRUNCATE users, orders, reviews, checklist_progress, plan_config, farm_updates, farm_update_likes, about_content, settings RESTART IDENTITY CASCADE'
+    'TRUNCATE users, orders, reviews, checklist_progress, plan_config, farm_updates, farm_update_likes, about_content, settings, messages RESTART IDENTITY CASCADE'
   );
   // Re-seed plan configurations so tests always start with a known state.
   await seedPlanConfig();
