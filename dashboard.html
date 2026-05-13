@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sakinah Ridge Farm LLC</title>
+  <meta name="theme-color" content="#3a6b35" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+  <link rel="stylesheet" href="/static/srf-theme.css" />
+  <script src="/static/srf-app.js" defer></script>
   <style>
     /* ── Reset & base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1485,6 +1490,7 @@
           <div class="sidebar-user-name" id="sidebar-user-name">—</div>
           <div class="sidebar-user-email" id="sidebar-user-email">—</div>
         </div>
+        <button type="button" class="theme-toggle" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false" style="margin-bottom:.5rem;width:100%;border-radius:8px;height:auto;padding:.5rem">🌙 Dark mode</button>
         <button class="btn-sidebar-logout" onclick="doLogout()">Sign Out</button>
       </div>
     </aside>
@@ -2493,6 +2499,14 @@
         <label for="review-body">Your Experience</label>
         <textarea id="review-body" maxlength="1000" rows="4"
           placeholder="Tell us about your experience with the egg CSA..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="review-photo">Add a photo <span style="font-weight:400;color:#888">(optional, max 5 MB)</span></label>
+        <input type="file" id="review-photo" accept="image/jpeg,image/png,image/gif,image/webp" />
+        <div id="review-photo-preview" style="margin-top:.5rem;display:none">
+          <img id="review-photo-img" alt="Selected photo preview" style="max-width:100%;max-height:180px;border-radius:8px;border:1px solid #e6ddd0;">
+          <button type="button" onclick="clearDashReviewPhoto()" style="display:block;margin-top:.4rem;background:none;border:none;color:#3a6b35;font-size:.82rem;cursor:pointer;text-decoration:underline">Remove photo</button>
+        </div>
       </div>
       <button class="btn-primary" onclick="submitReview()">Post Review</button>
     </div>
@@ -4017,6 +4031,9 @@
   function reviewCard(r) {
     const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
     const date  = new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const photo = r.photo_url
+      ? `<img src="${escHtml(r.photo_url)}" alt="Photo from ${escHtml(r.user_name)}" loading="lazy" style="margin-top:.6rem;width:100%;max-height:220px;object-fit:cover;border-radius:8px;">`
+      : '';
     return `<div class="review-card">
       <div class="review-header">
         <div>
@@ -4026,8 +4043,36 @@
         </div>
       </div>
       <div class="review-body">${escHtml(r.body)}</div>
+      ${photo}
     </div>`;
   }
+
+  function clearDashReviewPhoto() {
+    const inp = document.getElementById('review-photo');
+    const prev = document.getElementById('review-photo-preview');
+    const img = document.getElementById('review-photo-img');
+    if (inp)  inp.value = '';
+    if (img)  img.src = '';
+    if (prev) prev.style.display = 'none';
+  }
+  // Expose for inline onclick handler.
+  window.clearDashReviewPhoto = clearDashReviewPhoto;
+
+  // Live preview for the dashboard review photo input.
+  document.addEventListener('DOMContentLoaded', function () {
+    const inp = document.getElementById('review-photo');
+    if (!inp) return;
+    inp.addEventListener('change', function () {
+      const f = inp.files && inp.files[0];
+      if (!f) { clearDashReviewPhoto(); return; }
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        document.getElementById('review-photo-img').src = e.target.result;
+        document.getElementById('review-photo-preview').style.display = 'block';
+      };
+      reader.readAsDataURL(f);
+    });
+  });
 
   async function submitReview() {
     const title = document.getElementById('review-title').value.trim();
@@ -4037,11 +4082,30 @@
     if (!body)  { showFlash('review-flash', 'Please write your experience.', 'warn'); return; }
 
     try {
-      const data = await apiPost('/api/reviews', { rating: selectedRating, title, body });
+      const photoInput = document.getElementById('review-photo');
+      const photoFile  = photoInput && photoInput.files && photoInput.files[0];
+      let data;
+      if (photoFile) {
+        const fd = new FormData();
+        fd.append('rating', String(selectedRating));
+        fd.append('title', title);
+        fd.append('body', body);
+        fd.append('photo', photoFile);
+        const token = await getCsrfToken();
+        const r = await fetch('/api/reviews', {
+          method: 'POST', credentials: 'same-origin',
+          headers: { 'X-CSRF-Token': token },  // do NOT set Content-Type for FormData
+          body: fd
+        });
+        data = await r.json();
+      } else {
+        data = await apiPost('/api/reviews', { rating: selectedRating, title, body });
+      }
       if (data.error) { showFlash('review-flash', data.error, 'err'); return; }
       showFlash('review-flash', 'Review posted! Thank you.', 'ok');
       document.getElementById('review-title').value = '';
       document.getElementById('review-body').value  = '';
+      clearDashReviewPhoto();
       setRating(0);
       loadReviews();
     } catch (e) {

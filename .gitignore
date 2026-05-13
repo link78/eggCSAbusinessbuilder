@@ -12,3 +12,5 @@ uploads/**
 !uploads/flock/.gitkeep
 !uploads/story/
 !uploads/story/.gitkeep
+!uploads/reviews/
+!uploads/reviews/.gitkeep

@@ -1,0 +1,105 @@
+/* Dark-mode overrides for Sakinah Ridge Farm.
+ *
+ * The site's pages declare their light-mode palette inline on :root using
+ * CSS custom properties. To make dark mode a drop-in, this stylesheet just
+ * re-declares those same properties when the document is in [data-theme="dark"]
+ * mode, so every existing rule that reads var(--cream) etc. automatically
+ * picks up the dark equivalent.
+ *
+ * A handful of components (white card backgrounds, modal overlays, navbar
+ * fill) hard-coded #fff or other colors; explicit selectors below patch
+ * those without disturbing the light theme.
+ */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --green:      #6fae66;
+  --green-dark: #4f8b48;
+  --amber:      #ffb245;
+  --amber-lt:   #ffc66e;
+  --cream:      #1a1f1a;     /* page background */
+  --brown:      #c79a6b;
+  --text:       #ecebe6;
+  --muted:      #a8a8a0;
+  --border:     #2f3a30;
+}
+
+html[data-theme="dark"] body { background: var(--cream); color: var(--text); }
+
+/* Dashboard.html hard-codes a cream body background and white card surfaces
+ * (it pre-dates the CSS-variable based theming). Catch the common cases so
+ * the dashboard remains readable when dark mode is on. */
+html[data-theme="dark"] body[style*="#fdf8f0"],
+html[data-theme="dark"] .dashboard,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .tab-content,
+html[data-theme="dark"] .review-form-card,
+html[data-theme="dark"] .info-note {
+  background: #232a23 !important;
+  color: var(--text);
+}
+
+/* Generic catch-all for elements with explicit white/cream backgrounds. */
+html[data-theme="dark"] [style*="background:#fff"],
+html[data-theme="dark"] [style*="background: #fff"],
+html[data-theme="dark"] [style*="background:#fdf8f0"],
+html[data-theme="dark"] [style*="background: #fdf8f0"] {
+  background: #232a23 !important;
+  color: var(--text);
+}
+
+/* Surfaces hard-coded to white in light mode. */
+html[data-theme="dark"] .navbar,
+html[data-theme="dark"] header,
+html[data-theme="dark"] .review-card,
+html[data-theme="dark"] .update-card,
+html[data-theme="dark"] .story-card,
+html[data-theme="dark"] .hens-card,
+html[data-theme="dark"] .modal-card,
+html[data-theme="dark"] .wr-card,
+html[data-theme="dark"] .journal-card,
+html[data-theme="dark"] .delivery-map-wrap,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] section.section {
+  background: #232a23 !important;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .navbar { border-bottom-color: var(--border); }
+
+/* Modal/overlay scrims should be darker. */
+html[data-theme="dark"] .modal-overlay,
+html[data-theme="dark"] .wr-overlay {
+  background: rgba(0, 0, 0, 0.72) !important;
+}
+
+/* Form inputs / textareas. */
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select,
+html[data-theme="dark"] .m-input {
+  background: #1f261f;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+/* Theme-toggle button styling (works on every page). */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  margin-left: .25rem;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--text);
+  transition: background .15s, transform .15s;
+}
+.theme-toggle:hover { background: var(--cream); transform: scale(1.05); }
+html[data-theme="dark"] .theme-toggle:hover { background: #2a322a; }

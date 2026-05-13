@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Farm Journal | Sakinah Ridge Farm</title>
+  <meta name="description" content="Photos, notes, and updates from Sakinah Ridge Farm — a small family farm in Raymond, Nebraska, delivering pasture-raised eggs across Lincoln, NE." />
+  <meta name="theme-color" content="#3a6b35" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+  <link rel="alternate" type="application/rss+xml" title="Sakinah Ridge Farm — Farm Journal" href="/feed.xml" />
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="Farm Journal | Sakinah Ridge Farm" />
+  <meta property="og:description" content="Photos, notes, and updates from Sakinah Ridge Farm — pasture-raised eggs in Lincoln, NE." />
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="/journal.html" />
+  <meta property="og:image"       content="/icons/icon.svg" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:title"      content="Farm Journal | Sakinah Ridge Farm" />
+  <meta name="twitter:description" content="Photos, notes, and updates from Sakinah Ridge Farm." />
+
+  <link rel="stylesheet" href="/static/srf-theme.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green:      #3a6b35;
+      --green-dark: #2a4f26;
+      --amber:      #e07b00;
+      --cream:      #fdf8f0;
+      --text:       #2d2d2d;
+      --muted:      #666;
+      --border:     #e6ddd0;
+    }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--cream); color: var(--text); }
+    a { color: inherit; text-decoration: none; }
+
+    .navbar {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .9rem 2rem; background: #fff; border-bottom: 2px solid var(--border); gap: 1rem;
+    }
+    .navbar-logo { display: flex; align-items: center; gap: .55rem; font-weight: 700; font-size: 1.05rem; color: var(--green-dark); }
+    .navbar-logo .logo-icon { font-size: 1.6rem; }
+    .navbar-links { display: flex; align-items: center; gap: .25rem; list-style: none; flex-wrap: wrap; }
+    .navbar-links a { padding: .45rem .85rem; border-radius: 6px; font-size: .9rem; font-weight: 600; color: var(--text); transition: background .15s, color .15s; }
+    .navbar-links a:hover, .navbar-links a.active { background: var(--cream); color: var(--green); }
+    html[data-theme="dark"] .navbar-links a:hover,
+    html[data-theme="dark"] .navbar-links a.active { background: #2a322a; }
+
+    .hero {
+      padding: 3rem 1.25rem 2rem; text-align: center;
+      background: linear-gradient(135deg, #3a6b35 0%, #2a4f26 100%); color: #fff;
+    }
+    .hero h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); margin-bottom: .5rem; }
+    .hero p  { opacity: .9; max-width: 640px; margin: 0 auto; }
+    .hero .rss-link {
+      display: inline-flex; align-items: center; gap: .35rem;
+      margin-top: 1rem; padding: .4rem .9rem; border-radius: 999px;
+      background: rgba(255,255,255,.15); color: #fff; font-size: .85rem; font-weight: 600;
+    }
+    .hero .rss-link:hover { background: rgba(255,255,255,.25); }
+
+    .feed { max-width: 760px; margin: 2rem auto; padding: 0 1rem 3rem; display: grid; gap: 1.25rem; }
+    .journal-card {
+      background: #fff; border: 1px solid var(--border); border-radius: 14px;
+      padding: 1.25rem 1.4rem;
+    }
+    .journal-card:target { outline: 3px solid var(--amber); outline-offset: 4px; }
+    .journal-meta { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; font-size: .85rem; color: var(--muted); margin-bottom: .5rem; }
+    .journal-meta .author { font-weight: 600; color: var(--green-dark); }
+    .journal-meta a.permalink { color: var(--muted); }
+    .journal-meta a.permalink:hover { color: var(--green); text-decoration: underline; }
+    .journal-card h2 { font-size: 1.15rem; color: var(--green-dark); margin-bottom: .5rem; }
+    .journal-body { font-size: .98rem; line-height: 1.65; color: var(--text); white-space: pre-wrap; }
+    .journal-images {
+      margin-top: 1rem; display: grid; gap: .75rem;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+    .journal-images img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; }
+    .journal-caption { font-size: .82rem; color: var(--muted); margin-top: .35rem; font-style: italic; }
+    .journal-share { display: flex; gap: .4rem; margin-top: .9rem; flex-wrap: wrap; }
+    .journal-share a, .journal-share button {
+      display: inline-flex; align-items: center; gap: .3rem;
+      padding: .3rem .7rem; border-radius: 999px;
+      background: var(--cream); color: var(--green-dark);
+      border: 1px solid var(--border); cursor: pointer;
+      font-size: .8rem; font-weight: 600; font-family: inherit;
+    }
+    .journal-share a:hover, .journal-share button:hover { background: var(--green); color: #fff; border-color: var(--green); }
+    html[data-theme="dark"] .journal-share a, html[data-theme="dark"] .journal-share button { background: #2a322a; }
+
+    .feed-empty { text-align: center; color: var(--muted); padding: 3rem 1rem; }
+
+    footer { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: .9rem; }
+
+    @media (max-width: 600px) {
+      .navbar { padding: .7rem 1rem; }
+      .navbar-links a { padding: .35rem .55rem; font-size: .82rem; }
+    }
+  </style>
+  <script src="/static/srf-app.js" defer></script>
+</head>
+<body>
+
+<header>
+  <nav class="navbar" aria-label="Main navigation">
+    <a class="navbar-logo" href="/">
+      <span class="logo-icon" aria-hidden="true">🌿</span>
+      <span>Sakinah Ridge Farm LLC</span>
+    </a>
+    <ul class="navbar-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/#egg-csa">Egg CSA</a></li>
+      <li><a class="active" href="/journal.html" aria-current="page">Journal</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li>
+        <button type="button" class="theme-toggle" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">🌙</button>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<section class="hero">
+  <h1>Farm Journal</h1>
+  <p>Field notes, photos, and updates from Sakinah Ridge Farm in Raymond, Nebraska — delivering pasture-raised eggs across Lincoln, NE.</p>
+  <a class="rss-link" href="/feed.xml" rel="alternate" type="application/rss+xml" aria-label="Subscribe to RSS feed">📡 Subscribe via RSS</a>
+</section>
+
+<main class="feed" id="feed" aria-live="polite">
+  <div class="feed-empty" id="feed-loading">Loading journal entries…</div>
+</main>
+
+<footer>
+  <strong>Sakinah Ridge Farm LLC</strong> · Raymond, NE<br>
+  <a href="/">Home</a> · <a href="/about.html">About</a> · <a href="/feed.xml">RSS</a>
+</footer>
+
+<script>
+  (function () {
+    'use strict';
+
+    function escHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Convert **bold** markdown to <b> after HTML-escaping the rest.
+    function renderBody(s) {
+      return escHtml(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    }
+
+    function permalink(id) {
+      return location.origin + '/journal.html#post-' + id;
+    }
+
+    function shareButtons(id, title) {
+      var url = permalink(id);
+      var encUrl = encodeURIComponent(url);
+      var encTitle = encodeURIComponent(title);
+      return (
+        '<div class="journal-share" role="group" aria-label="Share this post">' +
+          '<a href="https://twitter.com/intent/tweet?text=' + encTitle + '&url=' + encUrl + '" target="_blank" rel="noopener noreferrer" aria-label="Share on Twitter">🐦 Twitter</a>' +
+          '<a href="https://www.facebook.com/sharer/sharer.php?u=' + encUrl + '" target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook">📘 Facebook</a>' +
+          '<a href="mailto:?subject=' + encTitle + '&body=' + encUrl + '" aria-label="Share by email">✉️ Email</a>' +
+          '<button type="button" onclick="copyPermalink(' + id + ', this)" aria-label="Copy permalink">🔗 Copy link</button>' +
+        '</div>'
+      );
+    }
+
+    window.copyPermalink = function (id, btn) {
+      var url = permalink(id);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () {
+          var orig = btn.textContent; btn.textContent = '✓ Copied';
+          setTimeout(function () { btn.textContent = orig; }, 1600);
+        }).catch(function () { window.prompt('Copy this link:', url); });
+      } else {
+        window.prompt('Copy this link:', url);
+      }
+    };
+
+    function renderEntry(u) {
+      var imgs = Array.isArray(u.image_urls) ? u.image_urls.slice() : [];
+      if (u.photo_url && imgs.indexOf(u.photo_url) === -1) imgs.unshift(u.photo_url);
+      var imageHtml = imgs.length
+        ? '<div class="journal-images">' +
+            imgs.map(function (src) {
+              return '<img src="' + escHtml(src) + '" alt="Photo from farm update" loading="lazy">';
+            }).join('') +
+          '</div>'
+        : '';
+      var caption = u.photo_caption ? '<div class="journal-caption">' + escHtml(u.photo_caption) + '</div>' : '';
+      var title   = u.date_label ? ('Farm Journal — ' + u.date_label) : ('Farm Journal — Update #' + u.id);
+      var anchor  = 'post-' + u.id;
+
+      return (
+        '<article class="journal-card" id="' + anchor + '">' +
+          '<div class="journal-meta">' +
+            '<span><span class="author">' + escHtml(u.author || 'Sakinah Ridge Farm') + '</span> · ' + escHtml(u.date_label || '') + '</span>' +
+            '<a class="permalink" href="#' + anchor + '">#' + u.id + '</a>' +
+          '</div>' +
+          '<h2>' + escHtml(title) + '</h2>' +
+          '<div class="journal-body">' + renderBody(u.body || '') + '</div>' +
+          imageHtml + caption +
+          shareButtons(u.id, title) +
+        '</article>'
+      );
+    }
+
+    async function loadJournal() {
+      var feed = document.getElementById('feed');
+      try {
+        var r = await fetch('/api/farm-updates', { credentials: 'same-origin' });
+        var data = await r.json();
+        var updates = (data && data.updates) || [];
+        if (!updates.length) {
+          feed.innerHTML = '<div class="feed-empty">No journal entries yet — check back soon!</div>';
+          return;
+        }
+        feed.innerHTML = updates.map(renderEntry).join('');
+        // If a permalink anchor was supplied, scroll to it after content loads.
+        if (location.hash) {
+          var el = document.getElementById(location.hash.slice(1));
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      } catch (e) {
+        feed.innerHTML = '<div class="feed-empty">Could not load journal entries. Please try again later.</div>';
+      }
+    }
+
+    loadJournal();
+  })();
+</script>
+
+</body>
+</html>

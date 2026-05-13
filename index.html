@@ -3,7 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sakinah Ridge Farm LLC – Raymond, Nebraska</title>
+  <title>Sakinah Ridge Farm LLC – Fresh Eggs in Lincoln, NE & Raymond</title>
+  <meta name="description" content="Sakinah Ridge Farm — fresh, pasture-raised eggs delivered to Lincoln, NE neighborhoods (University Place, Havelock, Bethany, Belmont, College View, Eastridge) and pickup in Raymond. Bi-weekly CSA subscriptions." />
+  <meta name="theme-color" content="#3a6b35" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+  <link rel="alternate" type="application/rss+xml" title="Sakinah Ridge Farm — Farm Journal" href="/feed.xml" />
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="Sakinah Ridge Farm — Fresh Eggs in Lincoln, NE" />
+  <meta property="og:description" content="Pasture-raised egg CSA subscriptions delivered across Lincoln, NE neighborhoods. Pickup available in Raymond." />
+  <meta property="og:type"        content="website" />
+  <meta property="og:image"       content="/icons/icon.svg" />
+  <meta name="twitter:card"       content="summary_large_image" />
+
+  <link rel="stylesheet" href="/static/srf-theme.css" />
+  <script src="/static/srf-app.js" defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -725,10 +740,13 @@
     <ul class="navbar-links">
       <li><a href="/">Home</a></li>
       <li><a href="#egg-csa">Egg CSA</a></li>
+      <li><a href="#delivery-zone">Delivery Zone</a></li>
       <li><a href="#farm-products">Farm Products</a></li>
       <li><a href="#reviews">Reviews</a></li>
+      <li><a href="/journal.html">Journal</a></li>
       <li><a href="/about.html">About</a></li>
       <li><a href="/dashboard#account" class="btn-login">Login</a></li>
+      <li><button type="button" class="theme-toggle" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">🌙</button></li>
     </ul>
   </nav>
 </header>
@@ -747,6 +765,80 @@
     </div>
   </div>
 </section>
+
+<!-- ══════════════════════════════════════════
+     DELIVERY ZONE — Lincoln, NE
+═══════════════════════════════════════════ -->
+<section class="section" id="delivery-zone" aria-labelledby="delivery-zone-heading" style="padding-top:2.5rem;">
+  <span class="section-label">Delivery Zone</span>
+  <h2 id="delivery-zone-heading">Fresh Eggs Delivered Across Lincoln, NE</h2>
+  <p class="lead">We deliver bi-weekly to neighborhoods across Lincoln — including <strong>University Place</strong>, <strong>Havelock</strong>, <strong>Bethany</strong>, <strong>Belmont</strong>, <strong>College View</strong>, <strong>Eastridge</strong>, <strong>Downtown</strong>, and the <strong>Near South</strong>. Pickup is always available at the farm in Raymond.</p>
+
+  <div class="delivery-map-wrap" style="margin:1.25rem auto 0;max-width:920px;background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+    <div id="delivery-map" style="width:100%;height:380px;background:#eef4ec;" role="img" aria-label="Map of Lincoln, NE delivery zone covering surrounding neighborhoods"></div>
+    <div style="padding:1rem 1.25rem;">
+      <strong style="color:var(--green-dark);font-size:.95rem;">Covered ZIP codes:</strong>
+      <span style="color:var(--muted);font-size:.92rem;">68501, 68502, 68503, 68504, 68505, 68506, 68507, 68508, 68510, 68512, 68516, 68521, 68522, 68523, 68524, 68526, 68528 — plus Raymond (68428).</span>
+      <p style="margin-top:.6rem;font-size:.88rem;color:var(--muted);">Outside this zone? <a href="mailto:info@sakinahridgefarm.com" style="color:var(--green);text-decoration:underline;">Email us</a> — we add new stops as routes grow.</p>
+    </div>
+  </div>
+</section>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+<script>
+  // Initialise the Leaflet delivery-zone map once the library is loaded.
+  // The "L" global is added by /leaflet.js (above) when the deferred script runs.
+  window.addEventListener('load', function () {
+    if (typeof L === 'undefined' || !document.getElementById('delivery-map')) return;
+
+    // Lincoln, NE city center.
+    var lincoln = [40.8136, -96.7026];
+    var map = L.map('delivery-map', {
+      scrollWheelZoom: false,
+      zoomControl: true
+    }).setView(lincoln, 11);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Rough delivery-zone polygon around Lincoln (covers the listed neighborhoods).
+    var zone = [
+      [40.880, -96.770],  // NW (Highlands / Air Park)
+      [40.880, -96.620],  // NE (Havelock north edge)
+      [40.770, -96.605],  // E  (Eastridge / 84th)
+      [40.745, -96.665],  // SE (College View)
+      [40.745, -96.760],  // SW (Yankee Hill)
+      [40.810, -96.795]   // W
+    ];
+    L.polygon(zone, { color: '#3a6b35', weight: 2, fillColor: '#6fae66', fillOpacity: 0.25 })
+      .addTo(map)
+      .bindPopup('<strong>Lincoln Delivery Zone</strong><br/>Bi-weekly egg deliveries.');
+
+    // Farm pickup pin.
+    L.marker([40.9583, -96.7894])
+      .addTo(map)
+      .bindPopup('<strong>Sakinah Ridge Farm</strong><br/>Raymond, NE — farm pickup');
+
+    // Neighborhood callouts (approx centers).
+    var neighborhoods = [
+      { name: 'University Place', latlng: [40.846, -96.674] },
+      { name: 'Havelock',         latlng: [40.860, -96.659] },
+      { name: 'Bethany',          latlng: [40.835, -96.643] },
+      { name: 'Belmont',          latlng: [40.834, -96.715] },
+      { name: 'College View',     latlng: [40.770, -96.673] },
+      { name: 'Eastridge',        latlng: [40.795, -96.642] },
+      { name: 'Downtown',         latlng: [40.810, -96.700] }
+    ];
+    neighborhoods.forEach(function (n) {
+      L.circleMarker(n.latlng, { radius: 5, color: '#e07b00', fillColor: '#f5a623', fillOpacity: .9, weight: 2 })
+        .addTo(map)
+        .bindTooltip(n.name, { permanent: false, direction: 'top' });
+    });
+  });
+</script>
 
 <!-- ══════════════════════════════════════════
      FARM UPDATES (DISCUSSION)
@@ -931,6 +1023,14 @@
       <div class="m-group" style="margin-bottom:1rem">
         <label style="display:block;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.3rem" for="wr-body">Your Review</label>
         <textarea id="wr-body" class="m-input" rows="4" maxlength="1000" placeholder="Share your experience…" style="resize:vertical"></textarea>
+      </div>
+      <div class="m-group" style="margin-bottom:1rem">
+        <label style="display:block;font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.3rem" for="wr-photo">Add a photo <span style="font-weight:400;color:var(--muted)">(optional, max 5 MB)</span></label>
+        <input id="wr-photo" class="m-input" type="file" accept="image/jpeg,image/png,image/gif,image/webp">
+        <div id="wr-photo-preview" style="margin-top:.5rem;display:none">
+          <img id="wr-photo-img" alt="Selected photo preview" style="max-width:100%;max-height:180px;border-radius:8px;border:1px solid var(--border);">
+          <button type="button" onclick="clearReviewPhoto()" style="display:block;margin-top:.4rem;background:none;border:none;color:var(--green);font-size:.82rem;cursor:pointer;text-decoration:underline">Remove photo</button>
+        </div>
       </div>
       <div id="wr-login-note" style="font-size:.85rem;color:var(--muted);margin-bottom:.8rem;display:none">
         You must be <a href="/dashboard#account" style="color:var(--green);text-decoration:underline">signed in</a> to submit a review.
@@ -1541,6 +1641,7 @@
         <div class="review-stars">${starsHtml(r.rating)}</div>
         <div class="review-title">${escHtml(r.title)}</div>
         <p class="review-body">${escHtml(r.body)}</p>
+        ${r.photo_url ? `<img class="review-photo" src="${escHtml(r.photo_url)}" alt="Photo from ${escHtml(r.user_name || 'a customer')}" loading="lazy" style="margin-top:.75rem;width:100%;max-height:220px;object-fit:cover;border-radius:8px;">` : ''}
       </div>`).join('');
   }
 
@@ -1556,12 +1657,39 @@
     updateStarPicker(0);
     document.getElementById('wr-title-input').value = '';
     document.getElementById('wr-body').value = '';
+    clearReviewPhoto();
     showWrFlash('', '');
     const note = document.getElementById('wr-login-note');
     if (note) note.style.display = _user ? 'none' : 'block';
     document.getElementById('write-review-modal').classList.add('open');
     document.body.style.overflow = 'hidden';
   }
+
+  function clearReviewPhoto() {
+    const inp = document.getElementById('wr-photo');
+    const prev = document.getElementById('wr-photo-preview');
+    const img = document.getElementById('wr-photo-img');
+    if (inp)  inp.value = '';
+    if (img)  img.src = '';
+    if (prev) prev.style.display = 'none';
+  }
+  window.clearReviewPhoto = clearReviewPhoto;
+
+  // Live preview of the chosen photo.
+  document.addEventListener('DOMContentLoaded', function () {
+    const inp = document.getElementById('wr-photo');
+    if (!inp) return;
+    inp.addEventListener('change', function () {
+      const f = inp.files && inp.files[0];
+      if (!f) { clearReviewPhoto(); return; }
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        document.getElementById('wr-photo-img').src = e.target.result;
+        document.getElementById('wr-photo-preview').style.display = 'block';
+      };
+      reader.readAsDataURL(f);
+    });
+  });
 
   function closeWriteReview() {
     document.getElementById('write-review-modal').classList.remove('open');
@@ -1599,7 +1727,28 @@
     if (!body)  { showWrFlash('Please write your review.', 'warn'); return; }
 
     try {
-      const data = await apiPost('/api/reviews', { rating: _wrRating, title, body });
+      const photoInput = document.getElementById('wr-photo');
+      const photoFile  = photoInput && photoInput.files && photoInput.files[0];
+      let data;
+      if (photoFile) {
+        // Multipart submission so the server receives both the JSON-ish
+        // fields and the binary photo.
+        const fd = new FormData();
+        fd.append('rating', String(_wrRating));
+        fd.append('title', title);
+        fd.append('body', body);
+        fd.append('photo', photoFile);
+        const token = await getCsrf();
+        const r = await fetch('/api/reviews', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'X-CSRF-Token': token },  // do NOT set Content-Type for FormData
+          body: fd
+        });
+        data = await r.json();
+      } else {
+        data = await apiPost('/api/reviews', { rating: _wrRating, title, body });
+      }
       if (data.error) { showWrFlash(data.error, 'err'); return; }
       showWrFlash('Thank you! Your review has been submitted.', 'ok');
       setTimeout(closeWriteReview, 1800);

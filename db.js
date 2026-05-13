@@ -240,8 +240,13 @@ async function init() {
     await query(`UPDATE users SET referral_code = $1 WHERE id = $2`, [generateReferralCode(), u.id]);
   }
 
-  // ── Delivery reminders (email/SMS opt-in) ──────────────────────────────────
-  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reminder_email_enabled BOOLEAN NOT NULL DEFAULT true`);
+  // ── Photo reviews ──────────────────────────────────────────────────────────
+  // Subscribers can optionally attach a single photo (their breakfast,
+  // kids holding a carton, etc.) — much more persuasive on the landing page
+  // than text-only reviews.
+  await query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS photo_url TEXT`);
+
+  // ── Delivery reminders (email/SMS opt-in) ──────────────────────────────────  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reminder_email_enabled BOOLEAN NOT NULL DEFAULT true`);
   await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reminder_sms_enabled   BOOLEAN NOT NULL DEFAULT false`);
   await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number           TEXT`);
   await query(`
