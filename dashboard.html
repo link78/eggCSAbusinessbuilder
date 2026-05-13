@@ -1787,6 +1787,7 @@
   <!-- Sub-nav tabs -->
   <div class="portal-tabs" role="tablist">
     <button class="portal-tab active" id="ptab-sub"     role="tab" onclick="switchPortalTab('sub')">📦 Subscription</button>
+    <button class="portal-tab"        id="ptab-manage"  role="tab" onclick="switchPortalTab('manage')">🎁 Manage</button>
     <button class="portal-tab"        id="ptab-billing" role="tab" onclick="switchPortalTab('billing')">💳 Billing</button>
     <button class="portal-tab"        id="ptab-messages" role="tab" onclick="switchPortalTab('messages')">💬 Messages<span id="portal-msg-badge" class="nav-unread-badge" style="display:none;">0</span></button>
     <button class="portal-tab"        id="ptab-cancel"  role="tab" onclick="switchPortalTab('cancel')">✖ Cancel</button>
@@ -1796,6 +1797,67 @@
   <div class="portal-tab-panel active" id="portal-panel-sub">
     <div class="card portal-plan-card" id="portal-plan-card">
       <div style="color:#aaa;font-size:.9rem;">Loading…</div>
+    </div>
+    <!-- Next-delivery countdown + upcoming list (Features 1 & 2) -->
+    <div id="portal-deliveries-card"></div>
+  </div>
+
+  <!-- Tab: Manage (Features 1, 3, 4, 5) -->
+  <div class="portal-tab-panel" id="portal-panel-manage">
+    <div id="portal-manage-flash"></div>
+
+    <!-- Pause / Skip controls -->
+    <div class="card" id="portal-pause-card">
+      <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:.6rem;color:#c45203;">⏸️ Pause or Skip Deliveries</h3>
+      <p style="margin:0 0 .9rem;color:#666;font-size:.88rem;">
+        Going on vacation? Pause your subscription for up to a year, or skip a single upcoming delivery.
+      </p>
+      <div id="portal-pause-status" style="margin-bottom:.8rem;"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end;">
+        <label style="display:flex;flex-direction:column;font-size:.85rem;color:#444;">
+          <span style="margin-bottom:.25rem;">Pause until</span>
+          <input type="date" id="portal-pause-until" style="padding:.45rem .6rem;border:1px solid #ccc;border-radius:6px;">
+        </label>
+        <button class="btn-secondary" onclick="portalPauseSubscription()">Pause</button>
+        <button class="btn-secondary" onclick="portalResumeSubscription()" id="portal-resume-btn" style="display:none;">Resume Now</button>
+        <label style="display:flex;flex-direction:column;font-size:.85rem;color:#444;">
+          <span style="margin-bottom:.25rem;">Skip a delivery</span>
+          <select id="portal-skip-date" style="padding:.45rem .6rem;border:1px solid #ccc;border-radius:6px;min-width:180px;">
+            <option value="">Choose a date…</option>
+          </select>
+        </label>
+        <button class="btn-secondary" onclick="portalSkipDelivery()">Skip</button>
+        <button class="btn-secondary" onclick="portalUnskipDelivery()" id="portal-unskip-btn" style="display:none;">Clear Skip</button>
+      </div>
+    </div>
+
+    <!-- Add-on marketplace -->
+    <div class="card" style="margin-top:1rem;">
+      <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:.6rem;color:#c45203;">🛒 Add-ons</h3>
+      <p style="margin:0 0 .8rem;color:#666;font-size:.88rem;">Optional extras you can attach to your next delivery.</p>
+      <div id="portal-addons-attached" style="margin-bottom:1rem;"></div>
+      <h4 style="font-size:.9rem;color:#555;margin:.2rem 0 .5rem;">Available add-ons</h4>
+      <div id="portal-addons-catalog" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.7rem;"></div>
+    </div>
+
+    <!-- Referrals -->
+    <div class="card" style="margin-top:1rem;">
+      <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:.6rem;color:#c45203;">🎁 Refer a Friend</h3>
+      <p style="margin:0 0 .8rem;color:#666;font-size:.88rem;">
+        Share your code. When a friend places their first order, you'll receive <strong>$5</strong> in account credit.
+      </p>
+      <div id="portal-referral-card">
+        <div style="color:#aaa;font-size:.9rem;">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Notification preferences -->
+    <div class="card" style="margin-top:1rem;">
+      <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:.6rem;color:#c45203;">🔔 Delivery Reminders</h3>
+      <p style="margin:0 0 .8rem;color:#666;font-size:.88rem;">Get a heads-up before each delivery so nothing gets missed.</p>
+      <div id="portal-notif-card">
+        <div style="color:#aaa;font-size:.9rem;">Loading…</div>
+      </div>
     </div>
   </div>
 
@@ -4398,16 +4460,18 @@ async function cancelOrder(id) {
     renderPortalSubscription();
     renderPortalBilling();
     renderPortalCancel();
+    renderPortalDeliveriesCard();
   }
 
   function switchPortalTab(tab) {
-    ['sub','billing','messages','cancel'].forEach(t => {
+    ['sub','manage','billing','messages','cancel'].forEach(t => {
       const tabBtn = document.getElementById('ptab-' + t);
       const panel  = document.getElementById('portal-panel-' + t);
       if (tabBtn) tabBtn.classList.toggle('active', t === tab);
       if (panel)  panel.classList.toggle('active', t === tab);
     });
     if (tab === 'messages') loadPortalMessages();
+    if (tab === 'manage')   loadPortalManage();
   }
 
   function _nextWeekdayDate(dayName) {
@@ -4599,6 +4663,341 @@ async function cancelOrder(id) {
       showFlash('portal-flash', 'Failed to cancel. Please try again.', 'err');
       btn.disabled = false; btn.textContent = 'Cancel Subscription';
     }
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     PORTAL — Manage tab (pause/skip, schedule, referrals,
+     notifications, add-ons)
+  ═══════════════════════════════════════════════════════ */
+
+  let _portalSchedule = null;   // last GET /api/orders/:id/schedule response
+
+  function _activeOrder() {
+    return _portalOrders.find(o => o.status === 'active');
+  }
+
+  function _fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso + 'T00:00:00Z');
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
+  function _daysUntil(iso) {
+    if (!iso) return null;
+    const target = new Date(iso + 'T00:00:00Z').getTime();
+    const today  = new Date();
+    const todayUTC = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+    return Math.round((target - todayUTC) / (24 * 60 * 60 * 1000));
+  }
+
+  const ONE_DAY_MS = 86400000;
+
+  // Render the next-delivery countdown + upcoming list under the
+  // Subscription tab. Pulls schedule from the API.
+  async function renderPortalDeliveriesCard() {
+    const card = document.getElementById('portal-deliveries-card');
+    if (!card) return;
+    const active = _activeOrder();
+    if (!active) { card.innerHTML = ''; _portalSchedule = null; return; }
+
+    let data = null;
+    try {
+      data = await apiFetch('/api/orders/' + active.id + '/schedule?count=6');
+    } catch (_) {}
+    _portalSchedule = data || null;
+    if (!data || !Array.isArray(data.deliveries) || !data.deliveries.length) {
+      card.innerHTML = '';
+      return;
+    }
+
+    const next = data.nextActive;
+    const days = _daysUntil(next);
+    const countdown = next
+      ? `<div style="font-size:2rem;font-weight:700;color:#e85d04;line-height:1;">${days === 0 ? 'Today!' : days === 1 ? 'Tomorrow' : days + ' days'}</div>
+         <div style="font-size:.85rem;color:#666;margin-top:.3rem;">${escHtml(_fmtDate(next))}</div>`
+      : `<div style="color:#999;">No upcoming deliveries</div>`;
+
+    const list = data.deliveries.map(d => {
+      const cls = d.skipped ? 'style="text-decoration:line-through;color:#999;"' : '';
+      const tag = d.skipped ? ' <span style="color:#999;font-size:.78rem;">(skipped)</span>' : '';
+      return `<li ${cls}>${escHtml(_fmtDate(d.date))}${tag}</li>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="card" style="margin-top:1rem;">
+        <h3 style="font-size:1.05rem;font-weight:700;margin:0 0 .6rem;color:#c45203;">📅 Next Delivery</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:1.5rem;align-items:flex-start;">
+          <div>${countdown}</div>
+          <div style="flex:1;min-width:200px;">
+            <h4 style="font-size:.9rem;color:#555;margin:0 0 .4rem;">Upcoming deliveries</h4>
+            <ul style="margin:0;padding-left:1.1rem;font-size:.9rem;color:#444;line-height:1.7;">${list}</ul>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Master loader for the "🎁 Manage" tab.
+  async function loadPortalManage() {
+    const active = _activeOrder();
+    if (!active) {
+      document.getElementById('portal-pause-card').innerHTML =
+        `<div style="color:#888;font-size:.9rem;">You'll be able to manage deliveries, add-ons, and reminders once you have an active subscription.</div>`;
+      document.getElementById('portal-addons-attached').innerHTML = '';
+      document.getElementById('portal-addons-catalog').innerHTML  = '';
+    }
+    await Promise.all([
+      renderPortalDeliveriesCard(),  // refreshes _portalSchedule
+      loadPortalReferrals(),
+      loadPortalNotifications(),
+      loadPortalAddons()
+    ]);
+    if (active) renderPortalPauseSection();
+  }
+
+  // ── Pause / Skip section ─────────────────────────────────────────────────
+  function renderPortalPauseSection() {
+    const active = _activeOrder();
+    const status = document.getElementById('portal-pause-status');
+    const resumeBtn = document.getElementById('portal-resume-btn');
+    const unskipBtn = document.getElementById('portal-unskip-btn');
+    const skipSel   = document.getElementById('portal-skip-date');
+    const pauseInput = document.getElementById('portal-pause-until');
+    if (!active) return;
+
+    // Populate the skip-date dropdown from the cached schedule.
+    if (skipSel) {
+      const opts = ['<option value="">Choose a date…</option>'];
+      const slots = (_portalSchedule && _portalSchedule.deliveries) || [];
+      slots.filter(s => !s.skipped).forEach(s => {
+        opts.push(`<option value="${escHtml(s.date)}">${escHtml(_fmtDate(s.date))}</option>`);
+      });
+      skipSel.innerHTML = opts.join('');
+    }
+
+    // Show the current pause/skip status.
+    const parts = [];
+    if (active.paused_until) {
+      parts.push(`<div style="background:#fff7ec;border:1px solid #f6c989;border-radius:6px;padding:.5rem .7rem;">⏸️ Paused until <strong>${escHtml(_fmtDate(active.paused_until))}</strong></div>`);
+      resumeBtn.style.display = '';
+    } else {
+      resumeBtn.style.display = 'none';
+    }
+    if (active.skip_next_delivery_date) {
+      parts.push(`<div style="background:#fff7ec;border:1px solid #f6c989;border-radius:6px;padding:.5rem .7rem;">⏭️ Skipping delivery on <strong>${escHtml(_fmtDate(active.skip_next_delivery_date))}</strong></div>`);
+      unskipBtn.style.display = '';
+    } else {
+      unskipBtn.style.display = 'none';
+    }
+    status.innerHTML = parts.join('');
+
+    // Default pause-until to 2 weeks out.
+    if (pauseInput && !pauseInput.value) {
+      const d = new Date(); d.setDate(d.getDate() + 14);
+      pauseInput.value = d.toISOString().slice(0, 10);
+      pauseInput.min   = new Date(Date.now() + ONE_DAY_MS).toISOString().slice(0, 10);
+    }
+  }
+
+  async function portalPauseSubscription() {
+    const active = _activeOrder(); if (!active) return;
+    const v = document.getElementById('portal-pause-until').value;
+    if (!v) { showFlash('portal-manage-flash', 'Choose a pause-until date.', 'err'); return; }
+    const data = await apiPost('/api/orders/' + active.id + '/pause', { pausedUntil: v });
+    if (data.error) { showFlash('portal-manage-flash', data.error, 'err'); return; }
+    showFlash('portal-manage-flash', 'Subscription paused until ' + _fmtDate(v) + '.', 'ok');
+    await loadPortal(); await loadPortalManage();
+  }
+
+  async function portalResumeSubscription() {
+    const active = _activeOrder(); if (!active) return;
+    const data = await apiPost('/api/orders/' + active.id + '/resume', {});
+    if (data.error) { showFlash('portal-manage-flash', data.error, 'err'); return; }
+    showFlash('portal-manage-flash', 'Subscription resumed.', 'ok');
+    await loadPortal(); await loadPortalManage();
+  }
+
+  async function portalSkipDelivery() {
+    const active = _activeOrder(); if (!active) return;
+    const v = document.getElementById('portal-skip-date').value;
+    if (!v) { showFlash('portal-manage-flash', 'Choose a delivery date to skip.', 'err'); return; }
+    const data = await apiPost('/api/orders/' + active.id + '/skip', { deliveryDate: v });
+    if (data.error) { showFlash('portal-manage-flash', data.error, 'err'); return; }
+    showFlash('portal-manage-flash', 'Delivery on ' + _fmtDate(v) + ' will be skipped.', 'ok');
+    await loadPortal(); await loadPortalManage();
+  }
+
+  async function portalUnskipDelivery() {
+    const active = _activeOrder(); if (!active) return;
+    const data = await apiPost('/api/orders/' + active.id + '/unskip', {});
+    if (data.error) { showFlash('portal-manage-flash', data.error, 'err'); return; }
+    showFlash('portal-manage-flash', 'Skip cleared — that delivery will go ahead.', 'ok');
+    await loadPortal(); await loadPortalManage();
+  }
+
+  // ── Referrals section ────────────────────────────────────────────────────
+  async function loadPortalReferrals() {
+    const el = document.getElementById('portal-referral-card');
+    if (!el) return;
+    let data = null;
+    try { data = await apiFetch('/api/referrals/me'); } catch (_) {}
+    if (!data || data.error) { el.innerHTML = '<div style="color:#888;">Referrals unavailable.</div>'; return; }
+
+    const link = window.location.origin + '/?ref=' + encodeURIComponent(data.referralCode);
+    const credit = ((data.accountCreditCents || 0) / 100).toFixed(2);
+    const rows = (data.referrals || []).map(r => {
+      const status = r.status === 'converted'
+        ? '<span style="color:#1f8a3a;font-weight:600;">$' + ((r.credit_cents||0)/100).toFixed(2) + ' earned</span>'
+        : '<span style="color:#aaa;">pending</span>';
+      return `<li style="display:flex;justify-content:space-between;gap:1rem;padding:.25rem 0;">
+        <span>${escHtml(r.referred_name)}</span>${status}
+      </li>`;
+    }).join('') || '<li style="color:#888;">No referrals yet.</li>';
+
+    el.innerHTML = `
+      <div style="display:flex;flex-wrap:wrap;gap:1.5rem;align-items:flex-start;">
+        <div>
+          <div style="font-size:.78rem;color:#888;text-transform:uppercase;letter-spacing:.05em;">Your code</div>
+          <div style="font-size:1.5rem;font-weight:700;color:#c45203;font-family:Menlo,Consolas,monospace;">${escHtml(data.referralCode || '—')}</div>
+          <button class="btn-secondary" style="margin-top:.5rem;" onclick="portalCopyReferralLink('${escHtml(link)}')">📋 Copy link</button>
+        </div>
+        <div>
+          <div style="font-size:.78rem;color:#888;text-transform:uppercase;letter-spacing:.05em;">Account credit</div>
+          <div style="font-size:1.5rem;font-weight:700;color:#1f8a3a;">$${credit}</div>
+          <div style="font-size:.78rem;color:#888;margin-top:.3rem;">
+            ${data.summary && data.summary.converted || 0} converted · ${data.summary && data.summary.pending || 0} pending
+          </div>
+        </div>
+        <div style="flex:1;min-width:200px;">
+          <div style="font-size:.78rem;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;">Your referrals</div>
+          <ul style="margin:0;padding-left:0;list-style:none;font-size:.9rem;color:#444;">${rows}</ul>
+        </div>
+      </div>`;
+  }
+
+  async function portalCopyReferralLink(link) {
+    try {
+      await navigator.clipboard.writeText(link);
+      showFlash('portal-manage-flash', 'Referral link copied!', 'ok');
+    } catch (_) {
+      // Fallback: select-and-prompt.
+      window.prompt('Copy your referral link:', link);
+    }
+  }
+
+  // ── Notifications section ────────────────────────────────────────────────
+  async function loadPortalNotifications() {
+    const el = document.getElementById('portal-notif-card');
+    if (!el) return;
+    let data = null;
+    try { data = await apiFetch('/api/auth/notifications'); } catch (_) {}
+    if (!data || data.error) { el.innerHTML = '<div style="color:#888;">Notification preferences unavailable.</div>'; return; }
+
+    el.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:.7rem;">
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.92rem;">
+          <input type="checkbox" id="portal-notif-email" ${data.reminderEmailEnabled ? 'checked' : ''}>
+          Email me before each delivery
+        </label>
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.92rem;">
+          <input type="checkbox" id="portal-notif-sms" ${data.reminderSmsEnabled ? 'checked' : ''}>
+          Text me before each delivery
+        </label>
+        <label style="display:flex;flex-direction:column;font-size:.85rem;color:#444;max-width:280px;">
+          <span style="margin-bottom:.25rem;">Phone number (for SMS reminders)</span>
+          <input type="tel" id="portal-notif-phone" value="${escHtml(data.phoneNumber || '')}"
+                 placeholder="+1 (555) 123-4567"
+                 style="padding:.45rem .6rem;border:1px solid #ccc;border-radius:6px;">
+        </label>
+        <div>
+          <button class="btn-primary" onclick="portalSaveNotifications()">Save preferences</button>
+        </div>
+      </div>`;
+  }
+
+  async function portalSaveNotifications() {
+    const body = {
+      reminderEmailEnabled: document.getElementById('portal-notif-email').checked,
+      reminderSmsEnabled:   document.getElementById('portal-notif-sms').checked,
+      phoneNumber:          document.getElementById('portal-notif-phone').value
+    };
+    const data = await apiPut('/api/auth/notifications', body);
+    if (data.error) { showFlash('portal-manage-flash', data.error, 'err'); return; }
+    showFlash('portal-manage-flash', 'Notification preferences saved.', 'ok');
+    await loadPortalNotifications();
+  }
+
+  // ── Add-on marketplace section ───────────────────────────────────────────
+  async function loadPortalAddons() {
+    const catalog  = document.getElementById('portal-addons-catalog');
+    const attached = document.getElementById('portal-addons-attached');
+    if (!catalog || !attached) return;
+    const active = _activeOrder();
+
+    // Catalog (always shown).
+    let catalogData = null;
+    try { catalogData = await apiFetch('/api/addons'); } catch (_) {}
+    const items = (catalogData && catalogData.addons) || [];
+    if (!items.length) {
+      catalog.innerHTML = '<div style="color:#888;font-size:.88rem;">No add-ons available right now.</div>';
+    } else {
+      catalog.innerHTML = items.map(a => {
+        const photo = a.photo_url
+          ? `<img src="${escHtml(a.photo_url)}" alt="" style="width:100%;height:90px;object-fit:cover;border-radius:6px 6px 0 0;">`
+          : '';
+        const btn = active
+          ? `<button class="btn-secondary" style="width:100%;margin-top:.4rem;" onclick="portalAttachAddon(${a.id})">+ Add to next delivery</button>`
+          : `<div style="color:#999;font-size:.78rem;margin-top:.4rem;">Subscribe to add</div>`;
+        return `<div style="border:1px solid #eaeaea;border-radius:8px;overflow:hidden;background:#fff;">
+          ${photo}
+          <div style="padding:.55rem .65rem;">
+            <div style="font-weight:600;color:#333;">${escHtml(a.name)}</div>
+            <div style="font-size:.78rem;color:#777;min-height:1.5em;">${escHtml(a.description || '')}</div>
+            <div style="font-weight:700;color:#e85d04;margin-top:.3rem;">$${(a.price_cents/100).toFixed(2)}</div>
+            ${btn}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // Attached (only if subscribed).
+    if (!active) { attached.innerHTML = ''; return; }
+    let myData = null;
+    try { myData = await apiFetch('/api/orders/' + active.id + '/addons'); } catch (_) {}
+    const mine = (myData && myData.orderAddons) || [];
+    if (!mine.length) {
+      attached.innerHTML = '<div style="color:#888;font-size:.88rem;">No add-ons attached to your next delivery yet.</div>';
+      return;
+    }
+    const total = ((myData.totalCents || 0) / 100).toFixed(2);
+    attached.innerHTML = `
+      <h4 style="font-size:.9rem;color:#555;margin:.2rem 0 .5rem;">On your next delivery</h4>
+      <ul style="list-style:none;padding:0;margin:0 0 .5rem;">${
+        mine.map(r => `<li style="display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-bottom:1px solid #f0f0f0;">
+          <span>${escHtml(r.name)} × ${r.quantity}${r.recurring ? ' <span style="font-size:.72rem;color:#888;">(every delivery)</span>' : ''}</span>
+          <span style="display:flex;gap:.5rem;align-items:center;">
+            <span style="color:#e85d04;font-weight:600;">$${((r.price_cents*r.quantity)/100).toFixed(2)}</span>
+            <button class="btn-secondary" style="padding:.2rem .55rem;font-size:.78rem;" onclick="portalRemoveAddon(${r.id})">Remove</button>
+          </span>
+        </li>`).join('')
+      }</ul>
+      <div style="text-align:right;font-weight:700;color:#333;">Add-on total: $${total}</div>`;
+  }
+
+  async function portalAttachAddon(addonId) {
+    const active = _activeOrder(); if (!active) return;
+    const data = await apiPost('/api/orders/' + active.id + '/addons', {
+      addonId, quantity: 1, recurring: false
+    });
+    if (data.error) { showFlash('portal-manage-flash', data.error, 'err'); return; }
+    showFlash('portal-manage-flash', 'Add-on attached to your next delivery.', 'ok');
+    await loadPortalAddons();
+  }
+
+  async function portalRemoveAddon(orderAddonId) {
+    const active = _activeOrder(); if (!active) return;
+    const data = await apiDelete('/api/orders/' + active.id + '/addons/' + orderAddonId);
+    if (data.error) { showFlash('portal-manage-flash', data.error, 'err'); return; }
+    await loadPortalAddons();
   }
 
   /* ═══════════════════════════════════════════════════════

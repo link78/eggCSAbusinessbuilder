@@ -2,15 +2,23 @@ const { Pool } = require('pg');
 const crypto   = require('crypto');
 
 /**
- * Generate a short, human-readable, URL-safe referral code.
- * 8 base32-style characters (excludes ambiguous 0/O/1/I).
+ * Generate a short, human-readable, URL-safe referral code: 8 base32-style
+ * characters drawn from an alphabet that excludes ambiguous glyphs (0/O,
+ * 1/I/L). Uses rejection sampling to avoid the modulo bias that would
+ * result from `byte % 32` when 256 is not a multiple of 32 — important
+ * because these codes are user-visible identifiers and we want a uniform
+ * distribution to maximize the collision-free namespace.
  */
 function generateReferralCode() {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const bytes = crypto.randomBytes(8);
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // 32 chars (power of 2)
+  const len = 8;
+  // Use the low 5 bits of each random byte; 5 bits = 32 distinct values,
+  // which is exactly the alphabet length, so no modulo bias is possible.
+  // We over-allocate randomBytes so the loop never runs short.
+  const buf = crypto.randomBytes(len);
   let out = '';
-  for (let i = 0; i < 8; i++) {
-    out += alphabet[bytes[i] % alphabet.length];
+  for (let i = 0; i < len; i++) {
+    out += alphabet[buf[i] & 0x1F];
   }
   return out;
 }

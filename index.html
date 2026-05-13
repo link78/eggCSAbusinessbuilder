@@ -1438,7 +1438,10 @@
       const confirm  = document.getElementById('m-reg-pw2').value;
       if (!name || !email || !password || !confirm) { showFlash('All fields are required.', 'warn'); return false; }
       if (password !== confirm) { showFlash('Passwords do not match.', 'err'); return false; }
-      const data = await apiPost('/api/auth/register', { name, email, password });
+      // Capture a referral code from `?ref=` on the URL, if present, so the
+      // referrer can earn credit when this user places their first order.
+      const refCode = new URLSearchParams(window.location.search).get('ref') || '';
+      const data = await apiPost('/api/auth/register', { name, email, password, referralCode: refCode || undefined });
       if (data.error) { showFlash(data.error, 'err'); return false; }
       _user = data.user; return true;
     }

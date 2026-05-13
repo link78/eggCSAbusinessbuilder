@@ -256,25 +256,37 @@ router.put('/notifications', requireAuth, async (req, res) => {
     }
   }
 
+  // Build a single atomic UPDATE. We use sentinel values so we can
+  // distinguish "leave unchanged" (NULL parameter) from "set to NULL"
+  // (the special string '__CLEAR__'). This is simpler and race-safe
+  // compared to issuing two UPDATE statements.
+  const PHONE_CLEAR = '__CLEAR__';
+  let phoneParam;
+  if (phoneNumber === '' || phoneNumber === null) {
+    phoneParam = PHONE_CLEAR;
+  } else if (cleanPhone !== null) {
+    phoneParam = cleanPhone;
+  } else {
+    phoneParam = null;  // leave unchanged
+  }
+
   await db.query(
     `UPDATE users
      SET reminder_email_enabled = COALESCE($1, reminder_email_enabled),
          reminder_sms_enabled   = COALESCE($2, reminder_sms_enabled),
-         phone_number           = COALESCE($3, phone_number)
+         phone_number           = CASE
+           WHEN $3::text = '${PHONE_CLEAR}' THEN NULL
+           WHEN $3::text IS NULL            THEN phone_number
+           ELSE $3
+         END
      WHERE id = $4`,
     [
       typeof reminderEmailEnabled === 'boolean' ? reminderEmailEnabled : null,
       typeof reminderSmsEnabled   === 'boolean' ? reminderSmsEnabled   : null,
-      cleanPhone,
+      phoneParam,
       req.session.userId
     ]
   );
-
-  // If phone was explicitly cleared (empty string), the COALESCE above keeps
-  // the old value. Handle that case separately.
-  if (phoneNumber === '' || phoneNumber === null) {
-    await db.query('UPDATE users SET phone_number = NULL WHERE id = $1', [req.session.userId]);
-  }
 
   const row = (await db.query(
     `SELECT reminder_email_enabled, reminder_sms_enabled, phone_number

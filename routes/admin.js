@@ -5,6 +5,9 @@ const crypto  = require('crypto');
 const multer  = require('multer');
 const db      = require('../db');
 const stripeService = require('../stripe');
+const schedule = require('../lib/deliverySchedule');
+const notifier = require('../lib/notifier');
+const { validateAddonInput } = require('./addons');
 
 const router = express.Router();
 
@@ -673,11 +676,6 @@ router.post('/messages/:userId', requireAdmin, async (req, res) => {
 // preferences and the per-user phone number are honored. Sends are recorded
 // in `reminder_log` with a UNIQUE constraint so re-running the job is a
 // safe no-op (already-notified users are skipped).
-
-const schedule = require('../lib/deliverySchedule');
-const notifier = require('../lib/notifier');
-const { validateAddonInput } = require('./addons');
-
 router.post('/send-reminders', requireAdmin, async (req, res) => {
   const { deliveryDate } = req.body || {};
   const parsed = schedule.parseISODate(deliveryDate);

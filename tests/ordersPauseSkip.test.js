@@ -189,6 +189,3 @@ describe('cancelled order schedule', () => {
     expect(res.body.nextActive).toBeNull();
   });
 });
-
-// Silence "open handle" complaints from db pool
-afterAll(() => db);

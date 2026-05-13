@@ -117,6 +117,11 @@ Once deployed, Railway will redeploy automatically on every push to the connecte
 - ⭐ **Reviews** — public star ratings from subscribers
 - 👤 **Account** — register/login, edit profile, upload profile picture, view and cancel active subscriptions
 - 🔑 **Admin Panel** — admin users can view all accounts and assign/remove admin roles
+- 📅 **Delivery Calendar** — customers see their next delivery countdown and a list of the next 6 biweekly delivery dates
+- ⏸️ **Pause & Skip** — customers can pause their subscription for up to a year, or skip a single upcoming delivery without cancelling
+- 🎁 **Referral Program** — each user gets a unique referral code (and a shareable `/?ref=CODE` link); $5 of account credit is awarded automatically when a referee places their first order
+- 🔔 **Delivery Reminders** — opt-in email and SMS reminders the day a delivery is scheduled. Pluggable transport in `lib/notifier.js`; admin triggers a send via `POST /api/admin/send-reminders` for any given delivery date (idempotent)
+- 🛒 **Add-on Marketplace** — admins curate optional extras (honey, jam, etc.) in `addons`; customers attach them to their next delivery, either one-shot or recurring
 
 ## Environment Variables
 
