@@ -13,6 +13,8 @@ const adminRoutes     = require('./routes/admin');
 const planConfigRoutes = require('./routes/planConfig');
 const billingRoutes    = require('./routes/billing');
 const messagesRoutes   = require('./routes/messages');
+const referralsRoutes  = require('./routes/referrals');
+const addonsRoutes     = require('./routes/addons');
 const stripeService    = require('./stripe');
 
 // Load any DB-stored Stripe keys as soon as the database is ready.
@@ -120,6 +122,8 @@ app.use('/api/checklist',   apiLimiter,   checklistRoutes);
 app.use('/api/admin',       apiLimiter,   adminRoutes);
 app.use('/api/plan-config', apiLimiter,   planConfigRoutes);
 app.use('/api/messages',    apiLimiter,   messagesRoutes);
+app.use('/api/referrals',   apiLimiter,   referralsRoutes);
+app.use('/api/addons',      apiLimiter,   addonsRoutes.router);
 app.use('/',                apiLimiter,   billingRoutes.router);
 
 // ── Public content endpoints ──────────────────────────────────────────────────

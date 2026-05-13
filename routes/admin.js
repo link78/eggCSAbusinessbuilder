@@ -667,4 +667,137 @@ router.post('/messages/:userId', requireAdmin, async (req, res) => {
   res.status(201).json({ message: row });
 });
 
+// ── Delivery reminders ──────────────────────────────────────────────────────
+// Admin triggers a one-shot reminder send for all active subscribers whose
+// next non-skipped delivery falls on `deliveryDate` (YYYY-MM-DD). Email/SMS
+// preferences and the per-user phone number are honored. Sends are recorded
+// in `reminder_log` with a UNIQUE constraint so re-running the job is a
+// safe no-op (already-notified users are skipped).
+
+const schedule = require('../lib/deliverySchedule');
+const notifier = require('../lib/notifier');
+const { validateAddonInput } = require('./addons');
+
+router.post('/send-reminders', requireAdmin, async (req, res) => {
+  const { deliveryDate } = req.body || {};
+  const parsed = schedule.parseISODate(deliveryDate);
+  if (!parsed) {
+    return res.status(400).json({ error: 'deliveryDate must be a YYYY-MM-DD date.' });
+  }
+  const iso = schedule.toISODate(parsed);
+
+  // Fetch every active subscription and its owner's preferences.
+  const orders = (await db.query(
+    `SELECT o.*, u.id AS uid, u.name, u.email, u.phone_number,
+            u.reminder_email_enabled, u.reminder_sms_enabled
+     FROM orders o
+     JOIN users  u ON u.id = o.user_id
+     WHERE o.status = 'active'`
+  )).rows;
+
+  let emailsSent = 0, smsSent = 0, skipped = 0;
+  for (const o of orders) {
+    const nextActive = schedule.nextActiveDelivery(o);
+    if (nextActive !== iso) { skipped++; continue; }
+
+    const subject = `Your eggs arrive on ${iso}`;
+    const body    = `Hi ${o.name}, this is a friendly reminder that your `
+                  + `Sakinah Ridge Farm delivery is scheduled for ${iso}. `
+                  + (o.fulfillment_method === 'delivery'
+                       ? 'Please make sure your cooler is out by 8am.'
+                       : `Pickup day: ${o.pickup_day}.`);
+
+    if (o.reminder_email_enabled && o.email) {
+      try {
+        // Try to insert the log row first — UNIQUE constraint dedupes.
+        await db.query(
+          `INSERT INTO reminder_log (user_id, order_id, channel, delivery_date)
+           VALUES ($1, $2, 'email', $3)`,
+          [o.uid, o.id, iso]
+        );
+        await notifier.sendEmail({ to: o.email, subject, body });
+        emailsSent++;
+      } catch (err) {
+        // 23505 = unique_violation → reminder already sent. Otherwise log and continue.
+        if (err && err.code !== '23505') {
+          // eslint-disable-next-line no-console
+          console.warn('send-reminders email failed', err.message);
+        }
+      }
+    }
+    if (o.reminder_sms_enabled && o.phone_number) {
+      try {
+        await db.query(
+          `INSERT INTO reminder_log (user_id, order_id, channel, delivery_date)
+           VALUES ($1, $2, 'sms', $3)`,
+          [o.uid, o.id, iso]
+        );
+        await notifier.sendSms({ to: o.phone_number, body: `${subject}. ${body}` });
+        smsSent++;
+      } catch (err) {
+        if (err && err.code !== '23505') {
+          // eslint-disable-next-line no-console
+          console.warn('send-reminders sms failed', err.message);
+        }
+      }
+    }
+  }
+
+  res.json({ deliveryDate: iso, emailsSent, smsSent, ordersChecked: orders.length, skipped });
+});
+
+// ── Add-on marketplace (admin CRUD) ─────────────────────────────────────────
+
+// GET /api/admin/addons — list all add-ons (including inactive)
+router.get('/addons', requireAdmin, async (req, res) => {
+  const rows = (await db.query(
+    `SELECT id, name, description, price_cents, photo_url, active, created_at
+     FROM addons ORDER BY created_at DESC`
+  )).rows;
+  res.json({ addons: rows });
+});
+
+// POST /api/admin/addons — create a new add-on
+router.post('/addons', requireAdmin, async (req, res) => {
+  const v = validateAddonInput(req.body || {});
+  if (v.error) return res.status(400).json({ error: v.error });
+  const { name, description, priceCents, photoUrl, active } = v.values;
+  const row = (await db.query(
+    `INSERT INTO addons (name, description, price_cents, photo_url, active)
+     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+    [name, description || '', priceCents, photoUrl || null, active !== false]
+  )).rows[0];
+  res.status(201).json({ addon: row });
+});
+
+// PUT /api/admin/addons/:id — partially update an add-on
+router.put('/addons/:id', requireAdmin, async (req, res) => {
+  const v = validateAddonInput(req.body || {}, { partial: true });
+  if (v.error) return res.status(400).json({ error: v.error });
+  const existing = (await db.query('SELECT * FROM addons WHERE id = $1', [req.params.id])).rows[0];
+  if (!existing) return res.status(404).json({ error: 'Add-on not found.' });
+
+  const merged = {
+    name:        v.values.name        !== undefined ? v.values.name        : existing.name,
+    description: v.values.description !== undefined ? v.values.description : existing.description,
+    priceCents:  v.values.priceCents  !== undefined ? v.values.priceCents  : existing.price_cents,
+    photoUrl:    v.values.photoUrl    !== undefined ? v.values.photoUrl    : existing.photo_url,
+    active:      v.values.active      !== undefined ? v.values.active      : existing.active
+  };
+  const row = (await db.query(
+    `UPDATE addons
+     SET name = $1, description = $2, price_cents = $3, photo_url = $4, active = $5
+     WHERE id = $6 RETURNING *`,
+    [merged.name, merged.description, merged.priceCents, merged.photoUrl, merged.active, req.params.id]
+  )).rows[0];
+  res.json({ addon: row });
+});
+
+// DELETE /api/admin/addons/:id — remove an add-on (cascades to order_addons)
+router.delete('/addons/:id', requireAdmin, async (req, res) => {
+  const result = await db.query('DELETE FROM addons WHERE id = $1', [req.params.id]);
+  if (result.rowCount === 0) return res.status(404).json({ error: 'Add-on not found.' });
+  res.json({ ok: true });
+});
+
 module.exports = router;

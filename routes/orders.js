@@ -243,12 +243,14 @@ router.post('/', requireAuth, async (req, res) => {
  * referrer's account. Safe to call on every order POST — no-op once converted.
  */
 async function convertReferralIfFirstOrder(userId) {
-  // Only convert on first order ever placed by this user.
+  // Only convert on the customer's very first order. After the INSERT above,
+  // a first-time customer has exactly one order row; returning customers have
+  // ≥2 (the new one plus prior, now-cancelled subscriptions).
   const orderCount = (await db.query(
     'SELECT COUNT(*)::int AS c FROM orders WHERE user_id = $1',
     [userId]
   )).rows[0].c;
-  if (orderCount !== 0) return;
+  if (orderCount > 1) return;
 
   const pending = (await db.query(
     `SELECT id, referrer_user_id FROM referrals
@@ -379,6 +381,80 @@ router.get('/:id/schedule', requireAuth, async (req, res) => {
     firstDelivery:   order.first_delivery_date || null,
     deliveryFrequency: order.delivery_frequency || DELIVERY_FREQUENCY
   });
+});
+
+// ── Customer add-on selections per subscription ─────────────────────────────
+
+const MAX_ADDON_QUANTITY = 50;
+
+// GET /api/orders/:id/addons — list add-ons attached to a subscription
+router.get('/:id/addons', requireAuth, async (req, res) => {
+  const order = await getActiveOrderForUser(req.params.id, req.session.userId);
+  if (!order) return res.status(404).json({ error: 'Order not found.' });
+
+  const rows = (await db.query(
+    `SELECT oa.id, oa.addon_id, oa.quantity, oa.recurring, oa.created_at,
+            a.name, a.description, a.price_cents, a.photo_url
+     FROM order_addons oa
+     JOIN addons a ON a.id = oa.addon_id
+     WHERE oa.order_id = $1
+     ORDER BY oa.created_at DESC`,
+    [order.id]
+  )).rows;
+
+  const totalCents = rows.reduce((sum, r) => sum + r.price_cents * r.quantity, 0);
+  res.json({ orderAddons: rows, totalCents });
+});
+
+// POST /api/orders/:id/addons — attach an add-on to a subscription
+router.post('/:id/addons', requireAuth, async (req, res) => {
+  const order = await getActiveOrderForUser(req.params.id, req.session.userId);
+  if (!order) return res.status(404).json({ error: 'Order not found.' });
+  if (order.status !== 'active') {
+    return res.status(400).json({ error: 'Add-ons can only be attached to active subscriptions.' });
+  }
+
+  const { addonId, quantity, recurring } = req.body || {};
+  const aid = parseInt(addonId, 10);
+  if (!Number.isInteger(aid) || aid <= 0) {
+    return res.status(400).json({ error: 'addonId is required.' });
+  }
+  const qtyRaw = quantity === undefined || quantity === null ? 1 : parseInt(quantity, 10);
+  if (!Number.isInteger(qtyRaw) || qtyRaw < 1 || qtyRaw > MAX_ADDON_QUANTITY) {
+    return res.status(400).json({ error: `quantity must be between 1 and ${MAX_ADDON_QUANTITY}.` });
+  }
+  const qty = qtyRaw;
+
+  const addon = (await db.query(
+    'SELECT id, active FROM addons WHERE id = $1',
+    [aid]
+  )).rows[0];
+  if (!addon || !addon.active) {
+    return res.status(404).json({ error: 'Add-on not found or unavailable.' });
+  }
+
+  const row = (await db.query(
+    `INSERT INTO order_addons (order_id, addon_id, quantity, recurring)
+     VALUES ($1, $2, $3, $4)
+     RETURNING *`,
+    [order.id, aid, qty, recurring === true]
+  )).rows[0];
+  res.status(201).json({ orderAddon: row });
+});
+
+// DELETE /api/orders/:id/addons/:orderAddonId — remove an add-on
+router.delete('/:id/addons/:orderAddonId', requireAuth, async (req, res) => {
+  const order = await getActiveOrderForUser(req.params.id, req.session.userId);
+  if (!order) return res.status(404).json({ error: 'Order not found.' });
+
+  const result = await db.query(
+    'DELETE FROM order_addons WHERE id = $1 AND order_id = $2',
+    [req.params.orderAddonId, order.id]
+  );
+  if (result.rowCount === 0) {
+    return res.status(404).json({ error: 'Add-on selection not found on this order.' });
+  }
+  res.json({ ok: true });
 });
 
 // DELETE /api/orders/:id — cancel an order

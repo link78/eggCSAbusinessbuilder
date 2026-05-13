@@ -14,7 +14,7 @@ function requireAuth(req, res, next) {
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-  const { name, email, password } = req.body || {};
+  const { name, email, password, referralCode } = req.body || {};
 
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Name, email, and password are required.' });
@@ -29,19 +29,54 @@ router.post('/register', async (req, res) => {
     return res.status(409).json({ error: 'An account with that email already exists.' });
   }
 
+  // Look up the referrer (if any) BEFORE inserting the new user so we can
+  // validate the code and avoid self-referral.
+  let referrer = null;
+  if (referralCode && typeof referralCode === 'string' && referralCode.trim()) {
+    const code = referralCode.trim().toUpperCase();
+    referrer = (await db.query(
+      'SELECT id FROM users WHERE referral_code = $1',
+      [code]
+    )).rows[0] || null;
+    // Silently ignore unknown codes — never expose code-enumeration data.
+  }
+
   try {
     const hash = await bcrypt.hash(password, 12);
     const cleanName = name.trim();
+    // Generate a unique referral code for the new user. Collisions are
+    // astronomically unlikely (32^8 ≈ 1.1 × 10^12) but we retry to be safe.
+    let newCode;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const candidate = db.generateReferralCode();
+      const taken = (await db.query('SELECT 1 FROM users WHERE referral_code = $1', [candidate])).rows[0];
+      if (!taken) { newCode = candidate; break; }
+    }
+    if (!newCode) newCode = db.generateReferralCode();  // last-ditch fallback
+
     const insertResult = await db.query(
-      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, stripe_customer_id',
-      [cleanName, emailLower, hash]
+      `INSERT INTO users (name, email, password_hash, referral_code, referred_by_user_id)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, name, email, stripe_customer_id`,
+      [cleanName, emailLower, hash, newCode, referrer ? referrer.id : null]
     );
     const insertedUser = insertResult.rows[0];
     const userId = insertedUser.id;
     await stripe.ensureStripeCustomerForUser(insertedUser);
 
+    // Record a pending referral row. The credit is paid out when the new
+    // user places their first order (handled in routes/orders.js).
+    if (referrer && referrer.id !== userId) {
+      await db.query(
+        `INSERT INTO referrals (referrer_user_id, referred_user_id, status)
+         VALUES ($1, $2, 'pending')
+         ON CONFLICT (referred_user_id) DO NOTHING`,
+        [referrer.id, userId]
+      );
+    }
+
     const user = (await db.query(
-      'SELECT id, name, email, role, avatar_url, created_at FROM users WHERE id = $1',
+      'SELECT id, name, email, role, avatar_url, referral_code, account_credit_cents, created_at FROM users WHERE id = $1',
       [userId]
     )).rows[0];
     req.session.userId = user.id;
@@ -96,7 +131,7 @@ router.get('/me', async (req, res) => {
     return res.json({ user: null });
   }
   const row = (await db.query(
-    'SELECT id, name, email, role, avatar_url, created_at FROM users WHERE id = $1',
+    'SELECT id, name, email, role, avatar_url, referral_code, account_credit_cents, created_at FROM users WHERE id = $1',
     [req.session.userId]
   )).rows[0];
   if (!row) {
@@ -172,6 +207,85 @@ router.put('/avatar', requireAuth, async (req, res) => {
 
   await db.query('UPDATE users SET avatar_url = $1 WHERE id = $2', [avatarUrl, req.session.userId]);
   res.json({ ok: true, avatar_url: avatarUrl });
+});
+
+// GET /api/auth/notifications — fetch the current user's reminder preferences
+router.get('/notifications', requireAuth, async (req, res) => {
+  const row = (await db.query(
+    `SELECT reminder_email_enabled, reminder_sms_enabled, phone_number
+     FROM users WHERE id = $1`,
+    [req.session.userId]
+  )).rows[0];
+  if (!row) return res.status(404).json({ error: 'User not found.' });
+  res.json({
+    reminderEmailEnabled: row.reminder_email_enabled,
+    reminderSmsEnabled:   row.reminder_sms_enabled,
+    phoneNumber:          row.phone_number || ''
+  });
+});
+
+// PUT /api/auth/notifications — update the user's reminder preferences
+router.put('/notifications', requireAuth, async (req, res) => {
+  const { reminderEmailEnabled, reminderSmsEnabled, phoneNumber } = req.body || {};
+
+  // Validate phone — accept E.164-ish or US national; we only require digits
+  // (10–15) for MVP. Empty string clears the field.
+  let cleanPhone = null;
+  if (phoneNumber !== undefined && phoneNumber !== null) {
+    const raw = String(phoneNumber).trim();
+    if (raw === '') {
+      cleanPhone = null;
+    } else {
+      const digits = raw.replace(/[^\d]/g, '');
+      if (digits.length < 10 || digits.length > 15) {
+        return res.status(400).json({ error: 'phoneNumber must contain 10–15 digits.' });
+      }
+      cleanPhone = raw;
+    }
+  }
+
+  // If SMS is being enabled, we need a phone number on file.
+  if (reminderSmsEnabled === true) {
+    const existing = (await db.query(
+      'SELECT phone_number FROM users WHERE id = $1',
+      [req.session.userId]
+    )).rows[0];
+    const finalPhone = cleanPhone !== null ? cleanPhone : existing && existing.phone_number;
+    if (!finalPhone) {
+      return res.status(400).json({ error: 'A phone number is required to enable SMS reminders.' });
+    }
+  }
+
+  await db.query(
+    `UPDATE users
+     SET reminder_email_enabled = COALESCE($1, reminder_email_enabled),
+         reminder_sms_enabled   = COALESCE($2, reminder_sms_enabled),
+         phone_number           = COALESCE($3, phone_number)
+     WHERE id = $4`,
+    [
+      typeof reminderEmailEnabled === 'boolean' ? reminderEmailEnabled : null,
+      typeof reminderSmsEnabled   === 'boolean' ? reminderSmsEnabled   : null,
+      cleanPhone,
+      req.session.userId
+    ]
+  );
+
+  // If phone was explicitly cleared (empty string), the COALESCE above keeps
+  // the old value. Handle that case separately.
+  if (phoneNumber === '' || phoneNumber === null) {
+    await db.query('UPDATE users SET phone_number = NULL WHERE id = $1', [req.session.userId]);
+  }
+
+  const row = (await db.query(
+    `SELECT reminder_email_enabled, reminder_sms_enabled, phone_number
+     FROM users WHERE id = $1`,
+    [req.session.userId]
+  )).rows[0];
+  res.json({
+    reminderEmailEnabled: row.reminder_email_enabled,
+    reminderSmsEnabled:   row.reminder_sms_enabled,
+    phoneNumber:          row.phone_number || ''
+  });
 });
 
 module.exports = router;
