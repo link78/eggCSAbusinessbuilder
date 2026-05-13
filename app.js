@@ -12,6 +12,7 @@ const checklistRoutes = require('./routes/checklist');
 const adminRoutes     = require('./routes/admin');
 const planConfigRoutes = require('./routes/planConfig');
 const billingRoutes    = require('./routes/billing');
+const messagesRoutes   = require('./routes/messages');
 const stripeService    = require('./stripe');
 
 // Load any DB-stored Stripe keys as soon as the database is ready.
@@ -46,6 +47,9 @@ const authLimiter = rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
+  // Disable in tests so the high register/login volume across test files
+  // doesn't trigger 429 responses and cascade into unrelated 401 failures.
+  skip: () => process.env.NODE_ENV === 'test',
   message: { error: 'Too many requests, please try again later.' }
 });
 
@@ -115,6 +119,7 @@ app.use('/api/reviews',     apiLimiter,   reviewsRoutes);
 app.use('/api/checklist',   apiLimiter,   checklistRoutes);
 app.use('/api/admin',       apiLimiter,   adminRoutes);
 app.use('/api/plan-config', apiLimiter,   planConfigRoutes);
+app.use('/api/messages',    apiLimiter,   messagesRoutes);
 app.use('/',                apiLimiter,   billingRoutes.router);
 
 // ── Public content endpoints ──────────────────────────────────────────────────

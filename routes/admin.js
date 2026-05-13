@@ -546,4 +546,125 @@ router.put('/stripe-price-ids', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Internal Messenger (admin side) ───────────────────────────────────────────
+// All messages between admins and a particular customer form a single thread
+// scoped to that customer. The admin UI lists conversations grouped by
+// customer; opening one shows the full thread and lets the admin reply.
+
+const MAX_MSG_BODY_LEN = 4000;
+
+// GET /api/admin/messages — list one row per customer who has any messages,
+// with the last message preview, last activity timestamp, and unread count
+// (messages from the customer that no admin has read yet).
+router.get('/messages', requireAdmin, async (req, res) => {
+  const conversations = (await db.query(`
+    WITH thread AS (
+      SELECT
+        CASE WHEN s.role = 'admin' THEN m.recipient_id ELSE m.sender_id END AS customer_id,
+        m.id, m.body, m.created_at, m.sender_id, m.recipient_id, m.read_at,
+        s.role AS sender_role
+      FROM messages m
+      JOIN users s ON s.id = m.sender_id
+      JOIN users r ON r.id = m.recipient_id
+      WHERE s.role = 'admin' OR r.role = 'admin'
+    ),
+    latest AS (
+      SELECT DISTINCT ON (customer_id)
+        customer_id, id, body, created_at, sender_role
+      FROM thread
+      ORDER BY customer_id, created_at DESC, id DESC
+    ),
+    unread AS (
+      SELECT customer_id, COUNT(*)::int AS unread_count
+      FROM thread
+      WHERE sender_role <> 'admin' AND read_at IS NULL
+      GROUP BY customer_id
+    )
+    SELECT
+      u.id            AS user_id,
+      u.name          AS user_name,
+      u.email         AS user_email,
+      u.avatar_url    AS user_avatar_url,
+      l.body          AS last_body,
+      l.created_at    AS last_created_at,
+      l.sender_role   AS last_sender_role,
+      COALESCE(un.unread_count, 0) AS unread_count
+    FROM latest l
+    JOIN users u ON u.id = l.customer_id
+    LEFT JOIN unread un ON un.customer_id = l.customer_id
+    ORDER BY l.created_at DESC
+  `)).rows;
+  res.json({ conversations });
+});
+
+// GET /api/admin/messages/:userId — full thread between any admin and the
+// given customer. Also marks the customer's messages to admins as read.
+router.get('/messages/:userId', requireAdmin, async (req, res) => {
+  const userId = parseInt(req.params.userId, 10);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(400).json({ error: 'Invalid user id.' });
+  }
+  const user = (await db.query(
+    'SELECT id, name, email, avatar_url, role FROM users WHERE id = $1',
+    [userId]
+  )).rows[0];
+  if (!user) return res.status(404).json({ error: 'User not found.' });
+  if (user.role === 'admin') {
+    return res.status(400).json({ error: 'Cannot open a customer thread with another admin.' });
+  }
+
+  const rows = (await db.query(
+    `SELECT m.id, m.sender_id, m.recipient_id, m.body, m.read_at, m.created_at,
+            s.role AS sender_role, s.name AS sender_name
+       FROM messages m
+       JOIN users s ON s.id = m.sender_id
+       JOIN users r ON r.id = m.recipient_id
+      WHERE (m.sender_id    = $1 AND r.role = 'admin')
+         OR (m.recipient_id = $1 AND s.role = 'admin')
+      ORDER BY m.created_at ASC, m.id ASC`,
+    [userId]
+  )).rows;
+
+  // Mark all customer → admin messages in this thread as read.
+  await db.query(
+    `UPDATE messages
+        SET read_at = NOW()
+      WHERE sender_id = $1
+        AND read_at IS NULL
+        AND recipient_id IN (SELECT id FROM users WHERE role = 'admin')`,
+    [userId]
+  );
+
+  res.json({ user, messages: rows });
+});
+
+// POST /api/admin/messages/:userId — admin sends a message to the customer.
+router.post('/messages/:userId', requireAdmin, async (req, res) => {
+  const userId = parseInt(req.params.userId, 10);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(400).json({ error: 'Invalid user id.' });
+  }
+  const recipient = (await db.query(
+    'SELECT id, role FROM users WHERE id = $1',
+    [userId]
+  )).rows[0];
+  if (!recipient) return res.status(404).json({ error: 'User not found.' });
+  if (recipient.role === 'admin') {
+    return res.status(400).json({ error: 'Cannot send a customer message to another admin.' });
+  }
+
+  const body = req.body && typeof req.body.body === 'string' ? req.body.body.trim() : '';
+  if (!body) return res.status(400).json({ error: 'Message body is required.' });
+  if (body.length > MAX_MSG_BODY_LEN) {
+    return res.status(400).json({ error: `Message is too long (max ${MAX_MSG_BODY_LEN} characters).` });
+  }
+
+  const row = (await db.query(
+    `INSERT INTO messages (sender_id, recipient_id, body)
+     VALUES ($1, $2, $3) RETURNING *`,
+    [req.session.userId, userId, body]
+  )).rows[0];
+  res.status(201).json({ message: row });
+});
+
 module.exports = router;
