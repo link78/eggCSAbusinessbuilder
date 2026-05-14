@@ -18,6 +18,15 @@ async function resetDb() {
   const db = require('../db');
   await db.ready;
   await db.reset();
+  // The `stripe.js` service caches API keys in module-level variables.
+  // Those keys are loaded asynchronously from the `settings` table during
+  // app startup; in tests, that load can race with our truncate and pick
+  // up leftover rows from a previous test file (notably stripeSettings).
+  // Force-clear the cache so registration in subsequent tests doesn't
+  // attempt real Stripe API calls.
+  try {
+    require('../stripe').setKeys({ secretKey: '', publishableKey: '' });
+  } catch (_) { /* stripe module not loaded — nothing to reset */ }
 }
 
 /**

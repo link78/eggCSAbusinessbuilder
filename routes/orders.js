@@ -1,5 +1,6 @@
 const express = require('express');
 const db      = require('../db');
+const schedule = require('../lib/deliverySchedule');
 
 const router = express.Router();
 
@@ -13,6 +14,9 @@ const MONTHLY_WEEKS         = 2;  // Bi-weekly plans: 2 deliveries per month
 const DELIVERY_FREQUENCY    = 'biweekly';  // Deliveries occur every 2 weeks
 const WEEKS_PER_DELIVERY    = 2;           // → eggs_per_delivery = eggs_per_week * 2
 const MIN_EGGS_PER_WEEK     = 12;          // At least one 12-egg box per week
+
+// Referral reward — $5 in account credit (5_00 cents) per converted referral
+const REFERRAL_REWARD_CENTS = 500;
 
 // Fixed plans — one box per weekly delivery; price depends on box type chosen by subscriber
 const FIXED_PLANS = {
@@ -196,6 +200,12 @@ router.post('/', requireAuth, async (req, res) => {
   // Bi-weekly delivery cadence: total eggs per delivery is always 2 weeks worth.
   const eggsPerDelivery = eggsPerWeek * WEEKS_PER_DELIVERY;
 
+  // Default first delivery to 7 days from today, so the farm has lead time.
+  // This anchors the recurring biweekly schedule for this subscription.
+  const firstDeliveryDate = schedule.toISODate(
+    schedule.addDays(schedule.todayUTC(), 7)
+  );
+
   // Cancel any existing active order before creating a new one
   await db.query(
     "UPDATE orders SET status = 'cancelled' WHERE user_id = $1 AND status = 'active'",
@@ -207,19 +217,244 @@ router.post('/', requireAuth, async (req, res) => {
       (user_id, plan_name, price, eggs_per_week,
        fulfillment_method, delivery_address, pickup_day, next_billing_date,
        boxes_per_delivery, duration_weeks, boxes12_per_delivery, boxes18_per_delivery,
-       delivery_frequency, eggs_per_delivery)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+       delivery_frequency, eggs_per_delivery, first_delivery_date)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
     RETURNING id
   `, [
     req.session.userId, planName, price, eggsPerWeek,
     method, cleanAddress, cleanDay, nextBillingDate(),
     totalBoxes, weeks, b12, b18,
-    DELIVERY_FREQUENCY, eggsPerDelivery
+    DELIVERY_FREQUENCY, eggsPerDelivery, firstDeliveryDate
   ]);
 
   const orderId = insertResult.rows[0].id;
+
+  // Referral conversion — if this is the customer's first ever order, credit
+  // the referrer (if any) with $5 in account credit. Idempotent: the
+  // referrals row is set to 'converted' so subsequent orders don't double-pay.
+  await convertReferralIfFirstOrder(req.session.userId);
+
   const order = (await db.query('SELECT * FROM orders WHERE id = $1', [orderId])).rows[0];
   res.json({ order });
+});
+
+/**
+ * If the user has a pending referral row, mark it converted and credit the
+ * referrer's account. Safe to call on every order POST — no-op once converted.
+ */
+async function convertReferralIfFirstOrder(userId) {
+  // Only convert on the customer's very first order. After the INSERT above,
+  // a first-time customer has exactly one order row; returning customers have
+  // ≥2 (the new one plus prior, now-cancelled subscriptions).
+  const orderCount = (await db.query(
+    'SELECT COUNT(*)::int AS c FROM orders WHERE user_id = $1',
+    [userId]
+  )).rows[0].c;
+  if (orderCount > 1) return;
+
+  const pending = (await db.query(
+    `SELECT id, referrer_user_id FROM referrals
+     WHERE referred_user_id = $1 AND status = 'pending'`,
+    [userId]
+  )).rows[0];
+  if (!pending) return;
+
+  await db.query(
+    `UPDATE referrals
+     SET status = 'converted', converted_at = NOW(), credit_cents = $2
+     WHERE id = $1`,
+    [pending.id, REFERRAL_REWARD_CENTS]
+  );
+  await db.query(
+    `UPDATE users
+     SET account_credit_cents = account_credit_cents + $2
+     WHERE id = $1`,
+    [pending.referrer_user_id, REFERRAL_REWARD_CENTS]
+  );
+}
+
+// ── Subscription management: pause / resume / skip ─────────────────────────
+
+async function getActiveOrderForUser(orderId, userId) {
+  return (await db.query(
+    'SELECT * FROM orders WHERE id = $1 AND user_id = $2',
+    [orderId, userId]
+  )).rows[0];
+}
+
+// POST /api/orders/:id/pause — pause deliveries until a future date (YYYY-MM-DD)
+router.post('/:id/pause', requireAuth, async (req, res) => {
+  const { pausedUntil } = req.body || {};
+  const parsed = schedule.parseISODate(pausedUntil);
+  if (!parsed) {
+    return res.status(400).json({ error: 'pausedUntil must be a YYYY-MM-DD date.' });
+  }
+  if (parsed <= schedule.todayUTC()) {
+    return res.status(400).json({ error: 'pausedUntil must be in the future.' });
+  }
+  // Reasonable cap of 1 year to avoid runaway "pauses".
+  const oneYearOut = schedule.addDays(schedule.todayUTC(), 365);
+  if (parsed > oneYearOut) {
+    return res.status(400).json({ error: 'pausedUntil cannot be more than 1 year in the future.' });
+  }
+
+  const order = await getActiveOrderForUser(req.params.id, req.session.userId);
+  if (!order)                       return res.status(404).json({ error: 'Order not found.' });
+  if (order.status !== 'active')    return res.status(400).json({ error: 'Only active orders can be paused.' });
+
+  await db.query(
+    'UPDATE orders SET paused_until = $1 WHERE id = $2',
+    [schedule.toISODate(parsed), order.id]
+  );
+  const updated = (await db.query('SELECT * FROM orders WHERE id = $1', [order.id])).rows[0];
+  res.json({ order: updated });
+});
+
+// POST /api/orders/:id/resume — clear any active pause
+router.post('/:id/resume', requireAuth, async (req, res) => {
+  const order = await getActiveOrderForUser(req.params.id, req.session.userId);
+  if (!order) return res.status(404).json({ error: 'Order not found.' });
+
+  await db.query(
+    'UPDATE orders SET paused_until = NULL WHERE id = $1',
+    [order.id]
+  );
+  const updated = (await db.query('SELECT * FROM orders WHERE id = $1', [order.id])).rows[0];
+  res.json({ order: updated });
+});
+
+// POST /api/orders/:id/skip — skip a single specific upcoming delivery date
+router.post('/:id/skip', requireAuth, async (req, res) => {
+  const { deliveryDate } = req.body || {};
+  const parsed = schedule.parseISODate(deliveryDate);
+  if (!parsed) {
+    return res.status(400).json({ error: 'deliveryDate must be a YYYY-MM-DD date.' });
+  }
+  if (parsed <= schedule.todayUTC()) {
+    return res.status(400).json({ error: 'deliveryDate must be in the future.' });
+  }
+
+  const order = await getActiveOrderForUser(req.params.id, req.session.userId);
+  if (!order)                    return res.status(404).json({ error: 'Order not found.' });
+  if (order.status !== 'active') return res.status(400).json({ error: 'Only active orders can have a delivery skipped.' });
+
+  // Validate the date is actually one of the upcoming delivery dates.
+  const upcoming = schedule.upcomingDeliveries(order, 12);
+  const iso = schedule.toISODate(parsed);
+  if (!upcoming.some(s => s.date === iso)) {
+    return res.status(400).json({ error: 'deliveryDate is not one of your upcoming delivery dates.' });
+  }
+
+  await db.query(
+    'UPDATE orders SET skip_next_delivery_date = $1 WHERE id = $2',
+    [iso, order.id]
+  );
+  const updated = (await db.query('SELECT * FROM orders WHERE id = $1', [order.id])).rows[0];
+  res.json({ order: updated });
+});
+
+// POST /api/orders/:id/unskip — clear any pending single-delivery skip
+router.post('/:id/unskip', requireAuth, async (req, res) => {
+  const order = await getActiveOrderForUser(req.params.id, req.session.userId);
+  if (!order) return res.status(404).json({ error: 'Order not found.' });
+
+  await db.query(
+    'UPDATE orders SET skip_next_delivery_date = NULL WHERE id = $1',
+    [order.id]
+  );
+  const updated = (await db.query('SELECT * FROM orders WHERE id = $1', [order.id])).rows[0];
+  res.json({ order: updated });
+});
+
+// GET /api/orders/:id/schedule — upcoming delivery dates for this order
+router.get('/:id/schedule', requireAuth, async (req, res) => {
+  const order = await getActiveOrderForUser(req.params.id, req.session.userId);
+  if (!order) return res.status(404).json({ error: 'Order not found.' });
+
+  const count = Math.min(Math.max(parseInt(req.query.count, 10) || 6, 1), 24);
+  const deliveries = schedule.upcomingDeliveries(order, count);
+  res.json({
+    deliveries,
+    nextActive:      schedule.nextActiveDelivery(order),
+    pausedUntil:     order.paused_until || null,
+    skipNextDate:    order.skip_next_delivery_date || null,
+    firstDelivery:   order.first_delivery_date || null,
+    deliveryFrequency: order.delivery_frequency || DELIVERY_FREQUENCY
+  });
+});
+
+// ── Customer add-on selections per subscription ─────────────────────────────
+
+const MAX_ADDON_QUANTITY = 50;
+
+// GET /api/orders/:id/addons — list add-ons attached to a subscription
+router.get('/:id/addons', requireAuth, async (req, res) => {
+  const order = await getActiveOrderForUser(req.params.id, req.session.userId);
+  if (!order) return res.status(404).json({ error: 'Order not found.' });
+
+  const rows = (await db.query(
+    `SELECT oa.id, oa.addon_id, oa.quantity, oa.recurring, oa.created_at,
+            a.name, a.description, a.price_cents, a.photo_url
+     FROM order_addons oa
+     JOIN addons a ON a.id = oa.addon_id
+     WHERE oa.order_id = $1
+     ORDER BY oa.created_at DESC`,
+    [order.id]
+  )).rows;
+
+  const totalCents = rows.reduce((sum, r) => sum + r.price_cents * r.quantity, 0);
+  res.json({ orderAddons: rows, totalCents });
+});
+
+// POST /api/orders/:id/addons — attach an add-on to a subscription
+router.post('/:id/addons', requireAuth, async (req, res) => {
+  const order = await getActiveOrderForUser(req.params.id, req.session.userId);
+  if (!order) return res.status(404).json({ error: 'Order not found.' });
+  if (order.status !== 'active') {
+    return res.status(400).json({ error: 'Add-ons can only be attached to active subscriptions.' });
+  }
+
+  const { addonId, quantity, recurring } = req.body || {};
+  const aid = parseInt(addonId, 10);
+  if (!Number.isInteger(aid) || aid <= 0) {
+    return res.status(400).json({ error: 'addonId is required.' });
+  }
+  const qtyRaw = quantity === undefined || quantity === null ? 1 : parseInt(quantity, 10);
+  if (!Number.isInteger(qtyRaw) || qtyRaw < 1 || qtyRaw > MAX_ADDON_QUANTITY) {
+    return res.status(400).json({ error: `quantity must be between 1 and ${MAX_ADDON_QUANTITY}.` });
+  }
+  const qty = qtyRaw;
+
+  const addon = (await db.query(
+    'SELECT id, active FROM addons WHERE id = $1',
+    [aid]
+  )).rows[0];
+  if (!addon || !addon.active) {
+    return res.status(404).json({ error: 'Add-on not found or unavailable.' });
+  }
+
+  const row = (await db.query(
+    `INSERT INTO order_addons (order_id, addon_id, quantity, recurring)
+     VALUES ($1, $2, $3, $4)
+     RETURNING *`,
+    [order.id, aid, qty, recurring === true]
+  )).rows[0];
+  res.status(201).json({ orderAddon: row });
+});
+
+// DELETE /api/orders/:id/addons/:orderAddonId — remove an add-on
+router.delete('/:id/addons/:orderAddonId', requireAuth, async (req, res) => {
+  const order = await getActiveOrderForUser(req.params.id, req.session.userId);
+  if (!order) return res.status(404).json({ error: 'Order not found.' });
+
+  const result = await db.query(
+    'DELETE FROM order_addons WHERE id = $1 AND order_id = $2',
+    [req.params.orderAddonId, order.id]
+  );
+  if (result.rowCount === 0) {
+    return res.status(404).json({ error: 'Add-on selection not found on this order.' });
+  }
+  res.json({ ok: true });
 });
 
 // DELETE /api/orders/:id — cancel an order

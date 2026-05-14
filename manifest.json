@@ -1,0 +1,20 @@
+{
+  "name": "Sakinah Ridge Farm — Egg CSA",
+  "short_name": "Sakinah Ridge",
+  "description": "Pasture-raised egg CSA subscriptions in and around Lincoln, NE.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdf8f0",
+  "theme_color": "#3a6b35",
+  "categories": ["food", "shopping", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

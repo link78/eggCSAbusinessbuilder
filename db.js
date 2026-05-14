@@ -1,4 +1,27 @@
 const { Pool } = require('pg');
+const crypto   = require('crypto');
+
+/**
+ * Generate a short, human-readable, URL-safe referral code: 8 base32-style
+ * characters drawn from an alphabet that excludes ambiguous glyphs (0/O,
+ * 1/I/L). Uses rejection sampling to avoid the modulo bias that would
+ * result from `byte % 32` when 256 is not a multiple of 32 — important
+ * because these codes are user-visible identifiers and we want a uniform
+ * distribution to maximize the collision-free namespace.
+ */
+function generateReferralCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // 32 chars (power of 2)
+  const len = 8;
+  // Use the low 5 bits of each random byte; 5 bits = 32 distinct values,
+  // which is exactly the alphabet length, so no modulo bias is possible.
+  // We over-allocate randomBytes so the loop never runs short.
+  const buf = crypto.randomBytes(len);
+  let out = '';
+  for (let i = 0; i < len; i++) {
+    out += alphabet[buf[i] & 0x1F];
+  }
+  return out;
+}
 
 const connectionString = process.env.DATABASE_URL;
 const sslOverride = process.env.DATABASE_SSL;
@@ -186,6 +209,82 @@ async function init() {
   await query(`CREATE INDEX IF NOT EXISTS idx_messages_recipient ON messages(recipient_id, read_at)`);
   await query(`CREATE INDEX IF NOT EXISTS idx_messages_pair      ON messages(sender_id, recipient_id, created_at)`);
 
+  // ── Pause / Skip support on subscriptions ──────────────────────────────────
+  // paused_until            — ISO date string. If set and in the future, no
+  //                           deliveries occur until that date.
+  // skip_next_delivery_date — ISO date string of the single delivery to skip.
+  await query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS paused_until TEXT`);
+  await query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS skip_next_delivery_date TEXT`);
+  await query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS first_delivery_date TEXT`);
+
+  // ── Referral / loyalty program ─────────────────────────────────────────────
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code TEXT UNIQUE`);
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS account_credit_cents INTEGER NOT NULL DEFAULT 0`);
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL`);
+  await query(`
+    CREATE TABLE IF NOT EXISTS referrals (
+      id                SERIAL PRIMARY KEY,
+      referrer_user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      referred_user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      status            TEXT    NOT NULL DEFAULT 'pending',
+      credit_cents      INTEGER NOT NULL DEFAULT 0,
+      created_at        TIMESTAMPTZ DEFAULT NOW(),
+      converted_at      TIMESTAMPTZ,
+      UNIQUE(referred_user_id)
+    )
+  `);
+  await query(`CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_user_id)`);
+  // Back-fill referral codes for any pre-existing user rows
+  const usersMissingCodes = (await query(`SELECT id FROM users WHERE referral_code IS NULL`)).rows;
+  for (const u of usersMissingCodes) {
+    await query(`UPDATE users SET referral_code = $1 WHERE id = $2`, [generateReferralCode(), u.id]);
+  }
+
+  // ── Photo reviews ──────────────────────────────────────────────────────────
+  // Subscribers can optionally attach a single photo (their breakfast,
+  // kids holding a carton, etc.) — much more persuasive on the landing page
+  // than text-only reviews.
+  await query(`ALTER TABLE reviews ADD COLUMN IF NOT EXISTS photo_url TEXT`);
+
+  // ── Delivery reminders (email/SMS opt-in) ──────────────────────────────────  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reminder_email_enabled BOOLEAN NOT NULL DEFAULT true`);
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reminder_sms_enabled   BOOLEAN NOT NULL DEFAULT false`);
+  await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number           TEXT`);
+  await query(`
+    CREATE TABLE IF NOT EXISTS reminder_log (
+      id           SERIAL PRIMARY KEY,
+      user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      order_id     INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+      channel      TEXT    NOT NULL CHECK (channel IN ('email','sms')),
+      delivery_date TEXT   NOT NULL,
+      sent_at      TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(user_id, order_id, channel, delivery_date)
+    )
+  `);
+
+  // ── Add-on marketplace ────────────────────────────────────────────────────
+  await query(`
+    CREATE TABLE IF NOT EXISTS addons (
+      id          SERIAL PRIMARY KEY,
+      name        TEXT    NOT NULL,
+      description TEXT    NOT NULL DEFAULT '',
+      price_cents INTEGER NOT NULL CHECK (price_cents >= 0),
+      photo_url   TEXT,
+      active      BOOLEAN NOT NULL DEFAULT true,
+      created_at  TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await query(`
+    CREATE TABLE IF NOT EXISTS order_addons (
+      id         SERIAL PRIMARY KEY,
+      order_id   INTEGER NOT NULL REFERENCES orders(id)  ON DELETE CASCADE,
+      addon_id   INTEGER NOT NULL REFERENCES addons(id)  ON DELETE CASCADE,
+      quantity   INTEGER NOT NULL DEFAULT 1 CHECK (quantity > 0),
+      recurring  BOOLEAN NOT NULL DEFAULT false,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await query(`CREATE INDEX IF NOT EXISTS idx_order_addons_order ON order_addons(order_id)`);
+
   // Seed default about content rows (idempotent)
   await seedAboutContent();
 
@@ -280,7 +379,7 @@ async function seedAboutContent() {
  */
 async function reset() {
   await query(
-    'TRUNCATE users, orders, reviews, checklist_progress, plan_config, farm_updates, farm_update_likes, about_content, settings, messages RESTART IDENTITY CASCADE'
+    'TRUNCATE users, orders, reviews, checklist_progress, plan_config, farm_updates, farm_update_likes, about_content, settings, messages, referrals, reminder_log, addons, order_addons RESTART IDENTITY CASCADE'
   );
   // Re-seed plan configurations so tests always start with a known state.
   await seedPlanConfig();
@@ -298,4 +397,4 @@ async function close() {
 // Kick off schema initialisation immediately on require().
 const ready = init();
 
-module.exports = { query, pool, reset, close, ready };
+module.exports = { query, pool, reset, close, ready, generateReferralCode };
