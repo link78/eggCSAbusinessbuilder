@@ -224,14 +224,35 @@ app.get('/api/farm-updates/:id', apiLimiter, async (req, res) => {
 
 // ── RSS feed for the Farm Journal ────────────────────────────────────────────
 
+// Strip characters that are not valid in XML 1.0. Without this, control
+// characters that PostgreSQL TEXT columns accept (e.g. form-feed 0x0C, or
+// any of 0x01-0x08 / 0x0B / 0x0E-0x1F, typically introduced by pastes from
+// rich-text editors) would produce a malformed feed and feed readers /
+// browsers would surface an "XML Parsing Error" when a user clicks
+// Subscribe via RSS. (PostgreSQL itself rejects NUL 0x00 in TEXT, but it
+// is included in the class below for defense in depth.)
+// Valid XML 1.0 chars: \t (0x09), \n (0x0A), \r (0x0D), 0x20-0xD7FF,
+// 0xE000-0xFFFD, 0x10000-0x10FFFF.
+function stripInvalidXmlChars(s) {
+  // eslint-disable-next-line no-control-regex
+  return String(s == null ? '' : s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\uFFFE\uFFFF]/g, '');
+}
+
 // Minimal XML escaper sufficient for body text inside <description>/<title>.
 function xmlEscape(s) {
-  return String(s == null ? '' : s)
+  return stripInvalidXmlChars(s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
+}
+
+// Wrap arbitrary user-supplied text safely inside a CDATA section. The only
+// sequence that cannot appear inside CDATA is `]]>`, which we split across
+// two CDATA sections per the XML spec.
+function xmlCdata(s) {
+  return `<![CDATA[${stripInvalidXmlChars(s).replace(/]]>/g, ']]]]><![CDATA[>')}]]>`;
 }
 
 // Build the absolute base URL from the incoming request so the feed works
@@ -242,36 +263,82 @@ function siteBaseUrl(req) {
   return `${proto}://${host}`;
 }
 
-// GET /feed.xml — RSS 2.0 feed of the most recent farm-journal posts
-app.get('/feed.xml', apiLimiter, async (req, res) => {
-  const rows = (await db.query(
-    'SELECT id, author, date_label, body, photo_caption, photo_url, image_urls, created_at FROM farm_updates ORDER BY created_at DESC LIMIT 50'
-  )).rows;
+// Resolve a stored image URL (which may be a site-relative path like
+// `/uploads/foo.jpg` or an already-absolute URL) to an absolute URL suitable
+// for an RSS <enclosure>.
+function absoluteImageUrl(base, url) {
+  const u = String(url || '').trim();
+  if (!u) return '';
+  if (/^https?:\/\//i.test(u)) return u;
+  return base + (u.startsWith('/') ? u : '/' + u);
+}
 
-  const base = siteBaseUrl(req);
-  const pubDate = (rows[0] && rows[0].created_at) ? new Date(rows[0].created_at).toUTCString() : new Date().toUTCString();
+// Best-effort content-type guess for the enclosure element based on the file
+// extension. Falls back to a generic image type so feed readers don't reject
+// the enclosure outright.
+function guessImageMime(url) {
+  const ext = (url.match(/\.([a-z0-9]+)(?:\?|#|$)/i) || [])[1];
+  switch ((ext || '').toLowerCase()) {
+    case 'png':  return 'image/png';
+    case 'gif':  return 'image/gif';
+    case 'webp': return 'image/webp';
+    case 'svg':  return 'image/svg+xml';
+    case 'jpg':
+    case 'jpeg':
+    default:     return 'image/jpeg';
+  }
+}
+
+// Dedicated, generous rate limiter for the public RSS feed. The default
+// `apiLimiter` returns a JSON body on rejection which would be served with an
+// `application/rss+xml`-expecting client and parsed as a broken feed. This
+// limiter returns plain text instead and allows enough headroom for normal
+// feed-reader polling intervals.
+const feedLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 600,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
+  handler: (req, res) => {
+    res.status(429)
+      .set('Content-Type', 'text/plain; charset=utf-8')
+      .send('Too many requests, please try again later.');
+  }
+});
+
+// Emit a minimal, valid RSS document. Used both for the normal response and
+// as a graceful fallback when the database query fails so feed readers never
+// receive HTML / JSON in place of XML.
+function renderFeed(base, rows) {
+  const pubDate = (rows[0] && rows[0].created_at)
+    ? new Date(rows[0].created_at).toUTCString()
+    : new Date().toUTCString();
 
   const items = rows.map((r) => {
     const link = `${base}/journal.html#post-${r.id}`;
-    const guid = `${base}/journal.html#post-${r.id}`;
     const titleText = r.date_label ? `Farm Journal — ${r.date_label}` : `Farm Journal — Update #${r.id}`;
     let desc = r.body || '';
     if (r.photo_caption) desc += `\n\n${r.photo_caption}`;
-    const imgs = (r.image_urls && r.image_urls.length) ? r.image_urls : (r.photo_url ? [r.photo_url] : []);
-    const enclosure = imgs[0]
-      ? `\n      <enclosure url="${xmlEscape(base + imgs[0])}" type="image/jpeg" />`
+    const imgs = (Array.isArray(r.image_urls) && r.image_urls.length)
+      ? r.image_urls
+      : (r.photo_url ? [r.photo_url] : []);
+    const firstImg = imgs[0] ? absoluteImageUrl(base, imgs[0]) : '';
+    const enclosure = firstImg
+      ? `\n      <enclosure url="${xmlEscape(firstImg)}" type="${guessImageMime(firstImg)}" />`
       : '';
+    const itemDate = r.created_at ? new Date(r.created_at).toUTCString() : pubDate;
     return `    <item>
-      <title>${xmlEscape(titleText)}</title>
+      <title>${xmlCdata(titleText)}</title>
       <link>${xmlEscape(link)}</link>
-      <guid isPermaLink="true">${xmlEscape(guid)}</guid>
-      <pubDate>${new Date(r.created_at).toUTCString()}</pubDate>
-      <author>${xmlEscape(r.author || 'Sakinah Ridge Farm')}</author>
-      <description>${xmlEscape(desc)}</description>${enclosure}
+      <guid isPermaLink="true">${xmlEscape(link)}</guid>
+      <pubDate>${itemDate}</pubDate>
+      <author>${xmlCdata(r.author || 'Sakinah Ridge Farm')}</author>
+      <description>${xmlCdata(desc)}</description>${enclosure}
     </item>`;
   }).join('\n');
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Sakinah Ridge Farm — Farm Journal</title>
@@ -284,9 +351,23 @@ ${items}
   </channel>
 </rss>
 `;
+}
 
+// GET /feed.xml — RSS 2.0 feed of the most recent farm-journal posts
+app.get('/feed.xml', feedLimiter, async (req, res) => {
+  const base = siteBaseUrl(req);
   res.set('Content-Type', 'application/rss+xml; charset=utf-8');
-  res.send(xml);
+  try {
+    const rows = (await db.query(
+      'SELECT id, author, date_label, body, photo_caption, photo_url, image_urls, created_at FROM farm_updates ORDER BY created_at DESC LIMIT 50'
+    )).rows;
+    res.send(renderFeed(base, rows));
+  } catch (err) {
+    // Don't let an async DB error become an unhandled rejection — feed
+    // readers must always receive valid XML, even on failure.
+    console.error('Error rendering /feed.xml:', err);
+    res.status(503).send(renderFeed(base, []));
+  }
 });
 
 // ── Static Files ─────────────────────────────────────────────────────────────

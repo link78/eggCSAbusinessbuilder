@@ -73,6 +73,47 @@ describe('RSS feed /feed.xml', () => {
     expect(res.text).toMatch(/<channel>/);
     expect(res.text).toMatch(/Sakinah Ridge Farm/);
   });
+
+  it('produces well-formed XML when an update body contains invalid XML control characters', async () => {
+    const db = require('../db');
+    // Insert an update whose body contains a form-feed and other control
+    // characters that PostgreSQL accepts in TEXT columns but which are
+    // illegal in XML 1.0. Without sanitization the feed would render as
+    // malformed XML and feed readers / browsers would show an "XML Parsing
+    // Error" to users clicking Subscribe via RSS. (NUL `\u0000` is rejected
+    // by Postgres itself so it can never reach the feed renderer.)
+    await db.query(
+      `INSERT INTO farm_updates (author, date_label, body, photo_caption, photo_url, image_urls)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      ['Tester', 'Today', 'hello\u0001world\u000cline', 'caption\u0002x', null, []]
+    );
+
+    const res = await request(app).get('/feed.xml');
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/application\/rss\+xml/);
+    // The illegal characters must be stripped from the response body.
+    // eslint-disable-next-line no-control-regex
+    expect(res.text).not.toMatch(/[\x01-\x08\x0B\x0C\x0E-\x1F]/);
+    // The surrounding text must still appear (only the control chars were removed).
+    expect(res.text).toMatch(/helloworldline/);
+    expect(res.text).toMatch(/<item>/);
+  });
+
+  it('preserves already-absolute image URLs in enclosures without prepending the site origin', async () => {
+    const db = require('../db');
+    await db.query(
+      `INSERT INTO farm_updates (author, date_label, body, photo_caption, photo_url, image_urls)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      ['Tester', 'Yesterday', 'with absolute image', null, null, ['https://cdn.example.com/a.png']]
+    );
+
+    const res = await request(app).get('/feed.xml');
+    expect(res.status).toBe(200);
+    // The absolute URL should be preserved as-is (not concatenated to the
+    // request origin) and the MIME type should reflect the .png extension.
+    expect(res.text).toMatch(/url="https:\/\/cdn\.example\.com\/a\.png"/);
+    expect(res.text).toMatch(/type="image\/png"/);
+  });
 });
 
 describe('GET /api/farm-updates/:id', () => {
