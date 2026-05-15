@@ -78,10 +78,15 @@ function uploadedReviewPhotoUrl(req) {
 
 // GET /api/reviews — public list of all reviews, newest first
 router.get('/', async (req, res) => {
-  const rows = (await db.query(
-    'SELECT id, user_name, rating, title, body, photo_url, created_at FROM reviews ORDER BY created_at DESC'
-  )).rows;
-  res.json({ reviews: rows });
+  try {
+    const rows = (await db.query(
+      'SELECT id, user_name, rating, title, body, photo_url, created_at FROM reviews ORDER BY created_at DESC'
+    )).rows;
+    res.json({ reviews: rows });
+  } catch (err) {
+    console.error('GET /api/reviews failed:', err);
+    res.status(500).json({ error: 'Failed to load reviews. Please try again.' });
+  }
 });
 
 // POST /api/reviews — submit a review (requires auth, optional photo)
@@ -114,23 +119,28 @@ router.post('/', requireAuth, handleReviewPhotoUpload, async (req, res) => {
     return rejectWith(400, 'Review must be 1–1000 characters.');
   }
 
-  const user = (await db.query('SELECT name FROM users WHERE id = $1', [req.session.userId])).rows[0];
-  if (!user) {
-    return rejectWith(401, 'User not found.');
+  try {
+    const user = (await db.query('SELECT name FROM users WHERE id = $1', [req.session.userId])).rows[0];
+    if (!user) {
+      return rejectWith(401, 'User not found.');
+    }
+
+    const insertResult = await db.query(
+      'INSERT INTO reviews (user_id, user_name, rating, title, body, photo_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [req.session.userId, user.name, ratingNum, titleTrimmed, bodyTrimmed, photoUrl]
+    );
+    const reviewId = insertResult.rows[0].id;
+
+    const review = (await db.query(
+      'SELECT id, user_name, rating, title, body, photo_url, created_at FROM reviews WHERE id = $1',
+      [reviewId]
+    )).rows[0];
+
+    res.json({ review });
+  } catch (err) {
+    console.error('POST /api/reviews failed:', err);
+    return rejectWith(500, 'Failed to submit review. Please try again.');
   }
-
-  const insertResult = await db.query(
-    'INSERT INTO reviews (user_id, user_name, rating, title, body, photo_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
-    [req.session.userId, user.name, ratingNum, titleTrimmed, bodyTrimmed, photoUrl]
-  );
-  const reviewId = insertResult.rows[0].id;
-
-  const review = (await db.query(
-    'SELECT id, user_name, rating, title, body, photo_url, created_at FROM reviews WHERE id = $1',
-    [reviewId]
-  )).rows[0];
-
-  res.json({ review });
 });
 
 module.exports = router;
