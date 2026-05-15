@@ -130,22 +130,27 @@ app.use('/',                apiLimiter,   billingRoutes.router);
 
 // GET /api/farm-updates — list all farm updates, newest first
 app.get('/api/farm-updates', apiLimiter, async (req, res) => {
-  const userId = req.session.userId || null;
-  const rows = (await db.query(`
-    SELECT fu.*,
-           COALESCE(l.likes_count, 0)::int AS likes_count,
-           CASE WHEN $1::int IS NOT NULL AND ml.user_id IS NOT NULL THEN true ELSE false END AS liked
-    FROM farm_updates fu
-    LEFT JOIN (
-      SELECT update_id, COUNT(*) AS likes_count
-      FROM farm_update_likes
-      GROUP BY update_id
-    ) l ON l.update_id = fu.id
-    LEFT JOIN farm_update_likes ml
-      ON ml.update_id = fu.id AND ml.user_id = $1
-    ORDER BY fu.created_at DESC
-  `, [userId])).rows;
-  res.json({ updates: rows });
+  try {
+    const userId = req.session.userId || null;
+    const rows = (await db.query(`
+      SELECT fu.*,
+             COALESCE(l.likes_count, 0)::int AS likes_count,
+             CASE WHEN $1::int IS NOT NULL AND ml.user_id IS NOT NULL THEN true ELSE false END AS liked
+      FROM farm_updates fu
+      LEFT JOIN (
+        SELECT update_id, COUNT(*) AS likes_count
+        FROM farm_update_likes
+        GROUP BY update_id
+      ) l ON l.update_id = fu.id
+      LEFT JOIN farm_update_likes ml
+        ON ml.update_id = fu.id AND ml.user_id = $1
+      ORDER BY fu.created_at DESC
+    `, [userId])).rows;
+    res.json({ updates: rows });
+  } catch (err) {
+    console.error('GET /api/farm-updates failed:', err);
+    res.status(500).json({ error: 'Failed to load farm updates. Please try again.' });
+  }
 });
 
 // POST /api/farm-updates/:id/like — toggle a thumbs-up on an update
@@ -158,48 +163,58 @@ app.post('/api/farm-updates/:id/like', apiLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Invalid update id.' });
   }
 
-  const exists = (await db.query('SELECT id FROM farm_updates WHERE id = $1', [updateId])).rows[0];
-  if (!exists) return res.status(404).json({ error: 'Update not found.' });
+  try {
+    const exists = (await db.query('SELECT id FROM farm_updates WHERE id = $1', [updateId])).rows[0];
+    if (!exists) return res.status(404).json({ error: 'Update not found.' });
 
-  const existing = (await db.query(
-    'SELECT 1 FROM farm_update_likes WHERE update_id = $1 AND user_id = $2',
-    [updateId, req.session.userId]
-  )).rows[0];
+    const existing = (await db.query(
+      'SELECT 1 FROM farm_update_likes WHERE update_id = $1 AND user_id = $2',
+      [updateId, req.session.userId]
+    )).rows[0];
 
-  let liked;
-  if (existing) {
-    await db.query(
-      'DELETE FROM farm_update_likes WHERE update_id = $1 AND user_id = $2',
-      [updateId, req.session.userId]
-    );
-    liked = false;
-  } else {
-    await db.query(
-      `INSERT INTO farm_update_likes (update_id, user_id)
-       VALUES ($1, $2)
-       ON CONFLICT DO NOTHING`,
-      [updateId, req.session.userId]
-    );
-    liked = true;
+    let liked;
+    if (existing) {
+      await db.query(
+        'DELETE FROM farm_update_likes WHERE update_id = $1 AND user_id = $2',
+        [updateId, req.session.userId]
+      );
+      liked = false;
+    } else {
+      await db.query(
+        `INSERT INTO farm_update_likes (update_id, user_id)
+         VALUES ($1, $2)
+         ON CONFLICT DO NOTHING`,
+        [updateId, req.session.userId]
+      );
+      liked = true;
+    }
+
+    const countRow = (await db.query(
+      'SELECT COUNT(*)::int AS likes_count FROM farm_update_likes WHERE update_id = $1',
+      [updateId]
+    )).rows[0];
+
+    res.json({ liked, likes_count: countRow.likes_count });
+  } catch (err) {
+    console.error('POST /api/farm-updates/:id/like failed:', err);
+    res.status(500).json({ error: 'Failed to update like. Please try again.' });
   }
-
-  const countRow = (await db.query(
-    'SELECT COUNT(*)::int AS likes_count FROM farm_update_likes WHERE update_id = $1',
-    [updateId]
-  )).rows[0];
-
-  res.json({ liked, likes_count: countRow.likes_count });
 });
 
 // GET /api/about-content — list all about-page sections
 app.get('/api/about-content', apiLimiter, async (req, res) => {
-  const rows = (await db.query('SELECT * FROM about_content ORDER BY id ASC')).rows;
-  const sections = {};
-  for (const row of rows) {
-    try { sections[row.section_key] = JSON.parse(row.content_json); }
-    catch (_) { sections[row.section_key] = {}; }
+  try {
+    const rows = (await db.query('SELECT * FROM about_content ORDER BY id ASC')).rows;
+    const sections = {};
+    for (const row of rows) {
+      try { sections[row.section_key] = JSON.parse(row.content_json); }
+      catch (_) { sections[row.section_key] = {}; }
+    }
+    res.json({ sections });
+  } catch (err) {
+    console.error('GET /api/about-content failed:', err);
+    res.status(500).json({ error: 'Failed to load about content. Please try again.' });
   }
-  res.json({ sections });
 });
 
 // GET /api/farm-updates/:id — fetch a single farm update by ID (for permalinks)
@@ -208,18 +223,23 @@ app.get('/api/farm-updates/:id', apiLimiter, async (req, res) => {
   if (!Number.isInteger(id) || id <= 0) {
     return res.status(400).json({ error: 'Invalid update id.' });
   }
-  const row = (await db.query(`
-    SELECT fu.*, COALESCE(l.likes_count, 0)::int AS likes_count
-    FROM farm_updates fu
-    LEFT JOIN (
-      SELECT update_id, COUNT(*) AS likes_count
-      FROM farm_update_likes
-      GROUP BY update_id
-    ) l ON l.update_id = fu.id
-    WHERE fu.id = $1
-  `, [id])).rows[0];
-  if (!row) return res.status(404).json({ error: 'Update not found.' });
-  res.json({ update: row });
+  try {
+    const row = (await db.query(`
+      SELECT fu.*, COALESCE(l.likes_count, 0)::int AS likes_count
+      FROM farm_updates fu
+      LEFT JOIN (
+        SELECT update_id, COUNT(*) AS likes_count
+        FROM farm_update_likes
+        GROUP BY update_id
+      ) l ON l.update_id = fu.id
+      WHERE fu.id = $1
+    `, [id])).rows[0];
+    if (!row) return res.status(404).json({ error: 'Update not found.' });
+    res.json({ update: row });
+  } catch (err) {
+    console.error('GET /api/farm-updates/:id failed:', err);
+    res.status(500).json({ error: 'Failed to load farm update. Please try again.' });
+  }
 });
 
 // ── RSS feed for the Farm Journal ────────────────────────────────────────────
