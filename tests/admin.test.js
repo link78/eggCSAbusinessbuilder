@@ -23,9 +23,11 @@ beforeAll(async () => {
     name: 'Bob', email: 'bob@example.com', password: 'password123'
   });
   const orderRes = await userAgent.post('/api/orders', {
-    planName: 'Small Family',
+    planName: 'Solo / Couple',
     fulfillmentMethod: 'pickup',
-    pickupDay: 'Monday'
+    pickupDay: 'Monday',
+    boxes12: 1,
+    boxes18: 0
   });
   sharedOrderId = orderRes.body.order.id;
 });
@@ -57,7 +59,7 @@ describe('GET /api/admin/orders', () => {
     expect(o).toBeDefined();
     expect(o.user_name).toBe('Bob');
     expect(o.user_email).toBe('bob@example.com');
-    expect(o.plan_name).toBe('Small Family');
+    expect(o.plan_name).toBe('Solo / Couple');
   });
 });
 
@@ -87,9 +89,9 @@ describe('PUT /api/admin/orders/:id', () => {
   });
 
   it('updates plan_name', async () => {
-    const res = await adminAgent.put(`/api/admin/orders/${sharedOrderId}`, { plan_name: 'Family' });
+    const res = await adminAgent.put(`/api/admin/orders/${sharedOrderId}`, { plan_name: 'Custom' });
     expect(res.status).toBe(200);
-    expect(res.body.order.plan_name).toBe('Family');
+    expect(res.body.order.plan_name).toBe('Custom');
   });
 
   it('updates status to cancelled', async () => {
@@ -113,9 +115,11 @@ describe('DELETE /api/admin/orders/:id', () => {
   beforeAll(async () => {
     // Create a fresh order to cancel
     const r = await userAgent.post('/api/orders', {
-      planName: 'Family',
+      planName: 'Solo / Couple',
       fulfillmentMethod: 'pickup',
-      pickupDay: 'Friday'
+      pickupDay: 'Friday',
+      boxes12: 1,
+      boxes18: 0
     });
     cancelOrderId = r.body.order.id;
   });

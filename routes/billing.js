@@ -10,13 +10,8 @@ const DELIVERY_FEE_PER_WEEK = 2;
 const MONTHLY_WEEKS = 2;
 const DELIVERY_FREQUENCY = 'biweekly';
 const WEEKS_PER_DELIVERY = 2;
-const FIXED_PLANS = {
-  'Small Family': { boxes: 1 },
-  'Family': { boxes: 1 }
-};
+const FIXED_PLANS = {};
 const PLAN_ID_TO_NAME = {
-  small_family: 'Small Family',
-  family: 'Family',
   solo_couple: 'Solo / Couple',
   custom: 'Custom'
 };
@@ -173,14 +168,13 @@ router.post('/create-checkout-session', requireAuth, requireCsrf, async (req, re
           price_data: {
             currency: 'usd',
             product_data: { name: order.plan_name },
-            recurring: { interval: 'month' },
             unit_amount: Math.round(Number(order.price) * 100)
           },
           quantity: 1
         };
 
     const session = await client.checkout.sessions.create({
-      mode: 'subscription',
+      mode: 'payment',
       customer: user.stripe_customer_id,
       line_items: [lineItem],
       success_url: `${baseUrl}/dashboard?checkout=success`,
@@ -190,13 +184,6 @@ router.post('/create-checkout-session', requireAuth, requireCsrf, async (req, re
         order_id: String(order.id),
         plan_id: String(planId || ''),
         plan_name: order.plan_name
-      },
-      subscription_data: {
-        metadata: {
-          user_id: String(user.id),
-          order_id: String(order.id),
-          plan_id: String(planId || '')
-        }
       }
     });
 
@@ -268,6 +255,20 @@ async function webhookHandler(req, res) {
     'customer.subscription.deleted'
   ].includes(event.type)) {
     await stripeService.updateSubscriptionStatus(subscriptionInfoFromEvent(event));
+  }
+
+  // Handle one-time payment checkout completion
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    if (session.mode === 'payment' && session.payment_status === 'paid') {
+      const orderId = session.metadata && session.metadata.order_id;
+      if (orderId) {
+        await db.query(
+          "UPDATE orders SET status = 'active' WHERE id = $1 AND status = 'pending'",
+          [orderId]
+        );
+      }
+    }
   }
 
   res.json({ received: true });

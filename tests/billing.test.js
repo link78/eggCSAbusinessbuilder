@@ -62,27 +62,28 @@ describe('Stripe customer registration', () => {
 });
 
 describe('POST /create-checkout-session', () => {
-  it('creates a pending subscription order and returns a Stripe Checkout URL', async () => {
+  it('creates a pending order and returns a Stripe Checkout URL (one-time payment)', async () => {
     const res = await agent.post('/create-checkout-session', {
       user_id: 1,
-      plan_id: 'family',
-      planName: 'Family',
+      plan_id: 'solo_couple',
+      planName: 'Solo / Couple',
       fulfillmentMethod: 'pickup',
       pickupDay: 'Thursday',
-      boxType: '18'
+      boxes12: 1,
+      boxes18: 0
     });
 
     expect(res.status).toBe(200);
     expect(res.body.url).toBe('https://checkout.stripe.test/session');
     expect(stripe.__checkoutCreate).toHaveBeenCalledWith(expect.objectContaining({
-      mode: 'subscription',
+      mode: 'payment',
       customer: 'cus_test_123',
       line_items: [{ price: 'price_family_test', quantity: 1 }]
     }));
 
     const order = (await db.query('SELECT * FROM orders WHERE user_id = $1 ORDER BY id DESC LIMIT 1', [1])).rows[0];
     expect(order).toMatchObject({
-      plan_name: 'Family',
+      plan_name: 'Solo / Couple',
       status: 'pending',
       stripe_price_id: 'price_family_test'
     });
@@ -91,10 +92,12 @@ describe('POST /create-checkout-session', () => {
   it('rejects checkout for a different user_id', async () => {
     const res = await agent.post('/create-checkout-session', {
       user_id: 999,
-      plan_id: 'family',
-      planName: 'Family',
+      plan_id: 'solo_couple',
+      planName: 'Solo / Couple',
       fulfillmentMethod: 'pickup',
-      pickupDay: 'Thursday'
+      pickupDay: 'Thursday',
+      boxes12: 1,
+      boxes18: 0
     });
     expect(res.status).toBe(403);
   });
