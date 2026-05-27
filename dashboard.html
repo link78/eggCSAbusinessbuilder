@@ -5155,10 +5155,11 @@ async function cancelOrder(id) {
   // to this customer so the admin can reply in context.
   function adminOpenThreadFromProfile() {
     if (!_profileUserId) return;
+    const userId = _profileUserId;
     closeCustomerProfile();
     switchView('messages');
     // Defer until the view is active and the layout is rendered.
-    setTimeout(() => adminOpenThread(_profileUserId), 50);
+    setTimeout(() => adminOpenThread(userId), 50);
   }
 
   async function refreshAdminUnreadBadge() {
