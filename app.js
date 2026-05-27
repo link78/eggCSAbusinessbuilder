@@ -45,8 +45,8 @@ if (!SESSION_SECRET && IS_PROD) {
 // ── Rate Limiters ────────────────────────────────────────────────────────────
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,  // 15 minutes
-  max: 30,
+  windowMs: 60 * 1000,  // 1 minute
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   // Disable in tests so the high register/login volume across test files
@@ -56,8 +56,8 @@ const authLimiter = rateLimit({
 });
 
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
+  windowMs: 60 * 1000,  // 1 minute
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' }
