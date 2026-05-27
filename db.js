@@ -24,6 +24,16 @@ function generateReferralCode() {
 }
 
 const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error(
+    'ERROR: DATABASE_URL is not set.\n' +
+    'Please create a .env file (see .env.example) or export DATABASE_URL.\n' +
+    'Example: DATABASE_URL=postgresql://localhost/egg_csa'
+  );
+  process.exit(1);
+}
+
 const sslOverride = process.env.DATABASE_SSL;
 const useSsl = sslOverride
   ? sslOverride !== 'false'
@@ -40,6 +50,10 @@ const pool = new Pool({
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
+});
+
+pool.on('error', (err) => {
+  console.error('Unexpected PostgreSQL pool error:', err.message);
 });
 
 /**
@@ -395,6 +409,10 @@ async function close() {
 }
 
 // Kick off schema initialisation immediately on require().
-const ready = init();
+const ready = init().catch((err) => {
+  console.error('Failed to initialise database:', err.message);
+  console.error('Ensure PostgreSQL is running and DATABASE_URL is correct.');
+  process.exit(1);
+});
 
 module.exports = { query, pool, reset, close, ready, generateReferralCode };

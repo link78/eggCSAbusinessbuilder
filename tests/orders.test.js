@@ -18,25 +18,10 @@ afterAll(async () => {
 // ── GET /api/orders/plans ─────────────────────────────────────────────────────
 
 describe('GET /api/orders/plans', () => {
-  it('returns the two fixed plans (Small Family, Family)', async () => {
+  it('returns no fixed plans (Small Family/Family removed)', async () => {
     const res = await agent.get('/api/orders/plans');
     expect(res.status).toBe(200);
-    expect(res.body.plans).toHaveLength(2);
-    const names = res.body.plans.map(p => p.name);
-    expect(names).toContain('Small Family');
-    expect(names).toContain('Family');
-  });
-
-  it('each plan has name, boxes, price12, price18, eggsPerWeek12, eggsPerWeek18', async () => {
-    const res = await agent.get('/api/orders/plans');
-    for (const plan of res.body.plans) {
-      expect(plan).toHaveProperty('name');
-      expect(plan).toHaveProperty('boxes');
-      expect(plan).toHaveProperty('price12');
-      expect(plan).toHaveProperty('price18');
-      expect(plan).toHaveProperty('eggsPerWeek12');
-      expect(plan).toHaveProperty('eggsPerWeek18');
-    }
+    expect(res.body.plans).toHaveLength(0);
   });
 
   it('returns delivery fee per week', async () => {
@@ -150,116 +135,26 @@ describe('POST /api/orders', () => {
     expect(res.body.error).toMatch(/at least/i);
   });
 
-  // ── Fixed plans (Small Family / Family) ──────────────────────────────────────
+  // ── Fixed plans removed ──────────────────────────────────────────────────────
 
-  it('places a fixed plan pickup order with default box type (Small Family → dozen)', async () => {
+  it('rejects Small Family plan (no longer available)', async () => {
     const res = await agent.post('/api/orders', {
       planName: 'Small Family',
       fulfillmentMethod: 'pickup',
       pickupDay: 'Friday'
     });
-    expect(res.status).toBe(200);
-    expect(res.body.order).toMatchObject({
-      plan_name:            'Small Family',
-      price:                10,   // 1×$5 × 2 deliveries (dozen default)
-      eggs_per_week:        12,
-      boxes12_per_delivery: 1,
-      boxes18_per_delivery: 0,
-      boxes_per_delivery:   1,
-      status:               'active'
-    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/Invalid plan/i);
   });
 
-  it('places Small Family order with explicit dozen box type', async () => {
-    const res = await agent.post('/api/orders', {
-      planName: 'Small Family',
-      fulfillmentMethod: 'pickup',
-      pickupDay: 'Tuesday',
-      boxType: 'dozen'
-    });
-    expect(res.status).toBe(200);
-    expect(res.body.order).toMatchObject({
-      price:                10,
-      eggs_per_week:        12,
-      boxes12_per_delivery: 1,
-      boxes18_per_delivery: 0
-    });
-  });
-
-  it('places Small Family order with 18-egg box type', async () => {
-    const res = await agent.post('/api/orders', {
-      planName: 'Small Family',
-      fulfillmentMethod: 'pickup',
-      pickupDay: 'Wednesday',
-      boxType: '18'
-    });
-    expect(res.status).toBe(200);
-    expect(res.body.order).toMatchObject({
-      price:                14,   // 1×$7 × 2 deliveries
-      eggs_per_week:        18,
-      boxes12_per_delivery: 0,
-      boxes18_per_delivery: 1
-    });
-  });
-
-  it('places Family order with default box type (Family → 18-egg)', async () => {
+  it('rejects Family plan (no longer available)', async () => {
     const res = await agent.post('/api/orders', {
       planName: 'Family',
       fulfillmentMethod: 'pickup',
       pickupDay: 'Thursday'
     });
-    expect(res.status).toBe(200);
-    expect(res.body.order).toMatchObject({
-      plan_name:            'Family',
-      price:                14,   // 1×$7 × 2 deliveries (18-egg default)
-      eggs_per_week:        18,
-      boxes12_per_delivery: 0,
-      boxes18_per_delivery: 1
-    });
-  });
-
-  it('places Family order with dozen box type', async () => {
-    const res = await agent.post('/api/orders', {
-      planName: 'Family',
-      fulfillmentMethod: 'pickup',
-      pickupDay: 'Monday',
-      boxType: 'dozen'
-    });
-    expect(res.status).toBe(200);
-    expect(res.body.order).toMatchObject({
-      price:                10,   // 1×$5 × 2 deliveries
-      eggs_per_week:        12,
-      boxes12_per_delivery: 1,
-      boxes18_per_delivery: 0
-    });
-  });
-
-  it('applies $2/delivery fee to a fixed plan delivery order', async () => {
-    const res = await agent.post('/api/orders', {
-      planName: 'Family',
-      fulfillmentMethod: 'delivery',
-      deliveryAddress: '123 Main St, Lincoln, NE'
-      // defaults to 18-egg → $14 base + $4 delivery = $18
-    });
-    expect(res.status).toBe(200);
-    expect(res.body.order).toMatchObject({
-      plan_name:        'Family',
-      price:            18,   // $14 base + $2×2 delivery fee
-      fulfillment_method: 'delivery',
-      delivery_address: '123 Main St, Lincoln, NE'
-    });
-  });
-
-  it('applies $2/delivery fee to fixed plan delivery order with dozen box type', async () => {
-    const res = await agent.post('/api/orders', {
-      planName: 'Small Family',
-      fulfillmentMethod: 'delivery',
-      deliveryAddress: '99 Oak Ave, Lincoln NE',
-      boxType: 'dozen'
-    });
-    expect(res.status).toBe(200);
-    // base = 1×$5 × 2 = $10, delivery fee = $2×2 = $4, total = $14
-    expect(res.body.order.price).toBe(14);
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/Invalid plan/i);
   });
 
   // ── Custom plan (fully flexible) ─────────────────────────────────────────────
@@ -392,15 +287,16 @@ describe('POST /api/orders', () => {
       boxes12: 1, boxes18: 0
     });
     await agent.post('/api/orders', {
-      planName: 'Small Family',
+      planName: 'Custom',
       fulfillmentMethod: 'pickup',
-      pickupDay: 'Friday'
+      pickupDay: 'Friday',
+      boxes12: 1, boxes18: 0, durationWeeks: 2
     });
 
     const res = await agent.get('/api/orders');
     const active = res.body.orders.filter(o => o.status === 'active');
     expect(active).toHaveLength(1);
-    expect(active[0].plan_name).toBe('Small Family');
+    expect(active[0].plan_name).toBe('Custom');
   });
 
   it('rejects missing planName', async () => {
@@ -421,7 +317,7 @@ describe('POST /api/orders', () => {
 
   it('rejects invalid fulfillmentMethod', async () => {
     const res = await agent.post('/api/orders', {
-      planName: 'Family', fulfillmentMethod: 'drone'
+      planName: 'Solo / Couple', fulfillmentMethod: 'drone', boxes12: 1, boxes18: 0
     });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/fulfillmentMethod/i);
@@ -429,7 +325,7 @@ describe('POST /api/orders', () => {
 
   it('rejects delivery order without deliveryAddress', async () => {
     const res = await agent.post('/api/orders', {
-      planName: 'Family', fulfillmentMethod: 'delivery'
+      planName: 'Solo / Couple', fulfillmentMethod: 'delivery', boxes12: 1, boxes18: 0
     });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/deliveryAddress/i);
@@ -437,7 +333,7 @@ describe('POST /api/orders', () => {
 
   it('rejects pickup order with invalid pickupDay', async () => {
     const res = await agent.post('/api/orders', {
-      planName: 'Family', fulfillmentMethod: 'pickup', pickupDay: 'Sunday'
+      planName: 'Solo / Couple', fulfillmentMethod: 'pickup', pickupDay: 'Sunday', boxes12: 1, boxes18: 0
     });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/pickupDay/i);
@@ -446,7 +342,7 @@ describe('POST /api/orders', () => {
   it('requires authentication', async () => {
     const freshAgent = makeAgent(app);
     const res = await freshAgent.post('/api/orders', {
-      planName: 'Family', fulfillmentMethod: 'pickup', pickupDay: 'Monday'
+      planName: 'Solo / Couple', fulfillmentMethod: 'pickup', pickupDay: 'Monday', boxes12: 1, boxes18: 0
     });
     expect(res.status).toBe(401);
   });
@@ -556,11 +452,12 @@ describe('Bi-weekly delivery subscription rules', () => {
     expect(res.body.order.eggs_per_delivery).toBe(60); // 30 × 2
   });
 
-  it('persists eggs_per_delivery for fixed plans', async () => {
+  it('persists eggs_per_delivery for Custom plans', async () => {
     const res = await agent.post('/api/orders', {
-      planName: 'Family',
+      planName: 'Custom',
       fulfillmentMethod: 'pickup',
-      pickupDay: 'Thursday'
+      pickupDay: 'Thursday',
+      boxes12: 0, boxes18: 1, durationWeeks: 2
     });
     expect(res.status).toBe(200);
     expect(res.body.order.eggs_per_delivery).toBe(36); // 18 × 2

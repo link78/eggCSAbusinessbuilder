@@ -1607,7 +1607,7 @@
           <div id="change-plan-flash"></div>
           <div class="modal-field">
             <label for="change-plan-input">New Plan Name</label>
-            <input type="text" id="change-plan-input" placeholder="e.g. Small Family" maxlength="120" />
+            <input type="text" id="change-plan-input" placeholder="e.g. Solo / Couple" maxlength="120" />
           </div>
           <div class="modal-actions" style="margin-top:.8rem;">
             <button class="btn-secondary" onclick="closeChangePlanModal()">Cancel</button>
@@ -2032,68 +2032,6 @@
       <button class="plan-cta" onclick="openSoloSubscribeModal()">Choose Plan</button>
     </div>
 
-    <!-- Small Family -->
-    <div class="plan-card featured">
-      <button class="plan-edit-btn" onclick="openEditPlanModal('small_family')" title="Edit this plan">✏️ Edit</button>
-      <div class="badge-popular">⭐ Most Popular</div>
-      <div class="plan-emoji">👨‍👩‍👦</div>
-      <h3>Small Family</h3>
-      <p class="plan-tagline">For 2–4 people</p>
-
-      <div class="plan-box-type-selector">
-        <label class="box-type-opt">
-          <input type="radio" name="sf-box-type" value="dozen" checked onchange="updateFixedPlanDisplay('Small Family')">
-          <span class="bto-label">🥚 1 Dozen (12)</span>
-        </label>
-        <label class="box-type-opt">
-          <input type="radio" name="sf-box-type" value="18" onchange="updateFixedPlanDisplay('Small Family')">
-          <span class="bto-label">🥚 18 Eggs</span>
-        </label>
-      </div>
-
-      <div class="plan-price" id="sf-price-display">$10<span>/mo</span></div>
-      <p class="per-week" id="sf-per-week">12 eggs/week · 24 eggs/delivery</p>
-      <ul>
-        <li id="sf-box-desc">1 dozen (12 eggs) per week</li>
-        <li>2 deliveries/month (bi-weekly)</li>
-        <li>Pickup weekly or delivery every 2 weeks (+$2/delivery)</li>
-        <li>Seasonal produce add-ons</li>
-        <li>Newsletter + farm updates</li>
-        <li>Cancel anytime</li>
-      </ul>
-      <button class="plan-cta" onclick="openSubscribeModal('Small Family')">Choose Plan</button>
-    </div>
-
-    <!-- Family -->
-    <div class="plan-card">
-      <button class="plan-edit-btn" onclick="openEditPlanModal('family')" title="Edit this plan">✏️ Edit</button>
-      <div class="plan-emoji">👨‍👩‍👧‍👦</div>
-      <h3>Family</h3>
-      <p class="plan-tagline">For 4+ people</p>
-
-      <div class="plan-box-type-selector">
-        <label class="box-type-opt">
-          <input type="radio" name="fam-box-type" value="dozen" onchange="updateFixedPlanDisplay('Family')">
-          <span class="bto-label">🥚 1 Dozen (12)</span>
-        </label>
-        <label class="box-type-opt">
-          <input type="radio" name="fam-box-type" value="18" checked onchange="updateFixedPlanDisplay('Family')">
-          <span class="bto-label">🥚 18 Eggs</span>
-        </label>
-      </div>
-
-      <div class="plan-price" id="fam-price-display">$14<span>/mo</span></div>
-      <p class="per-week" id="fam-per-week">18 eggs/week · 36 eggs/delivery</p>
-      <ul>
-        <li id="fam-box-desc">18-egg box per week</li>
-        <li>2 deliveries/month (bi-weekly)</li>
-        <li>Pickup weekly or delivery every 2 weeks (+$2/delivery)</li>
-        <li>Priority waitlist access</li>
-        <li>Seasonal produce add-ons</li>
-        <li>Cancel anytime</li>
-      </ul>
-      <button class="plan-cta" onclick="openSubscribeModal('Family')">Choose Plan</button>
-    </div>
 
     <!-- Custom Plan -->
     <div class="plan-card custom-plan-card">
@@ -2149,7 +2087,7 @@
   <div id="plans-flash"></div>
 
   <div class="info-note" style="margin-top:.8rem;">
-    <strong>Tip:</strong> The <strong>Family plan at $28/month</strong> tends to be the easiest sell in Lincoln — families go through eggs quickly and value the convenience of local delivery. Lead with that tier in your marketing.
+    <strong>Tip:</strong> The <strong>Custom plan</strong> is the most flexible option — customers can choose exactly how many boxes and weeks they need. Lead with convenience and freshness in your marketing.
   </div>
 </section>
 
@@ -2371,7 +2309,7 @@
   </div>
 
   <div class="info-note">
-    <strong>Revenue at 20 subscribers (mixed plans ~$19 avg):</strong> ~$380/month or <strong>~$4,560/year</strong> — well within the $25,000 cottage food threshold. You'd need ~119 subscribers at the Family plan to hit the license threshold.
+    <strong>Revenue at 20 customers (mixed orders ~$19 avg):</strong> ~$380/month or <strong>~$4,560/year</strong> — well within the $25,000 cottage food threshold.
   </div>
 </section>
 
@@ -2715,22 +2653,6 @@
     <div style="display:grid;gap:.85rem;">
       <div>
         <label style="display:block;font-weight:600;margin-bottom:.3rem;font-size:.9rem;">
-          Small Family <span style="font-weight:400;color:#888;">(1 dozen / 12-egg box)</span>
-        </label>
-        <div id="billing-price-small-family-source" style="font-size:.78rem;color:#888;margin-bottom:.3rem;display:none;"></div>
-        <input type="text" id="billing-price-small-family" autocomplete="off" spellcheck="false"
-          placeholder="price_…" style="width:100%;box-sizing:border-box;padding:.45rem .6rem;border:1px solid #ddd;border-radius:6px;font-size:.88rem;" />
-      </div>
-      <div>
-        <label style="display:block;font-weight:600;margin-bottom:.3rem;font-size:.9rem;">
-          Family <span style="font-weight:400;color:#888;">(18-egg box)</span>
-        </label>
-        <div id="billing-price-family-source" style="font-size:.78rem;color:#888;margin-bottom:.3rem;display:none;"></div>
-        <input type="text" id="billing-price-family" autocomplete="off" spellcheck="false"
-          placeholder="price_…" style="width:100%;box-sizing:border-box;padding:.45rem .6rem;border:1px solid #ddd;border-radius:6px;font-size:.88rem;" />
-      </div>
-      <div>
-        <label style="display:block;font-weight:600;margin-bottom:.3rem;font-size:.9rem;">
           Solo / Couple <span style="font-weight:400;color:#888;">(custom box selection)</span>
         </label>
         <div id="billing-price-solo-couple-source" style="font-size:.78rem;color:#888;margin-bottom:.3rem;display:none;"></div>
@@ -2765,7 +2687,7 @@
     <div id="edit-plan-flash"></div>
     <div class="edit-plan-field">
       <label for="edit-plan-name">Plan Name</label>
-      <input type="text" id="edit-plan-name" maxlength="120" placeholder="e.g. Small Family" />
+      <input type="text" id="edit-plan-name" maxlength="120" placeholder="e.g. Solo / Couple" />
     </div>
     <div class="edit-plan-field">
       <label for="edit-plan-eggs">Eggs per Week</label>
@@ -3696,13 +3618,7 @@
   function fixedPlanBoxDesc(boxType) { return boxType === 'dozen' ? '1 dozen (12 eggs) per week' : '18-egg box per week'; }
 
   function updateFixedPlanDisplay(planName) {
-    const prefix    = planName === 'Small Family' ? 'sf' : 'fam';
-    const radioName = prefix + '-box-type';
-    const boxType   = document.querySelector(`input[name="${radioName}"]:checked`).value;
-    const price     = fixedPlanPrice(boxType);
-    document.getElementById(`${prefix}-price-display`).innerHTML = `$${price}<span>/mo</span>`;
-    document.getElementById(`${prefix}-per-week`).textContent    = fixedPlanPerWeek(boxType);
-    document.getElementById(`${prefix}-box-desc`).textContent    = fixedPlanBoxDesc(boxType);
+    // Fixed plans removed — no-op
   }
 
   let _soloBoxes12   = 1;
@@ -3815,24 +3731,8 @@
 
   function openSubscribeModal(name) {
     if (!currentUser) { showAuthGate(); showAuthForm('login'); return; }
-    _pendingPlanName = name;
-    const prefix    = name === 'Small Family' ? 'sf' : 'fam';
-    const radioEl   = document.querySelector(`input[name="${prefix}-box-type"]:checked`);
-    _pendingBoxType = radioEl ? radioEl.value : (name === 'Small Family' ? 'dozen' : '18');
-    _pendingPlanPrice = fixedPlanPrice(_pendingBoxType);
-    const eggs = fixedPlanEggs(_pendingBoxType);
-    document.getElementById('modal-plan-name').textContent = name;
-    document.getElementById('modal-plan-subtitle').textContent =
-      formatCurrency(_pendingPlanPrice) + '/month · ' + eggs + ' eggs/week · Cancel anytime';
-    document.getElementById('modal-custom-fields').style.display = 'none';
-    document.getElementById('ft-pickup').checked = true;
-    document.getElementById('modal-pickup-day').value      = '';
-    document.getElementById('modal-delivery-address').value = '';
-    document.getElementById('modal-flash').style.display   = 'none';
-    updateFulfillmentFields();
-    _updateSubscribeButtonText();
-    document.getElementById('subscribe-modal').classList.add('open');
-    document.getElementById('modal-pickup-day').focus();
+    // Fixed plans removed — only Solo / Couple and Custom remain
+    alert('This plan is no longer available. Please use Solo / Couple or Custom.');
   }
 
   function closeSubscribeModal() {
@@ -3879,16 +3779,8 @@
         `<strong>Solo / Couple</strong> — ${boxDesc || '—'} box/delivery · ${eggs} eggs/wk<br>` +
         `${icon} · Monthly · <strong>$${total}/month</strong>${dlvNote}`;
     } else {
-      const boxType    = _pendingBoxType || '18';
-      const eggs       = fixedPlanEggs(boxType);
-      const base       = fixedPlanPrice(boxType);
-      const dlvFee     = isDelivery ? DELIVERY_FEE_PER_WEEK * MONTHLY_WEEKS : 0;
-      const total      = base + dlvFee;
-      const boxLabel   = boxType === 'dozen' ? '1 dozen (12 eggs)' : '18 eggs';
-      const dlvNote    = isDelivery ? ` <small style="color:#e85d04;">+$${dlvFee} delivery fee</small>` : '';
-      document.getElementById('modal-summary').innerHTML =
-        `<strong>${escHtml(_pendingPlanName || '')}</strong> — ${boxLabel} box/delivery · ${eggs} eggs/week<br>` +
-        `${icon} · Monthly · <strong>${formatCurrency(total)}/month</strong>${dlvNote}`;
+      // Fixed plans removed — fallback
+      document.getElementById('modal-summary').innerHTML = '';
     }
   }
 
@@ -3919,8 +3811,6 @@
         body.boxes12 = _customBoxes12; body.boxes18 = _customBoxes18; body.durationWeeks = _customWeeks;
       } else if (_pendingPlanName === 'Solo / Couple') {
         body.boxes12 = _soloBoxes12; body.boxes18 = _soloBoxes18;
-      } else {
-        body.boxType = _pendingBoxType;
       }
 
       body.plan_id = stripeServicePlanId(_pendingPlanName);
@@ -3936,7 +3826,7 @@
         const data = await apiPost('/api/orders', body);
         if (data.error) { showFlash('modal-flash', data.error, 'err'); return; }
         closeSubscribeModal();
-        showFlash('plans-flash', "✅ Subscription confirmed! You'll be contacted to arrange payment.", 'ok');
+        showFlash('plans-flash', "✅ Order confirmed! You'll be contacted to arrange payment.", 'ok');
         await loadPortal();
         switchView('portal');
       }
@@ -3949,8 +3839,6 @@
   }
 
   function stripeServicePlanId(planName) {
-    if (planName === 'Small Family') return 'small_family';
-    if (planName === 'Family') return 'family';
     if (planName === 'Solo / Couple') return 'solo_couple';
     if (planName === 'Custom') return 'custom';
     return '';
@@ -5267,10 +5155,11 @@ async function cancelOrder(id) {
   // to this customer so the admin can reply in context.
   function adminOpenThreadFromProfile() {
     if (!_profileUserId) return;
+    const userId = _profileUserId;
     closeCustomerProfile();
     switchView('messages');
     // Defer until the view is active and the layout is rendered.
-    setTimeout(() => adminOpenThread(_profileUserId), 50);
+    setTimeout(() => adminOpenThread(userId), 50);
   }
 
   async function refreshAdminUnreadBadge() {

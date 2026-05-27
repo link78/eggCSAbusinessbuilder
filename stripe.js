@@ -12,7 +12,7 @@ let _stripe = _secretKey ? Stripe(_secretKey) : null;
 let _dbPriceIds = {};
 
 // All settings keys that hold plan price IDs in the settings table.
-const PLAN_PRICE_KEYS = ['small_family', 'family', 'solo_couple', 'custom'];
+const PLAN_PRICE_KEYS = ['solo_couple', 'custom'];
 
 function _rebuild() {
   _stripe = _secretKey ? Stripe(_secretKey) : null;

@@ -18,11 +18,8 @@ const MIN_EGGS_PER_WEEK     = 12;          // At least one 12-egg box per week
 // Referral reward — $5 in account credit (5_00 cents) per converted referral
 const REFERRAL_REWARD_CENTS = 500;
 
-// Fixed plans — one box per weekly delivery; price depends on box type chosen by subscriber
-const FIXED_PLANS = {
-  'Small Family': { boxes: 1 },
-  'Family':       { boxes: 1 }
-};
+// Fixed plans removed — all purchases now use Solo / Couple or Custom with one-time checkout
+const FIXED_PLANS = {};
 
 // Flexible plan constraints
 const SOLO_MIN_BOXES   = 1;   // Solo / Couple: at least 1 box (12-egg or 18-egg)

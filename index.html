@@ -1081,7 +1081,7 @@
 
     <div id="m-form">
 
-      <!-- Box size (Small Family / Family only) -->
+      <!-- Box size (legacy — hidden, no longer used) -->
       <div id="box-type-wrap" class="m-section" style="display:none">
         <div class="m-section-label">Box Size</div>
         <div class="radio-row">
@@ -1264,33 +1264,17 @@
 
     const cards = [
       {
-        name: 'Solo / Couple', icon: '👫', featured: false, tag: '',
-        price: `from $${soloCoupleConstraints.pricePerBox12 * soloCoupleConstraints.monthlyWeeks}/mo`,
-        sub:   `+$${dlvMo}/mo for local delivery`,
+        name: 'Solo / Couple', icon: '👫', featured: true, tag: 'Most Popular',
+        price: `from $${soloCoupleConstraints.pricePerBox12 * soloCoupleConstraints.monthlyWeeks}`,
+        sub:   `+$${dlvMo} for local delivery`,
         feats: [
-          'Build your own weekly box',
+          'Build your own box',
           'Mix 12-egg ($5) &amp; 18-egg ($7) boxes',
-          'Delivery every 2 weeks · monthly billing',
+          'One-time purchase · no subscription',
           'Pickup or local delivery'
         ]
       }
     ];
-
-    for (const p of plans) {
-      const fam = p.name === 'Family';
-      cards.push({
-        name: p.name, icon: fam ? '👨‍👩‍👧‍👦' : '👨‍👩‍👧', featured: fam, tag: fam ? 'Most Popular' : '',
-        price: `$${fam ? p.price18 : p.price12}/mo`,
-        sub:   `${fam ? 18 : 12} eggs/week · +$${dlvMo}/mo delivery`,
-        feats: [
-          `1 ${fam ? '18-egg' : 'dozen'} box per week`,
-          `${fam ? p.eggsPerWeek18 : p.eggsPerWeek12} fresh pasture-raised eggs`,
-          'Delivery every 2 weeks · monthly billing',
-          'Box size switchable anytime',
-          'Pickup or local delivery'
-        ]
-      });
-    }
 
     cards.push({
       name: 'Custom', icon: '⚙️', featured: false, tag: '',
@@ -1323,25 +1307,18 @@
   function openSubscribeModal(planName) {
     _selPlan = planName;
 
-    const isFixed  = planName === 'Small Family' || planName === 'Family';
     const isSolo   = planName === 'Solo / Couple';
     const isCustom = planName === 'Custom';
 
     document.getElementById('modal-plan-name').textContent = planName + ' Plan';
     document.getElementById('modal-plan-sub').textContent  =
-      isFixed  ? '1 box per week · bi-weekly delivery · monthly billing' :
-      isSolo   ? 'Flexible monthly subscription'         :
+      isSolo   ? 'One-time egg purchase'         :
                  'Custom duration & box count';
 
-    document.getElementById('box-type-wrap').style.display  = isFixed             ? 'block' : 'none';
+    document.getElementById('box-type-wrap').style.display  = 'none';
     document.getElementById('box-count-wrap').style.display = isSolo || isCustom  ? 'block' : 'none';
     document.getElementById('duration-wrap').style.display  = isCustom            ? 'block' : 'none';
 
-    if (isFixed) {
-      const def = planName === 'Small Family' ? 'dozen' : '18';
-      const r = document.querySelector(`input[name="boxType"][value="${def}"]`);
-      if (r) r.checked = true;
-    }
     if (isSolo || isCustom) {
       document.getElementById('m-b12').value = '1';
       document.getElementById('m-b18').value = isCustom ? '1' : '0';
@@ -1412,17 +1389,11 @@
     const mo = soloCoupleConstraints.monthlyWeeks;
 
     let price = NaN, note = '', boxes = 0;
-    if (_selPlan === 'Small Family' || _selPlan === 'Family') {
-      const bt  = document.querySelector('input[name="boxType"]:checked')?.value;
-      const ppb = bt === '18' ? 7 : 5;
-      price = ppb * mo + (isDelivery ? deliveryFeePerWeek * mo : 0);
-      note  = '/mo';
-      boxes = 1;
-    } else if (_selPlan === 'Solo / Couple') {
+    if (_selPlan === 'Solo / Couple') {
       const b12 = parseInt(document.getElementById('m-b12')?.value) || 0;
       const b18 = parseInt(document.getElementById('m-b18')?.value) || 0;
       price = (b12 * 5 + b18 * 7) * mo + (isDelivery ? deliveryFeePerWeek * mo : 0);
-      note  = '/mo';
+      note  = ' total';
       boxes = b12 + b18;
     } else if (_selPlan === 'Custom') {
       const b12 = parseInt(document.getElementById('m-b12')?.value) || 0;
@@ -1452,8 +1423,6 @@
 
   /* ── Submit ─────────────────────────────────────────────── */
   function _planKeyFromName(planName) {
-    if (planName === 'Small Family')  return 'small_family';
-    if (planName === 'Family')        return 'family';
     if (planName === 'Solo / Couple') return 'solo_couple';
     if (planName === 'Custom')        return 'custom';
     return '';
@@ -1510,7 +1479,7 @@
       document.getElementById('m-form').style.display  = 'none';
       document.getElementById('m-flash').style.display = 'none';
       document.getElementById('m-success-msg').textContent =
-        `Your ${o.plan_name} subscription is confirmed! ` +
+        `Your ${o.plan_name} order is confirmed! ` +
         (o.fulfillment_method === 'pickup'
           ? `Pick up on ${o.pickup_day}s at the farm.`
           : `We'll deliver to ${o.delivery_address}.`) +
@@ -1563,12 +1532,7 @@
       ...(method === 'delivery' ? { deliveryAddress: address }   : {})
     };
 
-    if (_selPlan === 'Small Family' || _selPlan === 'Family') {
-      const bt = document.querySelector('input[name="boxType"]:checked')?.value;
-      if (!bt) { showFlash('Please choose a box size.', 'warn'); return null; }
-      p.boxType = bt;
-
-    } else if (_selPlan === 'Solo / Couple') {
+    if (_selPlan === 'Solo / Couple') {
       const b12 = Math.max(0, parseInt(document.getElementById('m-b12').value) || 0);
       const b18 = Math.max(0, parseInt(document.getElementById('m-b18').value) || 0);
       if (b12 + b18 < 1)  { showFlash('Please choose at least 1 box.', 'warn'); return null; }
